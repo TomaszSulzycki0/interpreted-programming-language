@@ -13,3 +13,9 @@ target_compile_options(ipl PRIVATE
     $<$<CONFIG:Debug>:-Wall -Wextra -O0 -g>
 )
 
+
+add_custom_command(TARGET ipl POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy
+    		${CMAKE_SOURCE_DIR}/testFiles/input.ipl
+    		$<TARGET_FILE_DIR:ipl>/testFiles/input.ipl
+)
