@@ -6,6 +6,8 @@
 #include<fstream>
 #include<stdexcept>
 
+#include"scope.hpp"
+
 constexpr int num_args_for_default_usage = 2;
 constexpr int num_args_for_description = 1;
 
@@ -39,6 +41,8 @@ int main(int argc, char** argv)
     {
         auto file_content = readFileToString(input_filename);
         std::cout << file_content;
+
+        Scope global_scope {};
     }
     catch(const std::exception& e)
     {
