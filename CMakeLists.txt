@@ -6,6 +6,10 @@ set(CMAKE_CXX_STANDARD 23)
 set(SOURCE_FILES
 	src/main.cpp
 	src/scope.cpp
+	src/variable.cpp
+	src/parser.cpp
+	src/builder.cpp
+	src/expression.cpp
 	)
 
 add_executable(ipl ${SOURCE_FILES})
@@ -15,8 +19,8 @@ target_compile_options(ipl PRIVATE
 )
 
 
-add_custom_command(TARGET ipl POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy
-    		${CMAKE_SOURCE_DIR}/testFiles/input.ipl
-    		$<TARGET_FILE_DIR:ipl>/testFiles/input.ipl
+configure_file(
+    "${CMAKE_SOURCE_DIR}/testFiles/input.ipl"
+    "${CMAKE_CURRENT_BINARY_DIR}/testFiles/input.ipl"
+    COPYONLY
 )

@@ -11,7 +11,7 @@ class Declaration
 private:
     std::string name;
 protected:
-    Declaration(const std::string& _name) : name(_name) {}
+    Declaration(std::string _name) : name(std::move(_name)) {}
 public:
     std::string getName() const { return name; }
     virtual void accept(DeclarationVisitor& visitor) const = 0;

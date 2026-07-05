@@ -32,11 +32,10 @@ public:
         return static_cast<long long>(value); 
     }
 
-    Numeric(const std::string& _name) : NumericDeclaration(_name), value(0) {}
-    Numeric(const std::string& _name, const T& _value) : NumericDeclaration(_name), value(_value) {}
+    Numeric(std::string _name, const T& _value) : NumericDeclaration(std::move(_name)), value(_value) {}
 
     template<Arithmetic U>
-    Numeric(const std::string& _name, const Numeric<U>& other) : NumericDeclaration(_name), value(static_cast<T>(other.getValue())) {}
+    Numeric(std::string _name, const Numeric<U>& other) : NumericDeclaration(std::move(_name)), value(static_cast<T>(other.getValue())) {}
 
     template<Arithmetic U> 
     friend auto operator+(const Numeric<T>& lhs, const Numeric<U>& rhs) 

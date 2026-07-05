@@ -1,63 +1,45 @@
 #include"parser.hpp"
+#include"variable.hpp"
+#include"expression.hpp"
 
-std::unique_ptr<NumericDeclaration> Parser::parse(const std::string& statement)
+std::unique_ptr<Expression> Parser::parseInitializer(const std::string& expr_str) 
+{
+    static const std::regex literal_pattern(R"(^-?\d+(?:\.\d+)?$)");
+    if (std::regex_match(expr_str, literal_pattern)) 
+    {
+        return std::make_unique<LiteralExpression>(expr_str);
+    }
+
+    static const std::regex variable_pattern(R"(^[a-zA-Z_]\w*$)");
+    if (std::regex_match(expr_str, variable_pattern)) 
+    {
+        return std::make_unique<VariableExpression>(expr_str);
+    }
+
+    // Future Expansion: Complex expressions like "x + 5" 
+    return nullptr; 
+}
+
+std::unique_ptr<DeclarationNode> Parser::parse(const std::string& statement)
 {
     static const std::regex declaration_pattern(R"(([a-zA-Z]+)\s+(\w+)(?:\s*=\s*(.+))?)");
-
     std::smatch matches;
 
     if (std::regex_match(statement, matches, declaration_pattern)) 
     {
         std::string type_token = matches[1];
         std::string name_token = matches[2];
+        std::unique_ptr<Expression> expr_token = nullptr;
 
-        auto it = num_innit_map.find(type_token);
-        if (it != num_innit_map.end()) 
+        if (matches[3].matched) 
         {
-            NumericInitArgs args;
-            args.name = name_token;
-            if (matches[3].matched) 
-            {
-                args.value = matches[3].str();
-            }
-            return it->second(args);
+            expr_token = parseInitializer(matches[3].str());
         }
+
+        return std::make_unique<DeclarationNode>(type_token, name_token, std::move(expr_token));
     }
 
     return nullptr;
-}
-
-Parser::Parser()
-{
-    num_innit_map["i"] = [](const NumericInitArgs& args) 
-    {
-        if (args.value.has_value()) 
-        {
-            int parsed_val = std::stoi(args.value.value());
-            return std::make_unique<Numeric<int>>(args.name, parsed_val);
-        }
-        return std::make_unique<Numeric<int>>(args.name);
-    };
-
-    num_innit_map["d"] = [](const NumericInitArgs& args) 
-    {
-        if (args.value.has_value()) 
-        {
-            double parsed_val = std::stod(args.value.value()); 
-            return std::make_unique<Numeric<double>>(args.name, parsed_val);
-        }
-        return std::make_unique<Numeric<double>>(args.name);
-    };
-
-    num_innit_map["f"] = [](const NumericInitArgs& args) 
-    {
-        if (args.value.has_value()) 
-        {
-            float parsed_val = std::stof(args.value.value()); 
-            return std::make_unique<Numeric<float>>(args.name, parsed_val);
-        }
-        return std::make_unique<Numeric<float>>(args.name);
-    };
 }
 
 std::string Parser::readFileToString(const std::string& filename) 

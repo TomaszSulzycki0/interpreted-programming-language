@@ -8,26 +8,29 @@
 #include<regex>
 #include<fstream>
 
-#include"variable.hpp"
+#include"expression.hpp"
 
-struct NumericInitArgs 
+// Raw data for builder
+//
+struct DeclarationNode 
 {
+    std::string type;
     std::string name;
-    std::optional<std::string> value; 
+    std::unique_ptr<Expression> initializer;
+
+    DeclarationNode(std::string t, std::string n, std::unique_ptr<Expression> init)
+        : type(std::move(t)), name(std::move(n)), initializer(std::move(init)) {}
 };
 
 class Parser
 {
 private:
-    std::map<std::string, std::function<std::unique_ptr<NumericDeclaration>(const NumericInitArgs&)>> num_innit_map;
-    // fix: Parser should only parse. Separate syntax validation from object creation.
+    std::unique_ptr<Expression> parseInitializer(const std::string& expr_str); 
 
 public:
-    std::unique_ptr<NumericDeclaration> parse(const std::string& statement);
+    std::unique_ptr<DeclarationNode> parse(const std::string& statement);
     std::vector<std::string> getStatements(const std::string& code);
     std::string readFileToString(const std::string& filename); 
-
-    Parser();
 
 };
 

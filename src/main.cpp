@@ -9,6 +9,7 @@
 #include"variable.hpp"
 #include"parser.hpp"
 #include"visitors.hpp"
+#include"builder.hpp"
 
 constexpr int num_args_for_default_usage = 2;
 constexpr int num_args_for_description = 1;
@@ -43,6 +44,8 @@ int main(int argc, char** argv)
     try
     {
         Parser parser {};
+        Scope main_scope {};
+        Builder builder {main_scope};
 
         auto file_content = parser.readFileToString(input_filename);
         auto statements = parser.getStatements(file_content);
@@ -52,17 +55,27 @@ int main(int argc, char** argv)
         for(int i = 0; i < statements.size(); ++i)
         {
             std::cout << "Statement " << i << " " << statements[i] << std::endl;
-            std::unique_ptr<NumericDeclaration> parsed = parser.parse(statements[i]);
 
-            if(parsed != nullptr)
+            auto parsed = parser.parse(statements[i]);
+
+            if (parsed == nullptr) 
             {
-                std::cout << parsed->getName() << " : ";
-        
-                PrintVisitor visitor;
-                parsed->accept(visitor);
-
-                std::cout << std::endl;
+                std::cerr << "Syntax Error: Could not parse statement: " << statements[i] << std::endl;
+                continue; 
             }
+
+            auto real_declaration = builder.build(*parsed); 
+            if (real_declaration == nullptr) 
+            {
+                std::cerr << "Semantic Error: Builder failed to create node for type: " << parsed->type << std::endl;
+                continue; 
+            }
+            
+            std::cout << real_declaration->getName() << " : ";
+            PrintVisitor visitor;
+            real_declaration->accept(visitor);
+            std::cout << std::endl;
+
         } 
        
     }
