@@ -43,7 +43,7 @@ std::vector<std::unique_ptr<DeclarationNode>> Parser::parseProgram(const std::ve
 
 std::unique_ptr<DeclarationNode> Parser::parseStatement(const std::string& statement)
 {
-    static const std::regex declaration_pattern(R"(([a-zA-Z]+)\s+(\w+)(?:\s*=\s*(.+))?)");
+    static const std::regex declaration_pattern(R"(([a-zA-Z]+)\s+(\w+)(?:\s*=\s*(\S+.*))?)");
     std::smatch matches;
 
     if (std::regex_match(statement, matches, declaration_pattern)) 
