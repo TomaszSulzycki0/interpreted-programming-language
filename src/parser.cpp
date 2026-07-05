@@ -1,3 +1,5 @@
+#include<iostream>
+
 #include"parser.hpp"
 #include"variable.hpp"
 #include"expression.hpp"
@@ -20,7 +22,26 @@ std::unique_ptr<Expression> Parser::parseInitializer(const std::string& expr_str
     return nullptr; 
 }
 
-std::unique_ptr<DeclarationNode> Parser::parse(const std::string& statement)
+std::vector<std::unique_ptr<DeclarationNode>> Parser::parseProgram(const std::vector<std::string>& statements) 
+{
+    std::vector<std::unique_ptr<DeclarationNode>> ast;
+
+    for (const auto& statement : statements) 
+    {
+        auto parsed_node = parseStatement(statement); 
+        
+        if (parsed_node == nullptr) 
+        {            
+            throw std::runtime_error("Error: Could not parse statement: " + statement); 
+        }
+        
+        ast.push_back(std::move(parsed_node));
+    }
+
+    return ast; 
+}
+
+std::unique_ptr<DeclarationNode> Parser::parseStatement(const std::string& statement)
 {
     static const std::regex declaration_pattern(R"(([a-zA-Z]+)\s+(\w+)(?:\s*=\s*(.+))?)");
     std::smatch matches;

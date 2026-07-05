@@ -1,5 +1,6 @@
 #include"expression.hpp"
 #include"declarationBase.hpp"
+#include"scope.hpp"
 
 void LiteralExpression::accept(ExpressionVisitor& visitor) const 
 {

@@ -1,9 +1,33 @@
+#include<iostream>
+
 #include"builder.hpp"
 #include"expression.hpp"
 #include"parser.hpp"
 #include"variable.hpp"
+#include"scope.hpp"
+#include"visitors.hpp"
 
-std::shared_ptr<Declaration> Builder::build(const DeclarationNode& node) 
+void Builder::buildProgram(const std::vector<std::unique_ptr<DeclarationNode>>& ast) 
+{
+    for (const auto& node_ptr : ast) 
+    {
+        auto real_declaration = buildNode(*node_ptr);
+        
+        if (real_declaration == nullptr) 
+        {
+            throw std::runtime_error("Error: Could not create variable of type: " + node_ptr->type); 
+        }
+
+        // DUBUG
+        //
+        std::cout << real_declaration->getName() << " : ";
+        PrintVisitor visitor;
+        real_declaration->accept(visitor);
+        std::cout << std::endl;
+    }
+}
+
+std::shared_ptr<Declaration> Builder::buildNode(const DeclarationNode& node) 
 {
     double resolved_value = 0.0;
 

@@ -26,9 +26,10 @@ class Parser
 {
 private:
     std::unique_ptr<Expression> parseInitializer(const std::string& expr_str); 
+    std::unique_ptr<DeclarationNode> parseStatement(const std::string& statement);
 
 public:
-    std::unique_ptr<DeclarationNode> parse(const std::string& statement);
+    std::vector<std::unique_ptr<DeclarationNode>> parseProgram(const std::vector<std::string>& statements); 
     std::vector<std::string> getStatements(const std::string& code);
     std::string readFileToString(const std::string& filename); 
 

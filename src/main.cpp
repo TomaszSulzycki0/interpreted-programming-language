@@ -50,34 +50,13 @@ int main(int argc, char** argv)
         auto file_content = parser.readFileToString(input_filename);
         auto statements = parser.getStatements(file_content);
         
-        std::cout << "Num statements: " << statements.size() << std::endl;
+        std::cout << "Loaded " << statements.size() << " raw statements." << std::endl;
 
-        for(int i = 0; i < statements.size(); ++i)
-        {
-            std::cout << "Statement " << i << " " << statements[i] << std::endl;
+        std::cout << "Parsing.." << std::endl;
+        auto program_ast = parser.parseProgram(statements);
 
-            auto parsed = parser.parse(statements[i]);
-
-            if (parsed == nullptr) 
-            {
-                std::cerr << "Syntax Error: Could not parse statement: " << statements[i] << std::endl;
-                continue; 
-            }
-
-            auto real_declaration = builder.build(*parsed); 
-            if (real_declaration == nullptr) 
-            {
-                std::cerr << "Semantic Error: Builder failed to create node for type: " << parsed->type << std::endl;
-                continue; 
-            }
-            
-            std::cout << real_declaration->getName() << " : ";
-            PrintVisitor visitor;
-            real_declaration->accept(visitor);
-            std::cout << std::endl;
-
-        } 
-       
+        std::cout << "Executing.." << std::endl;
+        builder.buildProgram(program_ast);
     }
     catch(const std::exception& e)
     {

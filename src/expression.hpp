@@ -3,8 +3,8 @@
 
 #include<string>
 
-#include"Scope.hpp"
 
+class Scope;
 class LiteralExpression;
 class VariableExpression;
 class NumericDeclaration;
