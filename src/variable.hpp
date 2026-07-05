@@ -2,25 +2,14 @@
 #define VARIABLE_HPP
 
 #include<concepts>
-#include<string>
+
+#include"declarationBase.hpp"
 
 template<typename T>
 concept Arithmetic = std::integral<T> || std::floating_point<T>;
 
-class Declaration
-{
-private:
-    std::string name;
-protected:
-    Declaration(const std::string& _name) : name(_name) {}
-public:
-    std::string getName() const { return name; }
-    virtual ~Declaration() = default;
-
-};
-
 template<Arithmetic T> 
-class Numeric : public Declaration
+class Numeric : public NumericDeclaration
 {
 private:
     T value;
@@ -28,11 +17,26 @@ public:
     T getValue() const { return value; }
     void setValue(const T& _value) { value = _value; }
 
-    Numeric(const std::string& _name) : Declaration(_name), value(0) {}
-    Numeric(const std::string& _name, const T& _value) : Declaration(_name), value(_value) {}
+    bool isFloatingPoint() const override 
+    { 
+        return std::is_floating_point_v<T>; 
+    }
+
+    double asDouble() const override 
+    { 
+        return static_cast<double>(value); 
+    }
+
+    long long asInteger() const override 
+    { 
+        return static_cast<long long>(value); 
+    }
+
+    Numeric(const std::string& _name) : NumericDeclaration(_name), value(0) {}
+    Numeric(const std::string& _name, const T& _value) : NumericDeclaration(_name), value(_value) {}
 
     template<Arithmetic U>
-    Numeric(const std::string& _name, const Numeric<U>& other) : Declaration(_name), value(static_cast<T>(other.getValue())) {}
+    Numeric(const std::string& _name, const Numeric<U>& other) : NumericDeclaration(_name), value(static_cast<T>(other.getValue())) {}
 
     template<Arithmetic U> 
     friend auto operator+(const Numeric<T>& lhs, const Numeric<U>& rhs) 
@@ -54,8 +58,8 @@ public:
         return *this; 
     }
     
-    
 };
+
 
 
 #endif
