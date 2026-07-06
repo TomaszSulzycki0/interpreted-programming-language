@@ -18,7 +18,7 @@ struct DeclarationNode
     std::string name;
     std::unique_ptr<Expression> initializer;
 
-    DeclarationNode(std::string t, std::string n, std::unique_ptr<Expression> init)
+    explicit DeclarationNode(std::string t, std::string n, std::unique_ptr<Expression> init)
         : type(std::move(t)), name(std::move(n)), initializer(std::move(init)) {}
 };
 
@@ -32,7 +32,6 @@ public:
     std::vector<std::unique_ptr<DeclarationNode>> parseProgram(const std::vector<std::string>& statements); 
     std::vector<std::string> getStatements(const std::string& code);
     std::string readFileToString(const std::string& filename); 
-
 };
 
 

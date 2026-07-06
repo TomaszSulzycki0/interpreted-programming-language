@@ -31,8 +31,8 @@ public:
         return it->second;
     }
 
-    Scope(); 
-    Scope(Scope& parent);
+    explicit Scope(); 
+    explicit Scope(Scope& parent);
 
 };
 

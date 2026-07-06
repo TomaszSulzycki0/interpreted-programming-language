@@ -3,27 +3,18 @@
 
 #include<string>
 
-class DeclarationVisitor;
-class NumericDeclaration;
+#include"visitors.hpp"
 
 class Declaration
 {
 private:
     std::string name;
 protected:
-    Declaration(std::string _name) : name(std::move(_name)) {}
+    explicit Declaration(std::string _name) : name(std::move(_name)) {}
 public:
     std::string getName() const { return name; }
     virtual void accept(DeclarationVisitor& visitor) const = 0;
     virtual ~Declaration() = default;
-};
-
-class DeclarationVisitor {
-public:
-    virtual void visit(const NumericDeclaration& num_decl) = 0;
-    // Future expansion: virtual void visit(const StringDeclaration& strDecl) = 0;
-
-    virtual ~DeclarationVisitor() = default;
 };
 
 class NumericDeclaration : public Declaration

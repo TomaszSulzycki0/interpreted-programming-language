@@ -9,7 +9,7 @@ template<typename T>
 concept Arithmetic = std::integral<T> || std::floating_point<T>;
 
 template<Arithmetic T> 
-class Numeric : public NumericDeclaration
+class Numeric final : public NumericDeclaration
 {
 private:
     T value;
@@ -32,10 +32,10 @@ public:
         return static_cast<long long>(value); 
     }
 
-    Numeric(std::string _name, const T& _value) : NumericDeclaration(std::move(_name)), value(_value) {}
+    explicit Numeric(std::string _name, const T& _value) : NumericDeclaration(std::move(_name)), value(_value) {}
 
     template<Arithmetic U>
-    Numeric(std::string _name, const Numeric<U>& other) : NumericDeclaration(std::move(_name)), value(static_cast<T>(other.getValue())) {}
+    explicit Numeric(std::string _name, const Numeric<U>& other) : NumericDeclaration(std::move(_name)), value(static_cast<T>(other.getValue())) {}
 
     template<Arithmetic U> 
     friend auto operator+(const Numeric<T>& lhs, const Numeric<U>& rhs) 

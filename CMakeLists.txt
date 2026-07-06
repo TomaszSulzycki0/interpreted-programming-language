@@ -9,6 +9,7 @@ set(SOURCE_FILES
 	src/variable.cpp
 	src/parser.cpp
 	src/builder.cpp
+	src/visitors.cpp
 	src/expression.cpp
 	)
 

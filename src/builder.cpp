@@ -24,6 +24,7 @@ void Builder::buildProgram(const std::vector<std::unique_ptr<DeclarationNode>>& 
         PrintVisitor visitor;
         real_declaration->accept(visitor);
         std::cout << std::endl;
+        
     }
 }
 

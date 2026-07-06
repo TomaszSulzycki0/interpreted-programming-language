@@ -3,19 +3,7 @@
 
 #include<string>
 
-
-class Scope;
-class LiteralExpression;
-class VariableExpression;
-class NumericDeclaration;
-
-class ExpressionVisitor 
-{
-public:
-    virtual void visit(const LiteralExpression& expr) = 0;
-    virtual void visit(const VariableExpression& expr) = 0;
-    virtual ~ExpressionVisitor() = default;
-};
+class ExpressionVisitor;
 
 class Expression 
 {
@@ -24,7 +12,7 @@ public:
     virtual void accept(ExpressionVisitor& visitor) const = 0;
 };
 
-class LiteralExpression : public Expression 
+class LiteralExpression final : public Expression 
 {
 public:
     const std::string value;
@@ -32,25 +20,12 @@ public:
     void accept(ExpressionVisitor& visitor) const override;
 };
 
-class VariableExpression : public Expression 
+class VariableExpression final : public Expression 
 {
 public:
     const std::string name;
     explicit VariableExpression(std::string n) : name(std::move(n)) {}
     void accept(ExpressionVisitor& visitor) const override;
-};
-
-class ExpressionEvaluator : public ExpressionVisitor 
-{
-private:
-    const Scope& scope;
-    double last_evaluated_value = 0.0;
-
-public:
-    explicit ExpressionEvaluator(const Scope& s) : scope(s) {}
-    double evaluate(const Expression& expr);
-    void visit(const LiteralExpression& expr) override;
-    void visit(const VariableExpression& expr) override;
 };
 
 #endif
