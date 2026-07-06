@@ -12,3 +12,4 @@ void VariableExpression::accept(ExpressionVisitor& visitor) const
 {
     visitor.visit(*this); 
 }
+

@@ -6,16 +6,15 @@
 
 class Scope;
 class Declaration;
-struct DeclarationNode;
+class ASTNode;
 
-class Builder {
+class Builder 
+{
 private:
     Scope& scope;
 public:
     explicit Builder(Scope& s) : scope(s) {}
-    std::shared_ptr<Declaration> buildNode(const DeclarationNode& node); 
-    void buildProgram(const std::vector<std::unique_ptr<DeclarationNode>>& ast); 
-
+    void buildProgram(const std::vector<std::unique_ptr<ASTNode>>& ast); 
 };
 
 #endif

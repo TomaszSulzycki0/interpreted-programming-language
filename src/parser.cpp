@@ -4,6 +4,16 @@
 #include"variable.hpp"
 #include"expression.hpp"
 
+void AssignmentNode::accept(NodeVisitor& visitor) const 
+{
+    visitor.visit(*this); 
+}
+
+void DeclarationNode::accept(NodeVisitor& visitor) const
+{
+    visitor.visit(*this); 
+}
+
 std::unique_ptr<Expression> Parser::parseInitializer(const std::string& expr_str) 
 {
     static const std::regex literal_pattern(R"(^-?\d+(?:\.\d+)?$)");
@@ -22,9 +32,9 @@ std::unique_ptr<Expression> Parser::parseInitializer(const std::string& expr_str
     return nullptr; 
 }
 
-std::vector<std::unique_ptr<DeclarationNode>> Parser::parseProgram(const std::vector<std::string>& statements) 
+std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram(const std::vector<std::string>& statements) 
 {
-    std::vector<std::unique_ptr<DeclarationNode>> ast;
+    std::vector<std::unique_ptr<ASTNode>> ast;
 
     for (const auto& statement : statements) 
     {
@@ -41,7 +51,7 @@ std::vector<std::unique_ptr<DeclarationNode>> Parser::parseProgram(const std::ve
     return ast; 
 }
 
-std::unique_ptr<DeclarationNode> Parser::parseStatement(const std::string& statement)
+std::unique_ptr<ASTNode> Parser::parseStatement(const std::string& statement)
 {
     static const std::regex declaration_pattern(R"(([a-zA-Z]+)\s+(\w+)(?:\s*=\s*(\S+.*))?)");
     std::smatch matches;

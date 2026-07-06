@@ -2,6 +2,50 @@
 #include"expression.hpp"
 #include"scope.hpp"
 #include"variable.hpp"
+#include"parser.hpp"
+
+void NodeMaker::visit(const AssignmentNode& node)
+{
+
+}
+
+void NodeMaker::visit(const DeclarationNode& node)
+{
+    double resolved_value = 0.0;
+
+    if (node.initializer) 
+    {
+        ExpressionEvaluator evaluator {scope};
+        resolved_value = evaluator.evaluate(*node.initializer);
+    }
+
+    std::shared_ptr<Declaration> concrete_decl = nullptr;
+
+    if (node.type == "i") 
+    {
+        concrete_decl = std::make_shared<Numeric<int>>(node.name, static_cast<int>(resolved_value));
+    } else if (node.type == "d") 
+    {
+        concrete_decl = std::make_shared<Numeric<double>>(node.name, resolved_value);
+    } else if (node.type == "f") 
+    {
+        concrete_decl = std::make_shared<Numeric<float>>(node.name, static_cast<float>(resolved_value));
+    }
+
+    if (!concrete_decl)
+    {
+        throw std::runtime_error("Error: Could not declare variable of type: " + node.type);
+    }
+
+    scope.define(node.name, concrete_decl);
+
+    // DUBUG
+    //
+    std::cout << concrete_decl->getName() << " : ";
+    PrintVisitor print_visitor {};
+    concrete_decl->accept(print_visitor);
+    std::cout << std::endl;
+}
 
 void PrintVisitor::visit(const NumericDeclaration& num_decl) 
 {

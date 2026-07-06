@@ -2,14 +2,20 @@
 #define VISITORS_HPP
 
 #include<iostream>
+#include<memory>
 
 class NumericDeclaration;
 class LiteralExpression;
 class VariableExpression;
 class Expression;
 class Scope;
+class ASTNode;
+class AssignmentNode;
+class DeclarationNode;
+class Declaration;
 
-class DeclarationVisitor {
+class DeclarationVisitor 
+{
 public:
     virtual void visit(const NumericDeclaration& num_decl) = 0;
     // Future expansion: virtual void visit(const StringDeclaration& strDecl) = 0;
@@ -22,6 +28,27 @@ class PrintVisitor final : public DeclarationVisitor
 public:
     void visit(const NumericDeclaration& num_decl) override;
 };
+
+class NodeVisitor
+{
+public:
+    virtual void visit(const AssignmentNode& node) = 0;
+    virtual void visit(const DeclarationNode& node) = 0;
+
+    virtual ~NodeVisitor() = default;
+};
+
+class NodeMaker : public NodeVisitor
+{
+private:
+    Scope& scope;
+public:
+    void visit(const AssignmentNode& node) override;
+    void visit(const DeclarationNode& node) override;
+
+    explicit NodeMaker(Scope& s) : scope(s) {}
+};
+
 
 class ExpressionVisitor 
 {
@@ -38,10 +65,11 @@ private:
     double last_evaluated_value = 0.0;
 
 public:
-    explicit ExpressionEvaluator(const Scope& s) : scope(s) {}
     double evaluate(const Expression& expr);
     void visit(const LiteralExpression& expr) override;
     void visit(const VariableExpression& expr) override;
+
+    explicit ExpressionEvaluator(const Scope& s) : scope(s) {}
 };
 
 #endif
