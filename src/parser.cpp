@@ -117,38 +117,60 @@ std::string Parser::readFileToString(const std::string& filename)
 
 std::vector<std::string> Parser::getStatements(const std::string& code)
 {
-    std::vector<std::string> output;
+    enum class STATE{
+        CODE, COMMENT, STRING 
+    };
+
+    std::vector<std::string> output {};
     std::size_t pos {};
     auto code_size = code.size();
-    
+
+    STATE state = STATE::CODE;
+
+    std::string statement {};
+
     for(std::size_t i {}; i < code_size; ++i)
     {
-        auto semicolon_pos = code.find(';', pos);
+        char current = code[i];
 
-        // No next semicolon
-        if(semicolon_pos  == std::string::npos)
+        if (current == '#' && state != STATE::STRING)
         {
-            break;
+            state = STATE::COMMENT;
+            continue;
+        } 
+        if (current == '\n' && state == STATE::COMMENT)
+        {
+            state = STATE::CODE;
+            continue;
+        }
+        else if (current == '"' && state == STATE::CODE)
+        {
+            state = STATE::STRING;
+        }
+        else if (current == '"' && state == STATE::STRING)
+        {
+            state = STATE::CODE;
+        }
+        else if (current == ';')
+        {
+            auto first_char = statement.find_first_not_of(" \n");
+            if(statement.empty() || first_char == std::string::npos)
+            {
+                continue;
+            }
+            output.push_back(statement.substr(first_char));
+            statement.clear();
+            continue;
         }
 
-        // Does not include semicolon in statement
-        auto raw_substring = code.substr(pos, semicolon_pos - pos);
-        auto first_char = raw_substring.find_first_not_of(" \n");
-
-        pos = semicolon_pos + 1; 
-
-        // Edge cases
-        // Handles multiple semicolons, white spaces, new lines
-        // fix: WILL NOT PARSE SEMICOLON INSIDE QUOTATION MARKS!
-        // fix: WILL NOT THROW IF THE LAST LINE OF CODE WITHOUT SEMICOLON!
-        if(raw_substring.empty() || first_char == std::string::npos)
+        if (state == STATE::COMMENT)
         {
             continue;
         }
 
-        auto statement = raw_substring.substr(first_char);
-        output.push_back(statement);
+        statement.push_back(current);
     }
+
 
     return output;
 }
