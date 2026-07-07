@@ -5,7 +5,6 @@
 #include<vector>
 
 class Scope;
-class Declaration;
 class ASTNode;
 
 class Builder 

@@ -24,6 +24,7 @@ public:
     virtual bool isFloatingPoint() const = 0;
     virtual double asDouble() const = 0;
     virtual long long asInteger() const = 0;
+    virtual void setValue(double val) = 0;
 
     void accept(DeclarationVisitor& visitor) const override 
     {

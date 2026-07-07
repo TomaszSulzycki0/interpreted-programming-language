@@ -15,7 +15,11 @@ private:
     T value;
 public:
     T getValue() const { return value; }
-    void setValue(const T& _value) { value = _value; }
+    
+    void setValue(double val) override 
+    {
+        value = static_cast<T>(val); 
+    }
 
     bool isFloatingPoint() const override 
     { 

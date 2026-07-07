@@ -6,7 +6,24 @@
 
 void NodeMaker::visit(const AssignmentNode& node)
 {
+    ExpressionEvaluator evaluator {scope};
+    double new_value = evaluator.evaluate(*node.value_expr);
+    
+    auto existing_var = scope.lookup(node.name);
+    auto numeric_var = std::dynamic_pointer_cast<NumericDeclaration>(existing_var);
+    if (!numeric_var) 
+    {
+        throw std::runtime_error("Runtime Error: " + node.name + " is not a mutable numeric variable.");
+    }
 
+    numeric_var->setValue(new_value);
+
+    // DUBUG
+    //
+    std::cout << "[ASSIGNMENT] " << existing_var->getName() << " <-- ";
+    PrintVisitor print_visitor {};
+    existing_var->accept(print_visitor);
+    std::cout << std::endl;
 }
 
 void NodeMaker::visit(const DeclarationNode& node)
@@ -41,7 +58,7 @@ void NodeMaker::visit(const DeclarationNode& node)
 
     // DUBUG
     //
-    std::cout << concrete_decl->getName() << " : ";
+    std::cout << "[DECLARATION] " << concrete_decl->getName() << " <-- ";
     PrintVisitor print_visitor {};
     concrete_decl->accept(print_visitor);
     std::cout << std::endl;

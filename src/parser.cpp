@@ -17,12 +17,13 @@ void DeclarationNode::accept(NodeVisitor& visitor) const
 std::unique_ptr<Expression> Parser::parseInitializer(const std::string& expr_str) 
 {
     static const std::regex literal_pattern(R"(^-?\d+(?:\.\d+)?$)");
+    static const std::regex variable_pattern(R"(^[a-zA-Z_]\w*$)");
+
     if (std::regex_match(expr_str, literal_pattern)) 
     {
         return std::make_unique<LiteralExpression>(expr_str);
     }
 
-    static const std::regex variable_pattern(R"(^[a-zA-Z_]\w*$)");
     if (std::regex_match(expr_str, variable_pattern)) 
     {
         return std::make_unique<VariableExpression>(expr_str);
@@ -53,7 +54,8 @@ std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram(const std::vector<std
 
 std::unique_ptr<ASTNode> Parser::parseStatement(const std::string& statement)
 {
-    static const std::regex declaration_pattern(R"(([a-zA-Z]+)\s+(\w+)(?:\s*=\s*(\S+.*))?)");
+    static const std::regex declaration_pattern(R"(([a-zA-Z]+)\s+([a-zA-Z_]\w*)(?:\s*=\s*(\S+.*))?)");
+    static const std::regex assignment_pattern(R"(([a-zA-Z_]\w*)\s*=\s*(\S+.*))");
     std::smatch matches;
 
     if (std::regex_match(statement, matches, declaration_pattern)) 
@@ -64,10 +66,29 @@ std::unique_ptr<ASTNode> Parser::parseStatement(const std::string& statement)
 
         if (matches[3].matched) 
         {
-            expr_token = parseInitializer(matches[3].str());
+            std::string expression_token = matches[3];
+            expr_token = parseInitializer(expression_token);
+            if (!expr_token)
+            {
+                throw std::runtime_error("Error: Could not parse expression: " + expression_token);
+            }
         }
 
         return std::make_unique<DeclarationNode>(type_token, name_token, std::move(expr_token));
+    } 
+    else if (std::regex_match(statement, matches, assignment_pattern)) 
+    {
+        std::string name_token = matches[1];
+        std::string expression_token = matches[2];
+
+        std::unique_ptr<Expression> expr_token = parseInitializer(expression_token);
+
+        if (!expr_token)
+        {
+            throw std::runtime_error("Error: Could not parse expression: " + expression_token);
+        }
+
+        return std::make_unique<AssignmentNode>(name_token, std::move(expr_token));
     }
 
     return nullptr;

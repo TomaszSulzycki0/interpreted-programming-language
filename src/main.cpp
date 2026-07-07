@@ -4,7 +4,6 @@
 #include<filesystem>
 #include<stdexcept>
 
-
 #include"scope.hpp"
 #include"variable.hpp"
 #include"parser.hpp"
@@ -54,7 +53,7 @@ int main(int argc, char** argv)
 
         std::cout << "Parsing.." << std::endl;
         auto program_ast = parser.parseProgram(statements);
-
+        
         std::cout << "Executing.." << std::endl;
         builder.buildProgram(program_ast);
     }
