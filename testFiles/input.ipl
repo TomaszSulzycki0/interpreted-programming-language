@@ -1,10 +1,5 @@
-i int1;
-d double1 = 0.11;
-f float1 = 99.120;
+i    spacedInt    =    42    ;
+d noSpace=1.1;f anotherNoSpace=2.2;
 
-i int2 = int1;
-d double2 = double1;
-f float2 = float1;
-
-int2 = double2;
-int2 = float1;
+i uninitializedInt;
+i useUninitialized = uninitializedInt;

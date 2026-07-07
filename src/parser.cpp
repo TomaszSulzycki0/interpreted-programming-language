@@ -16,7 +16,7 @@ void DeclarationNode::accept(NodeVisitor& visitor) const
 
 std::unique_ptr<Expression> Parser::parseInitializer(const std::string& expr_str) 
 {
-    static const std::regex literal_pattern(R"(^-?\d+(?:\.\d+)?$)");
+    static const std::regex literal_pattern(R"(^-?\d+(?:\.\d+)?\s*$)");
     static const std::regex variable_pattern(R"(^[a-zA-Z_]\w*$)");
 
     if (std::regex_match(expr_str, literal_pattern)) 
