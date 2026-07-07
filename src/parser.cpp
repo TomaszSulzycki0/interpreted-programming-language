@@ -1,7 +1,7 @@
 #include<iostream>
 
 #include"parser.hpp"
-#include"variable.hpp"
+#include"numericVariable.hpp"
 #include"expression.hpp"
 
 void AssignmentNode::accept(NodeVisitor& visitor) const 
@@ -18,6 +18,12 @@ std::unique_ptr<Expression> Parser::parseInitializer(const std::string& expr_str
 {
     static const std::regex literal_pattern(R"(^-?\d+(?:\.\d+)?\s*$)");
     static const std::regex variable_pattern(R"(^[a-zA-Z_]\w*$)");
+    
+    // For strings
+    if (expr_str.front() == '"' && expr_str.back() == '"')
+    {
+        return std::make_unique<LiteralExpression>(expr_str);
+    }
 
     if (std::regex_match(expr_str, literal_pattern)) 
     {
@@ -28,6 +34,8 @@ std::unique_ptr<Expression> Parser::parseInitializer(const std::string& expr_str
     {
         return std::make_unique<VariableExpression>(expr_str);
     }
+
+    
 
     // Future Expansion: Complex expressions like "x + 5" 
     return nullptr; 
@@ -131,6 +139,7 @@ std::vector<std::string> Parser::getStatements(const std::string& code)
 
         // Edge cases
         // Handles multiple semicolons, white spaces, new lines
+        // fix: WILL NOT PARSE SEMICOLON INSIDE QUOTATION MARKS!
         // fix: WILL NOT THROW IF THE LAST LINE OF CODE WITHOUT SEMICOLON!
         if(raw_substring.empty() || first_char == std::string::npos)
         {

@@ -1,8 +1,9 @@
 #include"visitors.hpp"
 #include"expression.hpp"
 #include"scope.hpp"
-#include"variable.hpp"
+#include"numericVariable.hpp"
 #include"parser.hpp"
+#include"stringVariable.hpp"
 
 void NodeMaker::visit(const AssignmentNode& node)
 {
@@ -40,6 +41,7 @@ void NodeMaker::visit(const DeclarationNode& node)
     {
         if (node.type == "i") raw_value = 0;
         else if (node.type == "d" || node.type == "f") raw_value = 0.0;
+        else if (node.type == "s") raw_value = "";
     }
 
     std::shared_ptr<Declaration> concrete_decl = nullptr;
@@ -59,7 +61,9 @@ void NodeMaker::visit(const DeclarationNode& node)
         {
             if constexpr (std::is_arithmetic_v<EvaluatedType>) {
                 concrete_decl = std::make_shared<Numeric<double>>(node.name, static_cast<double>(evaluated_arg));
-            } else {
+            } 
+            else 
+            {
                 throw std::runtime_error("Type Error: Cannot initialize double variable '" + node.name + "' with a non-numeric value.");
             }
         } 
@@ -68,9 +72,21 @@ void NodeMaker::visit(const DeclarationNode& node)
             if constexpr (std::is_arithmetic_v<EvaluatedType>) 
             {
                 concrete_decl = std::make_shared<Numeric<float>>(node.name, static_cast<float>(evaluated_arg));
-            } else 
+            } 
+            else 
             {
                 throw std::runtime_error("Type Error: Cannot initialize float variable '" + node.name + "' with a non-numeric value.");
+            }
+        }
+        else if (node.type == "s")
+        {
+            if constexpr (std::is_same_v<EvaluatedType, std::string>) 
+            {
+                concrete_decl = std::make_shared<StringDeclaration>(node.name, evaluated_arg);
+            } 
+            else 
+            {
+                throw std::runtime_error("Type Error: Cannot initialize string variable '" + node.name + "' with a numeric value.");
             }
         }
     }, raw_value);
@@ -101,6 +117,11 @@ void PrintVisitor::visit(const NumericDeclaration& num_decl)
     }
 }
 
+void PrintVisitor::visit(const StringDeclaration& str_decl) 
+{
+    std::cout << "(string) '" << str_decl.getString() << "'";
+}
+
 RuntimeValue ExpressionEvaluator::evaluate(const Expression& expr) 
 {
     expr.accept(*this);
@@ -109,13 +130,13 @@ RuntimeValue ExpressionEvaluator::evaluate(const Expression& expr)
 
 void ExpressionEvaluator::visit(const LiteralExpression& expr)  
 {
-    if (expr.value.find('.') != std::string::npos) 
+    if (expr.value.front() == '"' && expr.value.back() == '"')
     {
-        last_evaluated_value = std::stod(expr.value);
-    } 
-    else 
+        last_evaluated_value = expr.value.substr(1, expr.value.length() - 2);
+    }
+    else
     {
-        last_evaluated_value = std::stoi(expr.value);
+        last_evaluated_value = std::stod(expr.value);   
     }
 }
 

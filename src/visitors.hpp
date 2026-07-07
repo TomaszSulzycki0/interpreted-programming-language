@@ -5,9 +5,10 @@
 #include<memory>
 #include<variant>
 
-using RuntimeValue = std::variant<int, float, double>;
+using RuntimeValue = std::variant<int, float, double, std::string>;
 
 class NumericDeclaration;
+class StringDeclaration;
 class LiteralExpression;
 class VariableExpression;
 class Expression;
@@ -21,7 +22,7 @@ class DeclarationVisitor
 {
 public:
     virtual void visit(const NumericDeclaration& num_decl) = 0;
-    // Future expansion: virtual void visit(const StringDeclaration& strDecl) = 0;
+    virtual void visit(const StringDeclaration& str_decl) = 0;
 
     virtual ~DeclarationVisitor() = default;
 };
@@ -30,6 +31,7 @@ class PrintVisitor final : public DeclarationVisitor
 {
 public:
     void visit(const NumericDeclaration& num_decl) override;
+    void visit(const StringDeclaration& str_decl) override;
 };
 
 class NodeVisitor

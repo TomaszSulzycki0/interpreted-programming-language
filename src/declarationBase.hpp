@@ -25,19 +25,4 @@ public:
     virtual void setValue(const RuntimeValue& val) = 0;
 };
 
-class NumericDeclaration : public ValueDeclaration
-{
-public:
-    using ValueDeclaration::ValueDeclaration;
-    virtual bool isFloatingPoint() const = 0;
-    virtual double asDouble() const = 0;
-    virtual long long asInteger() const = 0;
-
-    void accept(DeclarationVisitor& visitor) const override 
-    {
-        visitor.visit(*this);
-    }
-
-};
-
 #endif

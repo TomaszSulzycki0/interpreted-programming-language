@@ -6,7 +6,6 @@ set(CMAKE_CXX_STANDARD 23)
 set(SOURCE_FILES
 	src/main.cpp
 	src/scope.cpp
-	src/variable.cpp
 	src/parser.cpp
 	src/builder.cpp
 	src/visitors.cpp

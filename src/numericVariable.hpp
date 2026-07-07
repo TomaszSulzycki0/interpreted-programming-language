@@ -1,5 +1,5 @@
-#ifndef VARIABLE_HPP
-#define VARIABLE_HPP
+#ifndef NUMERIC_VARIABLE_HPP
+#define NUMERIC_VARIABLE_HPP
 
 #include<concepts>
 
@@ -8,13 +8,28 @@
 template<typename T>
 concept Arithmetic = std::integral<T> || std::floating_point<T>;
 
+class NumericDeclaration : public ValueDeclaration
+{
+public:
+    using ValueDeclaration::ValueDeclaration;
+    virtual bool isFloatingPoint() const = 0;
+    virtual double asDouble() const = 0;
+    virtual long long asInteger() const = 0;
+
+    void accept(DeclarationVisitor& visitor) const override 
+    {
+        visitor.visit(*this);
+    }
+
+};
+
 template<Arithmetic T> 
 class Numeric final : public NumericDeclaration
 {
 private:
     T value;
 public:
-    RuntimeValue getValue() const { return value; }
+    RuntimeValue getValue() const override { return value; }
     
     void setValue(const RuntimeValue& val) override 
     {
@@ -26,7 +41,7 @@ public:
                 this->value = static_cast<T>(unpacked_val);
             } else 
             {
-                throw std::runtime_error("Error: Cannot assign non-numeric value to numeric variable '" + this->name + "'.");
+                throw std::runtime_error("Error: Cannot assign non-numeric value to numeric variable '" + this->getName() + "'.");
             }
         }, val);
     }
