@@ -3,6 +3,9 @@
 
 #include<iostream>
 #include<memory>
+#include<variant>
+
+using RuntimeValue = std::variant<int, float, double>;
 
 class NumericDeclaration;
 class LiteralExpression;
@@ -62,10 +65,10 @@ class ExpressionEvaluator final : public ExpressionVisitor
 {
 private:
     const Scope& scope;
-    double last_evaluated_value = 0.0;
+    RuntimeValue last_evaluated_value = 0.0;
 
 public:
-    double evaluate(const Expression& expr);
+    RuntimeValue evaluate(const Expression& expr);
     void visit(const LiteralExpression& expr) override;
     void visit(const VariableExpression& expr) override;
 

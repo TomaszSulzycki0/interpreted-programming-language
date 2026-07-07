@@ -17,14 +17,21 @@ public:
     virtual ~Declaration() = default;
 };
 
-class NumericDeclaration : public Declaration
+class ValueDeclaration : public Declaration 
 {
 public:
     using Declaration::Declaration;
+    virtual RuntimeValue getValue() const = 0;
+    virtual void setValue(const RuntimeValue& val) = 0;
+};
+
+class NumericDeclaration : public ValueDeclaration
+{
+public:
+    using ValueDeclaration::ValueDeclaration;
     virtual bool isFloatingPoint() const = 0;
     virtual double asDouble() const = 0;
     virtual long long asInteger() const = 0;
-    virtual void setValue(double val) = 0;
 
     void accept(DeclarationVisitor& visitor) const override 
     {

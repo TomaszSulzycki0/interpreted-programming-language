@@ -21,15 +21,7 @@ public:
     }
 
     // Lookup should be forwarded to parent if unsuccesful. 
-    std::shared_ptr<Declaration> lookup(const std::string& name) const 
-    {
-        auto it = symbols.find(name);
-        if (it == symbols.end()) 
-        {
-            throw std::runtime_error("Error: Variable '" + name + "' is undefined.");
-        }
-        return it->second;
-    }
+    std::shared_ptr<Declaration> lookup(const std::string& name) const;
 
     explicit Scope(); 
     explicit Scope(Scope& parent);

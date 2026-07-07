@@ -1,6 +1,10 @@
-i i1;
-d double1 = 1.1;
-f f1 = 10.120;
+i int1;
+d double1 = 0.11;
+f float1 = 99.120;
 
-f f2 = double1;
-f2 = a10;
+i int2 = int1;
+d double2 = double1;
+f float2 = float1;
+
+int2 = double2;
+int2 = float1;

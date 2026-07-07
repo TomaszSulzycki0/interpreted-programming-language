@@ -14,11 +14,21 @@ class Numeric final : public NumericDeclaration
 private:
     T value;
 public:
-    T getValue() const { return value; }
+    RuntimeValue getValue() const { return value; }
     
-    void setValue(double val) override 
+    void setValue(const RuntimeValue& val) override 
     {
-        value = static_cast<T>(val); 
+        std::visit([this](auto&& unpacked_val) {
+            using EvaluatedType = std::decay_t<decltype(unpacked_val)>;
+            
+            if constexpr (std::is_arithmetic_v<EvaluatedType>) 
+            {
+                this->value = static_cast<T>(unpacked_val);
+            } else 
+            {
+                throw std::runtime_error("Error: Cannot assign non-numeric value to numeric variable '" + this->name + "'.");
+            }
+        }, val);
     }
 
     bool isFloatingPoint() const override 
