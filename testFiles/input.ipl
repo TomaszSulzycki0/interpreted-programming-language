@@ -1,7 +1,7 @@
 i int1;
 f float1 = 1.78;
 d double1 = 99.999;
-s string1 = "lorem";
+s string1 = ";#";
 
 # Comment 1
 i int2 = int1;

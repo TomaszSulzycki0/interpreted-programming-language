@@ -128,6 +128,11 @@ RuntimeValue ExpressionEvaluator::evaluate(const Expression& expr)
     return last_evaluated_value;
 }
 
+void ExpressionEvaluator::visit(const BinaryExpression& expr)
+{
+    //
+}
+
 void ExpressionEvaluator::visit(const LiteralExpression& expr)  
 {
     if (expr.value.front() == '"' && expr.value.back() == '"')

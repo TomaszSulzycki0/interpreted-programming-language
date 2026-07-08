@@ -18,8 +18,9 @@ std::unique_ptr<Expression> Parser::parseInitializer(const std::string& expr_str
 {
     static const std::regex literal_pattern(R"(^-?\d+(?:\.\d+)?\s*$)");
     static const std::regex variable_pattern(R"(^[a-zA-Z_]\w*$)");
+    static const std::regex binary_pattern(R"(^(.*)\s*([+-/*])\s*(.*)$)");
+    std::smatch matches;
     
-    // For strings
     if (expr_str.front() == '"' && expr_str.back() == '"')
     {
         return std::make_unique<LiteralExpression>(expr_str);
@@ -35,9 +36,23 @@ std::unique_ptr<Expression> Parser::parseInitializer(const std::string& expr_str
         return std::make_unique<VariableExpression>(expr_str);
     }
 
-    
+    if (std::regex_match(expr_str, matches, binary_pattern))
+    {
+        std::string expr_str_left = matches[1];
+        std::string expr_str_op = matches[2];
+        std::string expr_str_right = matches[3];
 
-    // Future Expansion: Complex expressions like "x + 5" 
+        std::unique_ptr<Expression> expr_left = parseInitializer(expr_str_left);
+        std::unique_ptr<Expression> expr_right = parseInitializer(expr_str_right);
+
+        if ( !expr_left || !expr_right )
+        {
+            return nullptr;
+        }
+
+        return std::make_unique<BinaryExpression>(expr_str_op, std::move(expr_left), std::move(expr_right));
+    }
+    
     return nullptr; 
 }
 
@@ -122,7 +137,6 @@ std::vector<std::string> Parser::getStatements(const std::string& code)
     };
 
     std::vector<std::string> output {};
-    std::size_t pos {};
     auto code_size = code.size();
 
     STATE state = STATE::CODE;
@@ -151,7 +165,7 @@ std::vector<std::string> Parser::getStatements(const std::string& code)
         {
             state = STATE::CODE;
         }
-        else if (current == ';')
+        else if (current == ';' && state == STATE::CODE)
         {
             auto first_char = statement.find_first_not_of(" \n");
             if(statement.empty() || first_char == std::string::npos)
@@ -170,7 +184,6 @@ std::vector<std::string> Parser::getStatements(const std::string& code)
 
         statement.push_back(current);
     }
-
 
     return output;
 }

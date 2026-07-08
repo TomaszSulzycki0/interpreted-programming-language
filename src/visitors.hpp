@@ -7,16 +7,20 @@
 
 using RuntimeValue = std::variant<int, float, double, std::string>;
 
+class Declaration;
 class NumericDeclaration;
 class StringDeclaration;
+
+class Expression;
+class BinaryExpression;
 class LiteralExpression;
 class VariableExpression;
-class Expression;
-class Scope;
+
 class ASTNode;
 class AssignmentNode;
 class DeclarationNode;
-class Declaration;
+
+class Scope;
 
 class DeclarationVisitor 
 {
@@ -60,6 +64,8 @@ class ExpressionVisitor
 public:
     virtual void visit(const LiteralExpression& expr) = 0;
     virtual void visit(const VariableExpression& expr) = 0;
+    virtual void visit(const BinaryExpression& expr) = 0;
+
     virtual ~ExpressionVisitor() = default;
 };
 
@@ -73,6 +79,7 @@ public:
     RuntimeValue evaluate(const Expression& expr);
     void visit(const LiteralExpression& expr) override;
     void visit(const VariableExpression& expr) override;
+    void visit(const BinaryExpression& expr) override;
 
     explicit ExpressionEvaluator(const Scope& s) : scope(s) {}
 };

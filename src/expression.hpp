@@ -2,6 +2,7 @@
 #define EXPRESSION_HPP
 
 #include<string>
+#include<memory>
 
 class ExpressionVisitor;
 
@@ -10,6 +11,17 @@ class Expression
 public:
     virtual ~Expression() = default;
     virtual void accept(ExpressionVisitor& visitor) const = 0;
+};
+
+class BinaryExpression final : public Expression
+{
+public:
+    const std::string expr_operator;
+    const std::unique_ptr<Expression> expr_left;
+    const std::unique_ptr<Expression> expr_right;
+    explicit BinaryExpression(std::string _operator, std::unique_ptr<Expression> _left, std::unique_ptr<Expression> _right)
+        : expr_operator(std::move(_operator)), expr_left(std::move(_left)), expr_right(std::move(_right)) {}
+    void accept(ExpressionVisitor& visitor) const override;
 };
 
 class LiteralExpression final : public Expression 

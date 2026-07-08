@@ -13,3 +13,10 @@ void VariableExpression::accept(ExpressionVisitor& visitor) const
     visitor.visit(*this); 
 }
 
+void BinaryExpression::accept(ExpressionVisitor& visitor) const
+{
+    visitor.visit(*this); 
+}
+
+
+
