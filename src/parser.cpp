@@ -18,7 +18,7 @@ std::unique_ptr<Expression> Parser::parseInitializer(const std::string& expr_str
 {
     static const std::regex literal_pattern(R"(^-?\d+(?:\.\d+)?\s*$)");
     static const std::regex variable_pattern(R"(^[a-zA-Z_]\w*$)");
-    static const std::regex binary_pattern(R"(^(.*)\s*([+-/*])\s*(.*)$)");
+    static const std::regex binary_pattern(R"(^(\S+)\s*([+-/*])\s*(\S+)$)");
     std::smatch matches;
     
     if (expr_str.front() == '"' && expr_str.back() == '"')

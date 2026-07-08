@@ -74,6 +74,9 @@ class ExpressionEvaluator final : public ExpressionVisitor
 private:
     const Scope& scope;
     RuntimeValue last_evaluated_value = 0.0;
+    RuntimeValue resolveOperator(   const RuntimeValue& v_left, 
+                                    const RuntimeValue& v_right,
+                                    const std::string& op) const;
 
 public:
     RuntimeValue evaluate(const Expression& expr);

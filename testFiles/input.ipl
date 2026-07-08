@@ -14,3 +14,5 @@ i x = -15; # # "Comment 2" " ;; #;##
 x = int2;
 x = float2;
 x = double2;
+
+float2 = double1 / 100;

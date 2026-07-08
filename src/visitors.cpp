@@ -128,9 +128,49 @@ RuntimeValue ExpressionEvaluator::evaluate(const Expression& expr)
     return last_evaluated_value;
 }
 
+template <typename Op>
+RuntimeValue evaluateBinaryOp(const RuntimeValue& v_l, const RuntimeValue& v_r, Op operation) {
+    return std::visit([&](auto&& unpacked_left, auto&& unpacked_right) -> RuntimeValue {
+        using TLeft = std::decay_t<decltype(unpacked_left)>;
+        using TRight = std::decay_t<decltype(unpacked_right)>;
+
+        if constexpr (std::is_arithmetic_v<TLeft> && std::is_arithmetic_v<TRight>) {
+            return RuntimeValue{operation(unpacked_left, unpacked_right)};
+        } 
+        else 
+        {
+            throw std::runtime_error("Error: Unsupported operand types for this operation.");
+        }
+    }, v_l, v_r);
+}
+
+RuntimeValue ExpressionEvaluator::resolveOperator(const RuntimeValue& v_left, const RuntimeValue& v_right, const std::string& op) const
+{
+    static const std::map<std::string, std::function<RuntimeValue(const RuntimeValue&, const RuntimeValue&)>> operator_map = {
+        { "+", [](auto& l, auto& r) { return evaluateBinaryOp(l, r, std::plus<>{}); } },
+        { "-", [](auto& l, auto& r) { return evaluateBinaryOp(l, r, std::minus<>{}); } },
+        { "*", [](auto& l, auto& r) { return evaluateBinaryOp(l, r, std::multiplies<>{}); } },
+        { "/", [](auto& l, auto& r) { return evaluateBinaryOp(l, r, std::divides<>{}); } }
+    };
+
+    auto it = operator_map.find(op);
+    if (it != operator_map.end()) 
+    {
+        return it->second(v_left, v_right);
+    }
+    else
+    {
+        throw std::runtime_error("Error: Unknown operator " + op);
+    }
+    
+}
+
 void ExpressionEvaluator::visit(const BinaryExpression& expr)
 {
-    //
+    RuntimeValue eval_left = evaluate(*expr.expr_left);
+    RuntimeValue eval_right = evaluate(*expr.expr_right);
+
+    last_evaluated_value = resolveOperator(eval_left, eval_right, expr.expr_operator);
 }
 
 void ExpressionEvaluator::visit(const LiteralExpression& expr)  
