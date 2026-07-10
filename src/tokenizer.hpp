@@ -4,121 +4,83 @@
 #include<string>
 #include<vector>
 #include<memory>
-#include<set>
-#include<regex>
 #include<stdexcept>
 #include<unordered_map>
+#include<utility>
+#include<iostream>
+#include<iomanip>
+
 
 enum class TOKENIZER_STATE
 {
-    NULL_STATE,
-    MAKE_TEXT, 
-    MAKE_NUMBER,
-    MAKE_OPERATOR,
-    MAKE_STRING
+    DEFAULT,      
+    STRING,       
+    COMMENT      
 };
 
 enum class TOKEN_TYPE
 {
-
+    TOKEN_IDENTIFIER,
+    TOKEN_OPERATOR,
+    TOKEN_SEMICOLON,
+    TOKEN_LITERAL_FLOAT,
+    TOKEN_LITERAL_INTEGRAL,
+    TOKEN_PARENTHESIS_OPEN,
+    TOKEN_PARENTHESIS_CLOSE,
+    TOKEN_STRING_START,
+    TOKEN_STRING_BODY,
+    TOKEN_STRING_END,
+    TOKEN_COMMENT_START,
+    TOKEN_COMMENT_END,
+    TOKEN_ERROR,
+    TOKEN_EOF
 };
+
+std::ostream& operator<<(std::ostream& os, TOKEN_TYPE type); 
 
 struct Token
 {
     TOKEN_TYPE type;
-    std::string value {};
+    std::string_view value {};
 };
 
 class Tokenizer
 {
 private:
-    TOKENIZER_STATE current_state {TOKENIZER_STATE::NULL_STATE};
-    std::string code;
+    const static inline std::unordered_map<std::string_view, TOKEN_TYPE> keywords {};
+    std::vector<TOKENIZER_STATE> state_stack { TOKENIZER_STATE::DEFAULT };
+    std::string_view code;
     const std::size_t code_size;
-    static std::unordered_map<TOKENIZER_STATE, std::string> state_regex_map;
+    std::size_t pos {};
 
-    TOKENIZER_STATE assignStartState(char c);
+    TOKENIZER_STATE currentState() const { return state_stack.back(); }
+    void pushState(TOKENIZER_STATE state) { state_stack.push_back(state); }
+    void popState() { if ( state_stack.size() > 1 ) state_stack.pop_back(); }
+    char advance() { return code[pos++]; }
+    char peek() const { return pos < code_size ? code[pos] : '\0'; }
+    char peekNext() const { return pos + 1 < code_size ? code[pos + 1] : '\0'; }
+    
+    
+    Token getNextToken(); 
+                                                             
+    bool isIdentifierStart(char c) const;
+    bool isIdentifierBody(char c) const;
+    bool isDigit(char c) const;
+    void skipWhitespace();
+    
+    Token readIdentifier();
+    Token readNumber();
+
+    Token useStateDefault();
+    Token useStateString();
+    Token useStateComment();
+
+
 public:
-    Tokenizer(std::string _code);
+    explicit Tokenizer(const std::string& _code);
     std::vector<Token> emitTokens();
+    void debugTokens(const std::vector<Token>& tokens);
 };
-
-std::vector<Token> Tokenizer::emitTokens()
-{
-    std::vector<Token> tokens {};
-    std::string char_accum {};
-    
-    for ( std::size_t pos {}; pos < code_size; ++pos )
-    {
-        char current_char = code[pos];
-        auto current_char_str = std::to_string(current_char);
-
-        if ( current_state == TOKENIZER_STATE::NULL_STATE )
-        {
-            current_state = assignStartState(current_char);
-        }
-
-        switch (current_state)
-        {
-        case TOKENIZER_STATE::MAKE_TEXT:
-            
-            if ( std::regex_match( current_char_str, std::regex( state_regex_map[current_state] ) ) )
-            {
-                char_accum.push_back(current_char);
-            }
-            break;
-        case TOKENIZER_STATE::MAKE_NUMBER:
-            
-            break;
-        case TOKENIZER_STATE::MAKE_OPERATOR:
-            
-            break;
-        case TOKENIZER_STATE::MAKE_STRING:
-            
-            break;
-        default:
-            break;
-        }
-
-    }
-
-
-
-    return tokens;
-}
-
-TOKENIZER_STATE Tokenizer::assignStartState(char c)
-{
-    // Loop over map instead
-    static const std::regex text_pattern(R"(^[a-zA-Z_]$)");
-    static const std::regex digit_pattern(R"(^[0-9]$)");
-
-    auto c_str = std::to_string(c);
-
-    if (std::regex_match(c_str, text_pattern) )
-    {
-        return TOKENIZER_STATE::MAKE_TEXT;
-    }
-    
-    if (std::regex_match(c_str, digit_pattern) )
-    {
-        return TOKENIZER_STATE::MAKE_NUMBER;
-    }
-
-    throw std::runtime_error("Error: Tokenizer doesnt support character:" + c_str);
-
-    return TOKENIZER_STATE {};
-}
-
-Tokenizer::Tokenizer(std::string _code) : code(std::move(_code)), code_size(code.size())
-{
-    if( state_regex_map.empty() )
-    {
-        state_regex_map[TOKENIZER_STATE::MAKE_TEXT] = R"(^[a-zA-Z_]$)"; 
-        state_regex_map[TOKENIZER_STATE::MAKE_NUMBER] = R"(^[0-9]$)"; 
-    }
-}
-
 
 
 #endif
