@@ -55,7 +55,8 @@ private:
 
     std::unique_ptr<ASTNode> parseAssignment();
     std::unique_ptr<ASTNode> parseDeclaration();
-    std::unique_ptr<Expression> parseExpression(); 
+    std::unique_ptr<Expression> parseAtomicExpression(); 
+    std::unique_ptr<Expression> parseRPN(); 
 
     Token peek() const { return pos >= tokens_size ? Token{ TOKEN_TYPE::TOKEN_EOF } : tokens[pos]; }
     Token advance() { return tokens[pos++]; }

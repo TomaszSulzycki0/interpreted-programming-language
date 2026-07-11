@@ -40,6 +40,14 @@ std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram()
             advance();
             consume( TOKEN_TYPE::TOKEN_COMMENT_END, std::string_view("Error: Expected comment end token.") );
         }
+        else if ( check( TOKEN_TYPE::TOKEN_EOF ) )
+        {
+            break;
+        }
+        else
+        {
+            throw std::runtime_error("Error: Unrecognised token.");
+        }
     }
 
     return ast;
@@ -51,7 +59,7 @@ std::unique_ptr<ASTNode> Parser::parseAssignment()
     
     consume( TOKEN_TYPE::TOKEN_OPERATOR_EQUALS, std::string_view("Error: Expected equal sign.") );
     
-    std::unique_ptr<Expression> expr = parseExpression();
+    std::unique_ptr<Expression> expr = parseRPN();
 
     if ( !expr )
     {
@@ -72,7 +80,7 @@ std::unique_ptr<ASTNode> Parser::parseDeclaration()
     if ( check( TOKEN_TYPE::TOKEN_OPERATOR_EQUALS ) )
     {
         advance();
-        expr = parseExpression();
+        expr = parseRPN();
         if ( !expr )
         {
             throw std::runtime_error("Error: Could not parse expression");
@@ -84,7 +92,7 @@ std::unique_ptr<ASTNode> Parser::parseDeclaration()
     return std::make_unique<DeclarationNode>( std::string(declared_type.value), std::string(declared_name.value), std::move(expr) );
 }
 
-std::unique_ptr<Expression> Parser::parseExpression()
+std::unique_ptr<Expression> Parser::parseAtomicExpression()
 {
     if ( check( TOKEN_TYPE::TOKEN_STRING_START ) )
     {
@@ -98,13 +106,13 @@ std::unique_ptr<Expression> Parser::parseExpression()
         return std::make_unique<LiteralExpression>("\"" + std::string(str_body.value) + "\"");
     }
 
-    if ( check( TOKEN_TYPE::TOKEN_OPERATOR_MINUS ) )
+    if ( check( TOKEN_TYPE::TOKEN_MINUS_SIGN ) )
     {
         Token minus_sign = advance();
         if ( check( TOKEN_TYPE::TOKEN_LITERAL_FLOAT ) || check( TOKEN_TYPE::TOKEN_LITERAL_INTEGRAL )) // Later can pass exact info to expression obj
         {
             Token literal = advance();
-            return std::make_unique<LiteralExpression>( std::string(minus_sign.value) + std::string(literal.value) );
+            return std::make_unique<LiteralExpression>( "-" + std::string(literal.value) );
         }
     }
     
@@ -122,3 +130,181 @@ std::unique_ptr<Expression> Parser::parseExpression()
     
     return nullptr;
 } 
+
+std::unique_ptr<Expression> Parser::parseRPN()
+{   
+    const static std::unordered_map<TOKEN_TYPE, int> operator_precedence {
+        { TOKEN_TYPE::TOKEN_OPERATOR_MINUS, 1 }, 
+        { TOKEN_TYPE::TOKEN_OPERATOR_PLUS, 1 },
+        { TOKEN_TYPE::TOKEN_OPERATOR_MUL, 2 },
+        { TOKEN_TYPE::TOKEN_OPERATOR_DIV, 2 }
+    };
+
+    std::vector<Token> operator_stack {};
+    std::vector<std::unique_ptr<Expression>> expr_stack {};
+    int open_parenthesis = 0;
+
+    while ( pos < tokens_size )
+    {
+        if (    check( TOKEN_TYPE::TOKEN_OPERATOR_MINUS ) ||
+                check( TOKEN_TYPE::TOKEN_OPERATOR_PLUS ) ||
+                check( TOKEN_TYPE::TOKEN_OPERATOR_MUL ) ||
+                check( TOKEN_TYPE::TOKEN_OPERATOR_DIV ) )
+        {
+            Token op = advance();
+
+            auto it = operator_precedence.find(op.type);
+            if ( it == operator_precedence.end() )
+            {
+                throw std::runtime_error("Error: Unknown operator.");    
+            }
+        
+            int op_precedence = it->second;
+            
+            while ( !operator_stack.empty() )
+            {   
+                auto last_op = operator_stack.back();
+                auto _it = operator_precedence.find(last_op.type);
+
+                if ( _it == operator_precedence.end() )
+                {
+                    // Next token on stack is not arithmetic operator (opening parenthesis)
+                    break;
+                }
+                
+                int last_op_precedence = _it->second;
+
+                if ( last_op_precedence >= op_precedence )
+                {
+                    operator_stack.pop_back();
+
+                    if ( expr_stack.empty() )
+                    {
+                        throw std::runtime_error("Error: Unexpected operator.");
+                    }
+                    auto expr_right = std::move( expr_stack.back() );
+                    expr_stack.pop_back();
+    
+                    if ( expr_stack.empty() )
+                    {
+                        throw std::runtime_error("Error: Unexpected operator.");
+                    }
+                    auto expr_left = std::move( expr_stack.back() );
+                    expr_stack.pop_back();
+
+                    expr_stack.push_back( std::make_unique<BinaryExpression>( std::string(last_op.value), std::move( expr_left ), std::move( expr_right ) ) );
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            operator_stack.push_back( op );
+        }
+        else if ( check( TOKEN_TYPE::TOKEN_PARENTHESIS_OPEN ) )
+        {
+            operator_stack.push_back( advance() );
+            ++open_parenthesis;
+        }
+        else if ( check( TOKEN_TYPE::TOKEN_PARENTHESIS_CLOSE ) )
+        {
+            if ( open_parenthesis < 1 )
+            {
+                throw std::runtime_error("Error: Unexpected closing parenthesis without opening counterpart.");
+            }
+
+            advance();
+
+            while ( !operator_stack.empty() )
+            {   
+                auto last_op = operator_stack.back();
+                operator_stack.pop_back();
+                
+                if ( last_op.type == TOKEN_TYPE::TOKEN_PARENTHESIS_OPEN )
+                {
+                    break;
+                }
+
+                if ( expr_stack.empty() )
+                {
+                    // ( ) - fine
+                    break;
+                }
+                auto expr_right = std::move( expr_stack.back() );
+                expr_stack.pop_back();
+
+                if ( expr_stack.empty() )
+                {
+                    // ( myVar ) - fine. Leave it on the stack
+                    expr_stack.push_back( std::move( expr_right) );
+                    break;
+                }
+                auto expr_left = std::move( expr_stack.back() );
+                expr_stack.pop_back();
+
+                expr_stack.push_back( std::make_unique<BinaryExpression>( std::string(last_op.value), std::move( expr_left ), std::move( expr_right ) ) );
+            }
+
+            --open_parenthesis;
+
+        }
+        else if (   check( TOKEN_TYPE::TOKEN_LITERAL_INTEGRAL ) ||
+                    check( TOKEN_TYPE::TOKEN_LITERAL_FLOAT ) ||
+                    check( TOKEN_TYPE::TOKEN_MINUS_SIGN ) ||
+                    check( TOKEN_TYPE::TOKEN_STRING_START ) ||
+                    check( TOKEN_TYPE::TOKEN_IDENTIFIER ) )
+        {
+            auto expr = parseAtomicExpression();
+            if ( !expr )
+            {
+                throw std::runtime_error("Error: Could not parse expression");
+            }
+            expr_stack.push_back( std::move( expr ) );
+        }
+        else if ( check( TOKEN_TYPE::TOKEN_SEMICOLON ) )
+        {
+            break;
+        }
+        else
+        {
+            throw std::runtime_error("Error: Invalid expression");
+        }
+    }
+
+    if ( open_parenthesis != 0 )
+    {
+        throw std::runtime_error("Error: Unclosed parenthesis.");
+    }
+
+    while ( !operator_stack.empty() )
+    {   
+        auto last_op = operator_stack.back();
+        operator_stack.pop_back();
+
+        if ( expr_stack.empty() )
+        {
+            throw std::runtime_error("Error: Unexpected operator.");
+        }
+
+        auto expr_right = std::move( expr_stack.back() );
+        expr_stack.pop_back();
+
+        if ( expr_stack.empty() )
+        {
+            throw std::runtime_error("Error: Unexpected operator.");
+        }
+        auto expr_left = std::move( expr_stack.back() );
+        expr_stack.pop_back();
+
+        expr_stack.push_back( std::make_unique<BinaryExpression>( std::string(last_op.value), std::move( expr_left ), std::move( expr_right ) ) );
+    }
+
+
+    if ( expr_stack.size() != 1 )
+    {
+        throw std::runtime_error("Error: Invalid expression");
+    }
+
+    return std::move( expr_stack.front() );
+}

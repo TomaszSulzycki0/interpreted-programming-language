@@ -124,6 +124,10 @@ Token Tokenizer::useStateDefault()
     case '+':
         return Token{ TOKEN_TYPE::TOKEN_OPERATOR_PLUS, std::string_view("+") };
     case '-':
+        if ( isDigit( peek() ) )
+        {
+            return Token{ TOKEN_TYPE::TOKEN_MINUS_SIGN, std::string_view("-") };
+        }
         return Token{ TOKEN_TYPE::TOKEN_OPERATOR_MINUS, std::string_view("-") };
     case '*':
         return Token{ TOKEN_TYPE::TOKEN_OPERATOR_MUL, std::string_view("*") };
@@ -215,6 +219,7 @@ std::ostream& operator<<(std::ostream& os, TOKEN_TYPE type)
     {
         case TOKEN_TYPE::TOKEN_IDENTIFIER:              return os << "IDENTIFIER";
         case TOKEN_TYPE::TOKEN_KEYWORD_TYPE:            return os << "TYPE";
+        case TOKEN_TYPE::TOKEN_MINUS_SIGN:              return os << "MINUS_SIGN";
         case TOKEN_TYPE::TOKEN_OPERATOR_EQUALS:         return os << "OPERATOR_EQUALS";
         case TOKEN_TYPE::TOKEN_OPERATOR_DIV:            return os << "OPERATOR_DIV";
         case TOKEN_TYPE::TOKEN_OPERATOR_MUL:            return os << "OPERATOR_MUL";

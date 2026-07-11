@@ -15,4 +15,4 @@ x = int2;
 x = float2;
 x = double2;
 
-#float2 = double1+100;
+float2 = (0.1 * double1 + 2 - ( 1 + 8) ) / 2; 
