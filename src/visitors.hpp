@@ -58,7 +58,6 @@ public:
     explicit NodeMaker(Scope& s) : scope(s) {}
 };
 
-
 class ExpressionVisitor 
 {
 public:

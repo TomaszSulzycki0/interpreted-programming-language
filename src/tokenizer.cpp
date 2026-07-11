@@ -95,7 +95,7 @@ Token Tokenizer::useStateDefault()
 
     if ( pos >= code_size ) 
     {
-        return Token{ TOKEN_TYPE::TOKEN_EOF};
+        return Token{ TOKEN_TYPE::TOKEN_EOF };
     }
 
     char c = peek(); 
@@ -109,7 +109,7 @@ Token Tokenizer::useStateDefault()
         return readNumber(); 
     }
 
-    advance(); 
+    advance();
 
     switch (c)
     {
@@ -122,15 +122,15 @@ Token Tokenizer::useStateDefault()
     case ';':
         return Token{ TOKEN_TYPE::TOKEN_SEMICOLON, std::string_view(";") };
     case '+':
-        return Token{ TOKEN_TYPE::TOKEN_OPERATOR, std::string_view("+") };
+        return Token{ TOKEN_TYPE::TOKEN_OPERATOR_PLUS, std::string_view("+") };
     case '-':
-        return Token{ TOKEN_TYPE::TOKEN_OPERATOR, std::string_view("-") };
+        return Token{ TOKEN_TYPE::TOKEN_OPERATOR_MINUS, std::string_view("-") };
     case '*':
-        return Token{ TOKEN_TYPE::TOKEN_OPERATOR, std::string_view("*") };
+        return Token{ TOKEN_TYPE::TOKEN_OPERATOR_MUL, std::string_view("*") };
     case '/':
-        return Token{ TOKEN_TYPE::TOKEN_OPERATOR, std::string_view("/") };
+        return Token{ TOKEN_TYPE::TOKEN_OPERATOR_DIV, std::string_view("/") };
     case '=':
-        return Token{ TOKEN_TYPE::TOKEN_OPERATOR, std::string_view("=") };
+        return Token{ TOKEN_TYPE::TOKEN_OPERATOR_EQUALS, std::string_view("=") };
     case '(':
         return Token{ TOKEN_TYPE::TOKEN_PARENTHESIS_OPEN, std::string_view("(") };
     case ')':
@@ -142,7 +142,7 @@ Token Tokenizer::useStateDefault()
 
 Token Tokenizer::useStateString()
 {
-    if (pos >= code_size) 
+    if ( pos >= code_size ) 
     {
         popState();
         return Token{ TOKEN_TYPE::TOKEN_ERROR, std::string_view("Unterminated string literal") };
@@ -150,25 +150,26 @@ Token Tokenizer::useStateString()
 
     char c = peek();
 
-    if (c == '"')
+    if ( c == '"' )
     {
         advance(); 
         popState(); 
         return Token{ TOKEN_TYPE::TOKEN_STRING_END, std::string_view("\"") };
     }
-    else if (c == '\n') 
+    else if ( c == '\n' ) 
     {
+        advance();
         popState(); 
         return Token{ TOKEN_TYPE::TOKEN_ERROR, std::string_view("Forbidden newline in string") };
     }
 
-    std::size_t start_pos = pos;
-    while (pos < code_size && peek() != '"' && peek() != '\n') 
+    const std::size_t start_pos = pos;
+    while ( pos < code_size && peek() != '"' && peek() != '\n' ) 
     {
         advance();
     }
 
-    std::string_view lexeme = code.substr(start_pos, pos - start_pos);
+    const std::string_view lexeme = code.substr(start_pos, pos - start_pos);
     return Token{ TOKEN_TYPE::TOKEN_STRING_BODY, lexeme };
 }
 
@@ -179,7 +180,6 @@ Token Tokenizer::useStateComment()
         advance();
     }
 
-    advance();
     popState();
     return Token{ TOKEN_TYPE::TOKEN_COMMENT_END, std::string_view("#") };
 }
@@ -213,21 +213,26 @@ std::ostream& operator<<(std::ostream& os, TOKEN_TYPE type)
 {
     switch (type) 
     {
-        case TOKEN_TYPE::TOKEN_IDENTIFIER:             return os << "IDENTIFIER";
-        case TOKEN_TYPE::TOKEN_OPERATOR:               return os << "OPERATOR";
-        case TOKEN_TYPE::TOKEN_SEMICOLON:              return os << "SEMICOLON";
-        case TOKEN_TYPE::TOKEN_LITERAL_FLOAT:          return os << "LITERAL_FLOAT";
-        case TOKEN_TYPE::TOKEN_LITERAL_INTEGRAL:       return os << "LITERAL_INTEGRAL";
-        case TOKEN_TYPE::TOKEN_PARENTHESIS_OPEN:       return os << "PARENTHESIS_OPEN";
-        case TOKEN_TYPE::TOKEN_PARENTHESIS_CLOSE:      return os << "PARENTHESIS_CLOSE";
-        case TOKEN_TYPE::TOKEN_STRING_START:           return os << "STRING_START";
-        case TOKEN_TYPE::TOKEN_STRING_BODY:            return os << "STRING_BODY";
-        case TOKEN_TYPE::TOKEN_STRING_END:             return os << "STRING_END";
-        case TOKEN_TYPE::TOKEN_COMMENT_START:          return os << "COMMENT_START";
-        case TOKEN_TYPE::TOKEN_COMMENT_END:            return os << "COMMENT_END";
-        case TOKEN_TYPE::TOKEN_ERROR:                  return os << "ERROR";
-        case TOKEN_TYPE::TOKEN_EOF:                    return os << "EOF";
-        default:                                       return os << "UNKNOWN";
+        case TOKEN_TYPE::TOKEN_IDENTIFIER:              return os << "IDENTIFIER";
+        case TOKEN_TYPE::TOKEN_KEYWORD_TYPE:            return os << "TYPE";
+        case TOKEN_TYPE::TOKEN_OPERATOR_EQUALS:         return os << "OPERATOR_EQUALS";
+        case TOKEN_TYPE::TOKEN_OPERATOR_DIV:            return os << "OPERATOR_DIV";
+        case TOKEN_TYPE::TOKEN_OPERATOR_MUL:            return os << "OPERATOR_MUL";
+        case TOKEN_TYPE::TOKEN_OPERATOR_PLUS:           return os << "OPERATOR_PLUS";
+        case TOKEN_TYPE::TOKEN_OPERATOR_MINUS:          return os << "OPERATOR_MINUS";
+        case TOKEN_TYPE::TOKEN_SEMICOLON:               return os << "SEMICOLON";
+        case TOKEN_TYPE::TOKEN_LITERAL_FLOAT:           return os << "LITERAL_FLOAT";
+        case TOKEN_TYPE::TOKEN_LITERAL_INTEGRAL:        return os << "LITERAL_INTEGRAL";
+        case TOKEN_TYPE::TOKEN_PARENTHESIS_OPEN:        return os << "PARENTHESIS_OPEN";
+        case TOKEN_TYPE::TOKEN_PARENTHESIS_CLOSE:       return os << "PARENTHESIS_CLOSE";
+        case TOKEN_TYPE::TOKEN_STRING_START:            return os << "STRING_START";
+        case TOKEN_TYPE::TOKEN_STRING_BODY:             return os << "STRING_BODY";
+        case TOKEN_TYPE::TOKEN_STRING_END:              return os << "STRING_END";
+        case TOKEN_TYPE::TOKEN_COMMENT_START:           return os << "COMMENT_START";
+        case TOKEN_TYPE::TOKEN_COMMENT_END:             return os << "COMMENT_END";
+        case TOKEN_TYPE::TOKEN_ERROR:                   return os << "ERROR";
+        case TOKEN_TYPE::TOKEN_EOF:                     return os << "EOF";
+        default:                                        return os << "UNKNOWN";
     }
 }
 

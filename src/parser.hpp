@@ -9,6 +9,7 @@
 #include<fstream>
 
 #include"expression.hpp"
+#include"tokenizer.hpp"
 
 class NodeVisitor;
 
@@ -45,13 +46,35 @@ public:
 class Parser
 {
 private:
-    std::unique_ptr<Expression> parseInitializer(const std::string& expr_str); 
-    std::unique_ptr<ASTNode> parseStatement(const std::string& statement);
+    std::string code;
+    Tokenizer tokenizer;
+
+    std::vector<Token> tokens {};
+    std::size_t tokens_size {};
+    std::size_t pos {};
+
+    std::unique_ptr<ASTNode> parseAssignment();
+    std::unique_ptr<ASTNode> parseDeclaration();
+    std::unique_ptr<Expression> parseExpression(); 
+
+    Token peek() const { return pos >= tokens_size ? Token{ TOKEN_TYPE::TOKEN_EOF } : tokens[pos]; }
+    Token advance() { return tokens[pos++]; }
+    bool check(TOKEN_TYPE type) const { return peek().type == type; }
+
+    Token consume(TOKEN_TYPE type, std::string_view error_message) 
+    {
+        if ( check(type) ) 
+        { 
+            return advance();
+        }
+        throw std::runtime_error( std::string(error_message) );
+    }
 
 public:
-    std::vector<std::unique_ptr<ASTNode>> parseProgram(const std::vector<std::string>& statements); 
-    std::vector<std::string> getStatements(const std::string& code);
-    std::string readFileToString(const std::string& filename); 
+    std::vector<std::unique_ptr<ASTNode>> parseProgram(); 
+    void tokenizeProgram();
+    std::size_t getNumTokens() const { return tokens.size(); }
+    explicit Parser(std::string _code) : code(std::move(_code)), tokenizer(code) {}
 };
 
 

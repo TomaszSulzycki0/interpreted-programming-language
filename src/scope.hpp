@@ -15,13 +15,13 @@ private:
 
 public:
 
-    void define(const std::string& name, std::shared_ptr<Declaration> decl) 
+    void define(std::string_view name, std::shared_ptr<Declaration> decl) 
     {
-        symbols[name] = std::move(decl);
+        symbols[std::string(name)] = std::move(decl);
     }
 
     // Lookup should be forwarded to parent if unsuccesful. 
-    std::shared_ptr<Declaration> lookup(const std::string& name) const;
+    std::shared_ptr<Declaration> lookup(std::string_view name) const;
 
     explicit Scope(); 
     explicit Scope(Scope& parent);

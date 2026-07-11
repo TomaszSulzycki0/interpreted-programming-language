@@ -8,11 +8,12 @@
 class Declaration
 {
 private:
-    std::string name;
+    std::string_view name;
 protected:
-    explicit Declaration(std::string _name) : name(std::move(_name)) {}
+    explicit Declaration(std::string_view _name) : name(_name) {}
+    explicit Declaration(std::string&&) = delete; 
 public:
-    std::string getName() const { return name; }
+    std::string_view getName() const { return name; }
     virtual void accept(DeclarationVisitor& visitor) const = 0;
     virtual ~Declaration() = default;
 };

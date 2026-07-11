@@ -22,14 +22,14 @@ public:
                 this->value = unpacked_val;
             } else 
             {
-                throw std::runtime_error("Error: Cannot assign non-string value to string variable '" + this->getName() + "'.");
+                throw std::runtime_error("Error: Cannot assign non-string value to string variable '" + std::string( this->getName() ) + "'.");
             }
         }, val);
     }
 
     void accept(DeclarationVisitor& visitor) const override { visitor.visit(*this); }
 
-    explicit StringDeclaration(std::string _name, std::string _value) : ValueDeclaration(_name), value(std::move(_value)) {}
+    explicit StringDeclaration(std::string_view _name, std::string _value) : ValueDeclaration(_name), value(std::move(_value))  {}
 
 
 };

@@ -36,9 +36,10 @@ public:
             if constexpr (std::is_arithmetic_v<EvaluatedType>) 
             {
                 this->value = static_cast<T>(unpacked_val);
-            } else 
+            } 
+            else 
             {
-                throw std::runtime_error("Error: Cannot assign non-numeric value to numeric variable '" + this->getName() + "'.");
+                throw std::runtime_error("Error: Cannot assign non-numeric value to numeric variable '" + std::string( this->getName() ) + "'.");
             }
         }, val);
     }
@@ -58,10 +59,10 @@ public:
         return static_cast<long long>(value); 
     }
 
-    explicit Numeric(std::string _name, const T& _value) : NumericDeclaration(std::move(_name)), value(_value) {}
+    explicit Numeric(std::string_view _name, const T& _value) : NumericDeclaration(_name), value(_value) {}
 
     template<Arithmetic U>
-    explicit Numeric(std::string _name, const Numeric<U>& other) : NumericDeclaration(std::move(_name)), value(static_cast<T>(other.getValue())) {}
+    explicit Numeric(std::string_view _name, const Numeric<U>& other) : NumericDeclaration(_name), value(static_cast<T>(other.getValue())) {}
 
     template<Arithmetic U> 
     friend auto operator+(const Numeric<T>& lhs, const Numeric<U>& rhs) 

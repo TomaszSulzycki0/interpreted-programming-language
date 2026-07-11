@@ -14,7 +14,7 @@ void NodeMaker::visit(const AssignmentNode& node)
     auto target_var = std::dynamic_pointer_cast<ValueDeclaration>(existing_var);
     if (!target_var) 
     {
-        throw std::runtime_error("Runtime Error: " + node.name + " is not a mutable variable.");
+        throw std::runtime_error("Runtime Error: " + std::string( node.name ) + " is not a mutable variable.");
     }
 
     std::visit([&](auto&&) {
@@ -54,7 +54,7 @@ void NodeMaker::visit(const DeclarationNode& node)
             if constexpr (std::is_arithmetic_v<EvaluatedType>) {
                 concrete_decl = std::make_shared<Numeric<int>>(node.name, static_cast<int>(evaluated_arg));
             } else {
-                throw std::runtime_error("Type Error: Cannot initialize int variable '" + node.name + "' with a non-numeric value.");
+                throw std::runtime_error("Type Error: Cannot initialize int variable '" + std::string( node.name ) + "' with a non-numeric value.");
             }
         } 
         else if (node.type == "d") 
@@ -64,7 +64,7 @@ void NodeMaker::visit(const DeclarationNode& node)
             } 
             else 
             {
-                throw std::runtime_error("Type Error: Cannot initialize double variable '" + node.name + "' with a non-numeric value.");
+                throw std::runtime_error("Type Error: Cannot initialize double variable '" + std::string( node.name ) + "' with a non-numeric value.");
             }
         } 
         else if (node.type == "f") 
@@ -75,7 +75,7 @@ void NodeMaker::visit(const DeclarationNode& node)
             } 
             else 
             {
-                throw std::runtime_error("Type Error: Cannot initialize float variable '" + node.name + "' with a non-numeric value.");
+                throw std::runtime_error("Type Error: Cannot initialize float variable '" + std::string( node.name ) + "' with a non-numeric value.");
             }
         }
         else if (node.type == "s")
@@ -86,14 +86,14 @@ void NodeMaker::visit(const DeclarationNode& node)
             } 
             else 
             {
-                throw std::runtime_error("Type Error: Cannot initialize string variable '" + node.name + "' with a numeric value.");
+                throw std::runtime_error("Type Error: Cannot initialize string variable '" + std::string( node.name ) + "' with a numeric value.");
             }
         }
     }, raw_value);
 
     if (!concrete_decl)
     {
-        throw std::runtime_error("Error: Could not declare variable of type: " + node.type);
+        throw std::runtime_error("Error: Could not declare variable of type: " + std::string( node.type ));
     }
 
     scope.define(node.name, concrete_decl);

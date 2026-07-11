@@ -21,7 +21,12 @@ enum class TOKENIZER_STATE
 enum class TOKEN_TYPE
 {
     TOKEN_IDENTIFIER,
-    TOKEN_OPERATOR,
+    TOKEN_KEYWORD_TYPE,
+    TOKEN_OPERATOR_EQUALS,
+    TOKEN_OPERATOR_PLUS,
+    TOKEN_OPERATOR_MINUS,
+    TOKEN_OPERATOR_DIV,
+    TOKEN_OPERATOR_MUL,
     TOKEN_SEMICOLON,
     TOKEN_LITERAL_FLOAT,
     TOKEN_LITERAL_INTEGRAL,
@@ -33,6 +38,7 @@ enum class TOKEN_TYPE
     TOKEN_COMMENT_START,
     TOKEN_COMMENT_END,
     TOKEN_ERROR,
+    TOKEN_NULL,
     TOKEN_EOF
 };
 
@@ -47,7 +53,14 @@ struct Token
 class Tokenizer
 {
 private:
-    const static inline std::unordered_map<std::string_view, TOKEN_TYPE> keywords {};
+    const static inline std::unordered_map<std::string_view, TOKEN_TYPE> keywords 
+    {
+        { std::string_view("i"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
+        { std::string_view("f"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
+        { std::string_view("d"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
+        { std::string_view("s"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE }
+    };
+
     std::vector<TOKENIZER_STATE> state_stack { TOKENIZER_STATE::DEFAULT };
     std::string_view code;
     const std::size_t code_size;

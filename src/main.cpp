@@ -16,6 +16,7 @@ constexpr int num_args_for_description = 1;
 
 void programDesc();
 bool hasCorrectExtension(const std::string& filename, const std::string& expected_ext);
+std::string readFileToString(const std::string& filename); 
 
 int main(int argc, char** argv)
 {
@@ -42,17 +43,18 @@ int main(int argc, char** argv)
 
     try
     {
-        Parser parser {};
+        std::cout << "Evaluating: " + input_filename << std::endl;
+        Parser parser { readFileToString(input_filename) };
         Scope main_scope {};
         Builder builder {main_scope};
-
-        auto file_content = parser.readFileToString(input_filename);
-        auto statements = parser.getStatements(file_content);
         
-        std::cout << "Loaded " << statements.size() << " raw statements." << std::endl;
+        std::cout << "Lexing.." << std::endl;
+        parser.tokenizeProgram();
+        
+        std::cout << "Captured: " << parser.getNumTokens() << " tokens." << std::endl;
 
         std::cout << "Parsing.." << std::endl;
-        auto program_ast = parser.parseProgram(statements);
+        auto program_ast = parser.parseProgram();
 
         std::cout << "Executing.." << std::endl;
         builder.buildProgram(program_ast);
@@ -75,3 +77,15 @@ bool hasCorrectExtension(const std::string& filename, const std::string& expecte
     return std::filesystem::path(filename).extension() == expected_ext;
 }
 
+std::string readFileToString(const std::string& filename) 
+{
+    std::ifstream file_stream(filename);
+    if (!file_stream.is_open()) 
+    {
+        throw std::runtime_error("Unable to access file: " + filename);
+    }
+    
+    std::ostringstream buffer;
+    buffer << file_stream.rdbuf();
+    return buffer.str();
+}

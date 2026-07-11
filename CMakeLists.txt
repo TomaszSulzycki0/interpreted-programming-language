@@ -10,6 +10,7 @@ set(SOURCE_FILES
 	src/builder.cpp
 	src/visitors.cpp
 	src/expression.cpp
+	src/tokenizer.cpp
 	)
 
 add_executable(ipl ${SOURCE_FILES})
