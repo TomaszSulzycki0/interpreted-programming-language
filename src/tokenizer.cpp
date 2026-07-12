@@ -168,18 +168,21 @@ Token Tokenizer::useStateString()
         return Token{ TOKEN_TYPE::TOKEN_ERROR, std::string_view("Forbidden newline in string") };
     }
 
-    const std::size_t start_pos = pos;
     size_t start_in_buffer = str_buffer.size();
 
     while ( pos < code_size && peek() != '"' && peek() != '\n' ) 
     {
         if ( peek() == '\\')
         {
-            advance(); // move past '\'
+            advance();
             if ( pos  >= code_size )
             {
                 break;
             }
+            char after_escape = advance();
+            char escape_decoded = decodeEscapeSeq( after_escape );
+            str_buffer.push_back( escape_decoded );
+            continue;
         }
         str_buffer.push_back( advance() );
     }
@@ -222,6 +225,19 @@ void Tokenizer::skipWhitespace()
     {
         advance();
         c = peek();
+    }
+}
+
+char Tokenizer::decodeEscapeSeq(char c) const
+{
+    switch (c)
+    {
+        case 'n':   return '\n';
+        case 't':   return '\t';
+        case 'r':   return '\r';
+        case '\\':  return '\\';
+        case '\"':   return '\"';
+        default: return '\\';
     }
 }
 

@@ -75,6 +75,7 @@ private:
     char advance() { return code[pos++]; }
     char peek() const { return pos < code_size ? code[pos] : '\0'; }
     char peekNext() const { return pos + 1 < code_size ? code[pos + 1] : '\0'; }
+    char decodeEscapeSeq(char c) const;
     
     
     Token getNextToken(); 
