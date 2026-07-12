@@ -168,12 +168,23 @@ Token Tokenizer::useStateString()
     }
 
     const std::size_t start_pos = pos;
+    size_t start_in_buffer = str_buffer.size();
+
     while ( pos < code_size && peek() != '"' && peek() != '\n' ) 
     {
-        advance();
+        if ( peek() == '\\')
+        {
+            advance(); // move past '\'
+            if ( pos  >= code_size )
+            {
+                break;
+            }
+        }
+        str_buffer.push_back( advance() );
     }
 
-    const std::string_view lexeme = code.substr(start_pos, pos - start_pos);
+    const std::string_view lexeme( &str_buffer[start_in_buffer], str_buffer.size() - start_in_buffer );
+
     return Token{ TOKEN_TYPE::TOKEN_STRING_BODY, lexeme };
 }
 

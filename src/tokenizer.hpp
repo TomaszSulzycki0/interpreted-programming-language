@@ -9,6 +9,7 @@
 #include<utility>
 #include<iostream>
 #include<iomanip>
+#include<deque>
 
 
 enum class TOKENIZER_STATE
@@ -63,6 +64,7 @@ private:
     };
 
     std::vector<TOKENIZER_STATE> state_stack { TOKENIZER_STATE::DEFAULT };
+    std::deque<char> str_buffer {};
     std::string_view code;
     const std::size_t code_size;
     std::size_t pos {};

@@ -27,7 +27,7 @@ std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram()
     {
         tokenizeProgram();
     }
-    
+
     std::vector<std::unique_ptr<ASTNode>> ast;
 
     while ( pos < tokens_size )
@@ -101,14 +101,19 @@ std::unique_ptr<Expression> Parser::parseAtomicExpression()
 {
     if ( check( TOKEN_TYPE::TOKEN_STRING_START ) )
     {
-        advance();
-        Token str_body = advance();
+        advance(); // eat string start "
+        Token str_body_or_end = advance(); // string body or end if empty string
         
-        if ( str_body.type == TOKEN_TYPE::TOKEN_STRING_BODY )
+        if ( str_body_or_end.type == TOKEN_TYPE::TOKEN_STRING_END ) // empty string case
+        {
+            return std::make_unique<LiteralExpression>("");
+        }
+        else if ( str_body_or_end.type == TOKEN_TYPE::TOKEN_STRING_BODY )
         {
             consume( TOKEN_TYPE::TOKEN_STRING_END, std::string_view("Error: Expected string end literal.") );
+            return std::make_unique<LiteralExpression>("\"" + std::string(str_body_or_end.value) + "\"");
         }
-        return std::make_unique<LiteralExpression>("\"" + std::string(str_body.value) + "\"");
+        return nullptr;
     }
 
     if ( check( TOKEN_TYPE::TOKEN_MINUS_SIGN ) )

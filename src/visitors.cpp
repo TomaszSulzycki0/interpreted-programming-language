@@ -175,7 +175,11 @@ void ExpressionEvaluator::visit(const BinaryExpression& expr)
 
 void ExpressionEvaluator::visit(const LiteralExpression& expr)  
 {
-    if (expr.value.front() == '"' && expr.value.back() == '"')
+    if ( expr.value.empty() )
+    {
+        last_evaluated_value = "";
+    }
+    else if ( expr.value.front() == '"' && expr.value.back() == '"' )
     {
         last_evaluated_value = expr.value.substr(1, expr.value.length() - 2);
     }
