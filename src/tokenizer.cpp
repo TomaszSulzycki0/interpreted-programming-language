@@ -124,6 +124,7 @@ Token Tokenizer::useStateDefault()
     case '+':
         return Token{ TOKEN_TYPE::TOKEN_OPERATOR_PLUS, std::string_view("+") };
     case '-':
+        skipWhitespace();
         if ( isDigit( peek() ) )
         {
             return Token{ TOKEN_TYPE::TOKEN_MINUS_SIGN, std::string_view("-") };

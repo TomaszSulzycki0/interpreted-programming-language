@@ -1,18 +1,9 @@
-i int1;
-f float1 = 1.78;
-d double1 = 99.999;
-s string1 = ";#daafs";
+i         spaced_out       =
+-
+5
+;
 
-# Comment 1
-i int2 =int1;
-f float2= float1;
-d double2  = double1;
-s string2 =  string1;
+d				tab_separated				=				3.14159			;
 
-i x = -15; # # "Comment 2" " ;; #;##
-
-x = int2;
-x = float2;
-x = double2;
-
-float2 = (0.1 * double1 + 2 - ( 1 + 8) ) / 2; 
+s multi_line_intent = 
+"Does your language allow strings to span lines?";
