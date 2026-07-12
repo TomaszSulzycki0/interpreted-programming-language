@@ -71,6 +71,25 @@ private:
         throw std::runtime_error( std::string(error_message) );
     }
 
+    bool isOperator(Token t) const
+    { 
+        return  t.type == TOKEN_TYPE::TOKEN_OPERATOR_MINUS ||
+                t.type == TOKEN_TYPE::TOKEN_OPERATOR_PLUS ||
+                t.type == TOKEN_TYPE::TOKEN_OPERATOR_MUL ||
+                t.type == TOKEN_TYPE::TOKEN_OPERATOR_DIV;
+            }
+            
+    bool isAtomicExpr(Token t) const
+    {
+        return  t.type == TOKEN_TYPE::TOKEN_IDENTIFIER ||
+                t.type == TOKEN_TYPE::TOKEN_LITERAL_FLOAT ||
+                t.type == TOKEN_TYPE::TOKEN_LITERAL_INTEGRAL ||
+                t.type == TOKEN_TYPE::TOKEN_STRING_START ||
+                t.type == TOKEN_TYPE::TOKEN_MINUS_SIGN;
+    }
+
+    void makeBinExprRPN(std::vector<Token>& operator_stack, std::vector<std::unique_ptr<Expression>>& expr_stack);
+            
 public:
     std::vector<std::unique_ptr<ASTNode>> parseProgram(); 
     void tokenizeProgram();

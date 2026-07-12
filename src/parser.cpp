@@ -23,6 +23,11 @@ void Parser::tokenizeProgram()
 
 std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram() 
 {
+    if ( tokens_size == 0 )
+    {
+        tokenizeProgram();
+    }
+    
     std::vector<std::unique_ptr<ASTNode>> ast;
 
     while ( pos < tokens_size )
@@ -146,10 +151,7 @@ std::unique_ptr<Expression> Parser::parseRPN()
 
     while ( pos < tokens_size )
     {
-        if (    check( TOKEN_TYPE::TOKEN_OPERATOR_MINUS ) ||
-                check( TOKEN_TYPE::TOKEN_OPERATOR_PLUS ) ||
-                check( TOKEN_TYPE::TOKEN_OPERATOR_MUL ) ||
-                check( TOKEN_TYPE::TOKEN_OPERATOR_DIV ) )
+        if ( isOperator( peek() ) )
         {
             Token op = advance();
 
@@ -176,23 +178,7 @@ std::unique_ptr<Expression> Parser::parseRPN()
 
                 if ( last_op_precedence >= op_precedence )
                 {
-                    operator_stack.pop_back();
-
-                    if ( expr_stack.empty() )
-                    {
-                        throw std::runtime_error("Error: Unexpected operator.");
-                    }
-                    auto expr_right = std::move( expr_stack.back() );
-                    expr_stack.pop_back();
-    
-                    if ( expr_stack.empty() )
-                    {
-                        throw std::runtime_error("Error: Unexpected operator.");
-                    }
-                    auto expr_left = std::move( expr_stack.back() );
-                    expr_stack.pop_back();
-
-                    expr_stack.push_back( std::make_unique<BinaryExpression>( std::string(last_op.value), std::move( expr_left ), std::move( expr_right ) ) );
+                    makeBinExprRPN( operator_stack, expr_stack );
                 }
                 else
                 {
@@ -249,11 +235,7 @@ std::unique_ptr<Expression> Parser::parseRPN()
             --open_parenthesis;
 
         }
-        else if (   check( TOKEN_TYPE::TOKEN_LITERAL_INTEGRAL ) ||
-                    check( TOKEN_TYPE::TOKEN_LITERAL_FLOAT ) ||
-                    check( TOKEN_TYPE::TOKEN_MINUS_SIGN ) ||
-                    check( TOKEN_TYPE::TOKEN_STRING_START ) ||
-                    check( TOKEN_TYPE::TOKEN_IDENTIFIER ) )
+        else if ( isAtomicExpr( peek() ) )
         {
             auto expr = parseAtomicExpression();
             if ( !expr )
@@ -278,28 +260,9 @@ std::unique_ptr<Expression> Parser::parseRPN()
     }
 
     while ( !operator_stack.empty() )
-    {   
-        auto last_op = operator_stack.back();
-        operator_stack.pop_back();
-
-        if ( expr_stack.empty() )
-        {
-            throw std::runtime_error("Error: Unexpected operator.");
-        }
-
-        auto expr_right = std::move( expr_stack.back() );
-        expr_stack.pop_back();
-
-        if ( expr_stack.empty() )
-        {
-            throw std::runtime_error("Error: Unexpected operator.");
-        }
-        auto expr_left = std::move( expr_stack.back() );
-        expr_stack.pop_back();
-
-        expr_stack.push_back( std::make_unique<BinaryExpression>( std::string(last_op.value), std::move( expr_left ), std::move( expr_right ) ) );
+    {
+        makeBinExprRPN( operator_stack, expr_stack );   
     }
-
 
     if ( expr_stack.size() != 1 )
     {
@@ -307,4 +270,30 @@ std::unique_ptr<Expression> Parser::parseRPN()
     }
 
     return std::move( expr_stack.front() );
+}
+
+void Parser::makeBinExprRPN( std::vector<Token>& operator_stack, std::vector<std::unique_ptr<Expression>>& expr_stack)
+{
+    auto last_op = operator_stack.back();
+    operator_stack.pop_back();
+
+    if ( expr_stack.empty() )
+    {
+        throw std::runtime_error("Error: Unexpected operator.");
+    }
+
+    auto expr_right = std::move( expr_stack.back() );
+    expr_stack.pop_back();
+
+    if ( expr_stack.empty() )
+    {
+        throw std::runtime_error("Error: Unexpected operator.");
+    }
+    auto expr_left = std::move( expr_stack.back() );
+    expr_stack.pop_back();
+
+    expr_stack.push_back( std::make_unique<BinaryExpression>( 
+            std::string(last_op.value), 
+            std::move( expr_left ), 
+            std::move( expr_right ) ) );
 }
