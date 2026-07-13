@@ -14,8 +14,6 @@ std::vector<Token> Tokenizer::emitTokens()
         tokens.push_back( getNextToken() );    
     }
 
-    //tokens.push_back( Token{ TOKEN_TYPE::TOKEN_EOF, std::string_view("EOF") } ); 
-
     return tokens;
 }
 

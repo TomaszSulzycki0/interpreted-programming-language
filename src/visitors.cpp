@@ -11,6 +11,11 @@ void NodeMaker::visit(const AssignmentNode& node)
     RuntimeValue new_value = evaluator.evaluate(*node.value_expr);
     
     auto existing_var = scope.lookup(node.name);
+    if ( !existing_var )
+    {
+        throw std::runtime_error("Error: Variable '" + std::string( node.name ) + "' is undefined.");
+    }
+
     auto target_var = std::dynamic_pointer_cast<ValueDeclaration>(existing_var);
     if (!target_var) 
     {
@@ -31,8 +36,13 @@ void NodeMaker::visit(const AssignmentNode& node)
 
 void NodeMaker::visit(const DeclarationNode& node)
 {
+    if ( scope.lookup( node.name ))
+    {
+        throw std::runtime_error("Error: Variable '" + std::string( node.name ) + "' redefinition.");
+    }
+
     RuntimeValue raw_value; 
-    if (node.initializer) 
+    if ( node.initializer ) 
     {
         ExpressionEvaluator evaluator {scope};
         raw_value = evaluator.evaluate(*node.initializer);
@@ -49,17 +59,17 @@ void NodeMaker::visit(const DeclarationNode& node)
     std::visit([&](auto&& evaluated_arg) {
         using EvaluatedType = std::decay_t<decltype(evaluated_arg)>;
 
-        if (node.type == "i") 
+        if ( node.type == "i" ) 
         {
-            if constexpr (std::is_arithmetic_v<EvaluatedType>) {
+            if constexpr ( std::is_arithmetic_v<EvaluatedType> ) {
                 concrete_decl = std::make_shared<Numeric<int>>(node.name, static_cast<int>(evaluated_arg));
             } else {
                 throw std::runtime_error("Type Error: Cannot initialize int variable '" + std::string( node.name ) + "' with a non-numeric value.");
             }
         } 
-        else if (node.type == "d") 
+        else if ( node.type == "d" ) 
         {
-            if constexpr (std::is_arithmetic_v<EvaluatedType>) {
+            if constexpr ( std::is_arithmetic_v<EvaluatedType> ) {
                 concrete_decl = std::make_shared<Numeric<double>>(node.name, static_cast<double>(evaluated_arg));
             } 
             else 
@@ -67,9 +77,9 @@ void NodeMaker::visit(const DeclarationNode& node)
                 throw std::runtime_error("Type Error: Cannot initialize double variable '" + std::string( node.name ) + "' with a non-numeric value.");
             }
         } 
-        else if (node.type == "f") 
+        else if ( node.type == "f" ) 
         {
-            if constexpr (std::is_arithmetic_v<EvaluatedType>) 
+            if constexpr ( std::is_arithmetic_v<EvaluatedType> )  
             {
                 concrete_decl = std::make_shared<Numeric<float>>(node.name, static_cast<float>(evaluated_arg));
             } 
@@ -78,7 +88,7 @@ void NodeMaker::visit(const DeclarationNode& node)
                 throw std::runtime_error("Type Error: Cannot initialize float variable '" + std::string( node.name ) + "' with a non-numeric value.");
             }
         }
-        else if (node.type == "s")
+        else if ( node.type == "s" )
         {
             if constexpr (std::is_same_v<EvaluatedType, std::string>) 
             {
@@ -91,7 +101,7 @@ void NodeMaker::visit(const DeclarationNode& node)
         }
     }, raw_value);
 
-    if (!concrete_decl)
+    if ( !concrete_decl )
     {
         throw std::runtime_error("Error: Could not declare variable of type: " + std::string( node.type ));
     }
@@ -108,7 +118,7 @@ void NodeMaker::visit(const DeclarationNode& node)
 
 void PrintVisitor::visit(const NumericDeclaration& num_decl) 
 {
-    if (num_decl.isFloatingPoint()) 
+    if ( num_decl.isFloatingPoint() ) 
     {
         std::cout << "(floating point) " << num_decl.asDouble();
     } else 
@@ -134,8 +144,8 @@ RuntimeValue evaluateBinaryOp(const RuntimeValue& v_l, const RuntimeValue& v_r, 
         using TLeft = std::decay_t<decltype(unpacked_left)>;
         using TRight = std::decay_t<decltype(unpacked_right)>;
 
-        if constexpr (std::is_arithmetic_v<TLeft> && std::is_arithmetic_v<TRight>) {
-            return RuntimeValue{operation(unpacked_left, unpacked_right)};
+        if constexpr ( std::is_arithmetic_v<TLeft> && std::is_arithmetic_v<TRight> ) {
+            return RuntimeValue{ operation( unpacked_left, unpacked_right ) };
         } 
         else 
         {
@@ -154,9 +164,9 @@ RuntimeValue ExpressionEvaluator::resolveOperator(const RuntimeValue& v_left, co
     };
 
     auto it = operator_map.find(op);
-    if (it != operator_map.end()) 
+    if ( it != operator_map.end() ) 
     {
-        return it->second(v_left, v_right);
+        return it->second( v_left, v_right );
     }
     else
     {
@@ -192,8 +202,13 @@ void ExpressionEvaluator::visit(const LiteralExpression& expr)
 void ExpressionEvaluator::visit(const VariableExpression& expr) 
 {
     auto decl = scope.lookup(expr.name);
+    if ( !decl )
+    {
+        throw std::runtime_error("Error: Variable '" + std::string( expr.name ) + "' is undefined.");
+    }
+
     auto val_decl = std::dynamic_pointer_cast<ValueDeclaration>(decl);
-    if (!val_decl) 
+    if ( !val_decl ) 
     {
         throw std::runtime_error("Error: " + expr.name + " does not elicit a value.");
     }

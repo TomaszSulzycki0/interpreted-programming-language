@@ -1,9 +1,6 @@
-i         spaced_out       =
--
-5
-;
+# Redefining an existing variable with the same type
+i x = 100;
+i x = 200;
 
-d				tab_separated				=				3.14159			;
-
-s multi_line_intent = 
-"Does your language allow strings to span lines?";
+# Redefining an existing variable with a DIFFERENT type
+f x = 5.5;
