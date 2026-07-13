@@ -32,26 +32,46 @@ std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram()
 
     while ( pos < tokens_size )
     {
-        if ( check( TOKEN_TYPE::TOKEN_KEYWORD_TYPE ) )
+        try 
         {
-            ast.push_back( std::move( parseDeclaration() ) );
+            if ( check( TOKEN_TYPE::TOKEN_KEYWORD_TYPE ) )
+            {
+                ast.push_back( std::move( parseDeclaration() ) );
+            }
+            else if ( check( TOKEN_TYPE::TOKEN_IDENTIFIER) )
+            {
+                ast.push_back( std::move( parseAssignment() ) );
+            }
+            else if ( check( TOKEN_TYPE::TOKEN_COMMENT_START ) )
+            {
+                advance();
+                consume( TOKEN_TYPE::TOKEN_COMMENT_END, std::string_view("Error: Expected comment end token.") );
+            }
+            else if ( check( TOKEN_TYPE::TOKEN_EOF ) )
+            {
+                break;
+            }
+            else
+            {
+                throw std::runtime_error("Error: Unrecognised token.");
+            }
         }
-        else if ( check( TOKEN_TYPE::TOKEN_IDENTIFIER) )
+        catch ( const std::exception& e )
         {
-            ast.push_back( std::move( parseAssignment() ) );
-        }
-        else if ( check( TOKEN_TYPE::TOKEN_COMMENT_START ) )
-        {
-            advance();
-            consume( TOKEN_TYPE::TOKEN_COMMENT_END, std::string_view("Error: Expected comment end token.") );
-        }
-        else if ( check( TOKEN_TYPE::TOKEN_EOF ) )
-        {
-            break;
-        }
-        else
-        {
-            throw std::runtime_error("Error: Unrecognised token.");
+            is_good_for_exec = false;
+
+            std::cerr << e.what() << " Line: " << peek().line << '\n';
+
+            // For now simply skip to semicolon.
+            while ( pos < tokens_size )
+            {
+                if ( check( TOKEN_TYPE::TOKEN_SEMICOLON ) )
+                {
+                    advance();
+                    break;
+                }
+                advance();
+            }
         }
     }
 
@@ -61,6 +81,7 @@ std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram()
 std::unique_ptr<ASTNode> Parser::parseAssignment()
 {
     Token assignee_name = consume( TOKEN_TYPE::TOKEN_IDENTIFIER, std::string_view("Error: Expected declaration identifier.") );
+    
     
     consume( TOKEN_TYPE::TOKEN_OPERATOR_EQUALS, std::string_view("Error: Expected equal sign.") );
     
@@ -79,7 +100,14 @@ std::unique_ptr<ASTNode> Parser::parseAssignment()
 std::unique_ptr<ASTNode> Parser::parseDeclaration()
 {
     Token declared_type = consume( TOKEN_TYPE::TOKEN_KEYWORD_TYPE, std::string_view("Error: Expected declaration type.") );
-    Token declared_name = consume( TOKEN_TYPE::TOKEN_IDENTIFIER, std::string_view("Error: Expected declaration identifier.") );
+
+    // More precise, for most common invalid syntax
+    if ( check( TOKEN_TYPE::TOKEN_KEYWORD_TYPE ) )
+    {
+        consume( TOKEN_TYPE::TOKEN_IDENTIFIER, std::string_view("Error: Invalid combination type-type during declaration.") );
+    }
+
+    Token declared_name = consume( TOKEN_TYPE::TOKEN_IDENTIFIER, std::string_view("Error: Invalid declaration syntax.") );
     std::unique_ptr<Expression> expr = nullptr;
     
     if ( check( TOKEN_TYPE::TOKEN_OPERATOR_EQUALS ) )

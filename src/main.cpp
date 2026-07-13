@@ -56,8 +56,12 @@ int main(int argc, char** argv)
         std::cout << "Parsing.." << std::endl;
         auto program_ast = parser.parseProgram();
 
-        std::cout << "Executing.." << std::endl;
-        builder.buildProgram(program_ast);
+        if ( parser.isASTExecutable() )
+        {
+            std::cout << "Executing.." << std::endl;
+            builder.buildProgram(program_ast); 
+        }
+
     }
     catch(const std::exception& e)
     {

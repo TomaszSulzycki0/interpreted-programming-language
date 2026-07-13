@@ -45,10 +45,10 @@ Token Tokenizer::readIdentifier()
     auto it = keywords.find(lexeme);
     if ( it != keywords.end() )
     {
-        return Token{ it->second, lexeme };
+        return Token{ it->second, lexeme, current_line };
     }
     
-    return Token{ TOKEN_TYPE::TOKEN_IDENTIFIER, lexeme };
+    return Token{ TOKEN_TYPE::TOKEN_IDENTIFIER, lexeme, current_line };
 }
 
 Token Tokenizer::readNumber()
@@ -81,10 +81,10 @@ Token Tokenizer::readNumber()
 
     if (is_float) 
     {
-        return Token{ TOKEN_TYPE::TOKEN_LITERAL_FLOAT, lexeme };
+        return Token{ TOKEN_TYPE::TOKEN_LITERAL_FLOAT, lexeme, current_line };
     } 
     
-    return Token{ TOKEN_TYPE::TOKEN_LITERAL_INTEGRAL, lexeme };    
+    return Token{ TOKEN_TYPE::TOKEN_LITERAL_INTEGRAL, lexeme, current_line };    
 }
 
 Token Tokenizer::useStateDefault()
@@ -93,7 +93,7 @@ Token Tokenizer::useStateDefault()
 
     if ( pos >= code_size ) 
     {
-        return Token{ TOKEN_TYPE::TOKEN_EOF };
+        return Token{ TOKEN_TYPE::TOKEN_EOF, std::string_view("EOF"), current_line };
     }
 
     char c = peek(); 
@@ -113,34 +113,34 @@ Token Tokenizer::useStateDefault()
     {
     case '"':
         pushState(TOKENIZER_STATE::STRING);
-        return Token{ TOKEN_TYPE::TOKEN_STRING_START,  std::string_view( "\"") };
+        return Token{ TOKEN_TYPE::TOKEN_STRING_START,  std::string_view( "\""), current_line };
     case '#':
         pushState(TOKENIZER_STATE::COMMENT);
-        return Token{ TOKEN_TYPE::TOKEN_COMMENT_START, std::string_view("#") };
+        return Token{ TOKEN_TYPE::TOKEN_COMMENT_START, std::string_view("#"), current_line };
     case ';':
-        return Token{ TOKEN_TYPE::TOKEN_SEMICOLON, std::string_view(";") };
+        return Token{ TOKEN_TYPE::TOKEN_SEMICOLON, std::string_view(";"), current_line };
     case '+':
-        return Token{ TOKEN_TYPE::TOKEN_OPERATOR_PLUS, std::string_view("+") };
+        return Token{ TOKEN_TYPE::TOKEN_OPERATOR_PLUS, std::string_view("+"), current_line };
     case '-':
         skipWhitespace();
         if ( isDigit( peek() ) )
         {
-            return Token{ TOKEN_TYPE::TOKEN_MINUS_SIGN, std::string_view("-") };
+            return Token{ TOKEN_TYPE::TOKEN_MINUS_SIGN, std::string_view("-"), current_line };
         }
-        return Token{ TOKEN_TYPE::TOKEN_OPERATOR_MINUS, std::string_view("-") };
+        return Token{ TOKEN_TYPE::TOKEN_OPERATOR_MINUS, std::string_view("-"), current_line };
     case '*':
-        return Token{ TOKEN_TYPE::TOKEN_OPERATOR_MUL, std::string_view("*") };
+        return Token{ TOKEN_TYPE::TOKEN_OPERATOR_MUL, std::string_view("*"), current_line };
     case '/':
-        return Token{ TOKEN_TYPE::TOKEN_OPERATOR_DIV, std::string_view("/") };
+        return Token{ TOKEN_TYPE::TOKEN_OPERATOR_DIV, std::string_view("/"), current_line };
     case '=':
-        return Token{ TOKEN_TYPE::TOKEN_OPERATOR_EQUALS, std::string_view("=") };
+        return Token{ TOKEN_TYPE::TOKEN_OPERATOR_EQUALS, std::string_view("="), current_line };
     case '(':
-        return Token{ TOKEN_TYPE::TOKEN_PARENTHESIS_OPEN, std::string_view("(") };
+        return Token{ TOKEN_TYPE::TOKEN_PARENTHESIS_OPEN, std::string_view("("), current_line };
     case ')':
-        return Token{ TOKEN_TYPE::TOKEN_PARENTHESIS_CLOSE, std::string_view(")") };
+        return Token{ TOKEN_TYPE::TOKEN_PARENTHESIS_CLOSE, std::string_view(")"), current_line };
     }
     
-    return Token{ TOKEN_TYPE::TOKEN_ERROR, std::string_view("Bad character") };
+    return Token{ TOKEN_TYPE::TOKEN_ERROR, std::string_view("Bad character"), current_line };
 }
 
 Token Tokenizer::useStateString()
@@ -148,7 +148,7 @@ Token Tokenizer::useStateString()
     if ( pos >= code_size ) 
     {
         popState();
-        return Token{ TOKEN_TYPE::TOKEN_ERROR, std::string_view("Unterminated string literal") };
+        return Token{ TOKEN_TYPE::TOKEN_ERROR, std::string_view("Unterminated string literal"), current_line };
     }
 
     char c = peek();
@@ -157,13 +157,14 @@ Token Tokenizer::useStateString()
     {
         advance(); 
         popState(); 
-        return Token{ TOKEN_TYPE::TOKEN_STRING_END, std::string_view("\"") };
+        return Token{ TOKEN_TYPE::TOKEN_STRING_END, std::string_view("\""), current_line };
     }
     else if ( c == '\n' ) 
     {
+        ++current_line;
         advance();
         popState(); 
-        return Token{ TOKEN_TYPE::TOKEN_ERROR, std::string_view("Forbidden newline in string") };
+        return Token{ TOKEN_TYPE::TOKEN_ERROR, std::string_view("Forbidden newline in string"), current_line };
     }
 
     size_t start_in_buffer = str_buffer.size();
@@ -187,7 +188,7 @@ Token Tokenizer::useStateString()
 
     const std::string_view lexeme( &str_buffer[start_in_buffer], str_buffer.size() - start_in_buffer );
 
-    return Token{ TOKEN_TYPE::TOKEN_STRING_BODY, lexeme };
+    return Token{ TOKEN_TYPE::TOKEN_STRING_BODY, lexeme, current_line };
 }
 
 Token Tokenizer::useStateComment()
@@ -198,7 +199,7 @@ Token Tokenizer::useStateComment()
     }
 
     popState();
-    return Token{ TOKEN_TYPE::TOKEN_COMMENT_END, std::string_view("#") };
+    return Token{ TOKEN_TYPE::TOKEN_COMMENT_END, std::string_view("#"), current_line };
 }
 
 bool Tokenizer::isIdentifierStart(char c) const
@@ -221,6 +222,10 @@ void Tokenizer::skipWhitespace()
     char c = peek();   
     while ( std::isspace( static_cast<unsigned char>(c) ) )
     {
+        if ( c == '\n' )
+        {
+            ++current_line;
+        }
         advance();
         c = peek();
     }
@@ -277,6 +282,8 @@ void Tokenizer::debugTokens(const std::vector<Token>& tokens)
                     << std::setw(0) << "]" 
                     << std::setw(7) << "  ->"
                     << std::setw(12) << token.value 
+                    << std::setw(10) << " line: " 
+                    << token.line 
                     << std::endl;
     }
 }

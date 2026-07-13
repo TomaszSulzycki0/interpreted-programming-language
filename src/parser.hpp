@@ -53,6 +53,8 @@ private:
     std::size_t tokens_size {};
     std::size_t pos {};
 
+    bool is_good_for_exec = true;
+
     std::unique_ptr<ASTNode> parseAssignment();
     std::unique_ptr<ASTNode> parseDeclaration();
     std::unique_ptr<Expression> parseAtomicExpression(); 
@@ -94,6 +96,8 @@ public:
     std::vector<std::unique_ptr<ASTNode>> parseProgram(); 
     void tokenizeProgram();
     std::size_t getNumTokens() const { return tokens.size(); }
+    bool isASTExecutable() const { return is_good_for_exec; }
+
     explicit Parser(std::string _code) : code(std::move(_code)), tokenizer(code) {}
 };
 

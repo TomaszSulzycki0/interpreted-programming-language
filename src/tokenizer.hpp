@@ -50,6 +50,7 @@ struct Token
 {
     TOKEN_TYPE type;
     std::string_view value {};
+    std::size_t line {};
 };
 
 class Tokenizer
@@ -65,9 +66,11 @@ private:
 
     std::vector<TOKENIZER_STATE> state_stack { TOKENIZER_STATE::DEFAULT };
     std::deque<char> str_buffer {};
+
+    std::size_t pos {};
+    std::size_t current_line {1};
     std::string_view code;
     const std::size_t code_size;
-    std::size_t pos {};
 
     TOKENIZER_STATE currentState() const { return state_stack.back(); }
     void pushState(TOKENIZER_STATE state) { state_stack.push_back(state); }
@@ -77,14 +80,12 @@ private:
     char peekNext() const { return pos + 1 < code_size ? code[pos + 1] : '\0'; }
     char decodeEscapeSeq(char c) const;
     
-    
-    Token getNextToken(); 
-                                                             
     bool isIdentifierStart(char c) const;
     bool isIdentifierBody(char c) const;
     bool isDigit(char c) const;
     void skipWhitespace();
     
+    Token getNextToken(); 
     Token readIdentifier();
     Token readNumber();
 

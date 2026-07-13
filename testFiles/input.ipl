@@ -4,3 +4,8 @@ i x = 200;
 
 # Redefining an existing variable with a DIFFERENT type
 f x = 5.5;
+
+# Using type keywords as variable names (Shadowing)
+i f = 10;
+d = 20.0;
+s i = "confusing";
