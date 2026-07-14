@@ -139,7 +139,8 @@ RuntimeValue ExpressionEvaluator::evaluate(const Expression& expr)
 }
 
 template <typename Op>
-RuntimeValue evaluateBinaryOp(const RuntimeValue& v_l, const RuntimeValue& v_r, Op operation) {
+RuntimeValue evaluateBinaryOp(const RuntimeValue& v_l, const RuntimeValue& v_r, Op operation) 
+{
     return std::visit([&](auto&& unpacked_left, auto&& unpacked_right) -> RuntimeValue {
         using TLeft = std::decay_t<decltype(unpacked_left)>;
         using TRight = std::decay_t<decltype(unpacked_right)>;
@@ -147,6 +148,9 @@ RuntimeValue evaluateBinaryOp(const RuntimeValue& v_l, const RuntimeValue& v_r, 
         if constexpr ( std::is_arithmetic_v<TLeft> && std::is_arithmetic_v<TRight> ) {
             return RuntimeValue{ operation( unpacked_left, unpacked_right ) };
         } 
+        else if constexpr ( std::same_as<std::string, TLeft> && std::same_as<std::string, TRight> && std::same_as<std::plus<>, Op> ) {
+            return RuntimeValue{ operation( unpacked_left, unpacked_right ) };
+        }
         else 
         {
             throw std::runtime_error("Error: Unsupported operand types for this operation.");

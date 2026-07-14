@@ -5,4 +5,5 @@ s escape3 = "A string with a \" quote \" in the middle";
 
 # Concatenation syntax check (if your language allows it)
 s concat_test = "Hello " + "World";
+s str = concat_test + " abc";
 s mixed_concat = "Value: " + 42;
