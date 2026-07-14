@@ -182,6 +182,7 @@ std::unique_ptr<Expression> Parser::parseAtomicExpression()
 std::unique_ptr<Expression> Parser::parseRPN()
 {   
     const static std::unordered_map<TOKEN_TYPE, int> operator_precedence {
+        { TOKEN_TYPE::TOKEN_OPERATOR_EQUALEQUALS, 0 }, 
         { TOKEN_TYPE::TOKEN_OPERATOR_MINUS, 1 }, 
         { TOKEN_TYPE::TOKEN_OPERATOR_PLUS, 1 },
         { TOKEN_TYPE::TOKEN_OPERATOR_MUL, 2 },

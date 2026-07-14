@@ -1,1 +1,6 @@
-b myBool = true;
+b myBool2 = true;
+b myBool3 = true;
+b myBool4 = false;
+
+b trueBool = myBool2 == myBool3;
+b falseBool = myBool2 == myBool4;

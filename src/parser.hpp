@@ -78,7 +78,8 @@ private:
         return  t.type == TOKEN_TYPE::TOKEN_OPERATOR_MINUS ||
                 t.type == TOKEN_TYPE::TOKEN_OPERATOR_PLUS ||
                 t.type == TOKEN_TYPE::TOKEN_OPERATOR_MUL ||
-                t.type == TOKEN_TYPE::TOKEN_OPERATOR_DIV;
+                t.type == TOKEN_TYPE::TOKEN_OPERATOR_DIV ||
+                t.type == TOKEN_TYPE::TOKEN_OPERATOR_EQUALEQUALS;
             }
             
     bool isAtomicExpr(Token t) const

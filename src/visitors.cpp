@@ -184,7 +184,8 @@ RuntimeValue ExpressionEvaluator::resolveOperator(const RuntimeValue& v_left, co
         { "+", [](auto& l, auto& r) { return evaluateBinaryOp(l, r, std::plus<>{}); } },
         { "-", [](auto& l, auto& r) { return evaluateBinaryOp(l, r, std::minus<>{}); } },
         { "*", [](auto& l, auto& r) { return evaluateBinaryOp(l, r, std::multiplies<>{}); } },
-        { "/", [](auto& l, auto& r) { return evaluateBinaryOp(l, r, std::divides<>{}); } }
+        { "/", [](auto& l, auto& r) { return evaluateBinaryOp(l, r, std::divides<>{}); } },
+        { "==", [](auto& l, auto& r) { return evaluateBinaryOp(l, r, std::equal_to<>{}); } }
     };
 
     auto it = operator_map.find(op);
