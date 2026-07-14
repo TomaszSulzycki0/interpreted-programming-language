@@ -13,7 +13,6 @@
 constexpr int num_args_for_default_usage = 2;
 constexpr int num_args_for_description = 1;
 
-
 void programDesc();
 bool hasCorrectExtension(const std::string& filename, const std::string& expected_ext);
 std::string readFileToString(const std::string& filename); 
@@ -29,7 +28,7 @@ int main(int argc, char** argv)
     case num_args_for_default_usage:
         break;
     default:
-        std::cerr << "Invalid number of parameters passed to interpreter: " << argc - 1 << std::endl;
+        std::cerr << "Error: Invalid number of parameters passed to interpreter: " << argc - 1 << std::endl;
         return -1;
     }
 
@@ -37,7 +36,7 @@ int main(int argc, char** argv)
 
     if(!hasCorrectExtension(input_filename, ".ipl"))
     {
-        std::cerr << "Invalid input file extension. Expecting .ipl" << std::endl;
+        std::cerr << "Error: Invalid input file extension. Expecting .ipl" << std::endl;
         return -1;
     }
 
@@ -68,7 +67,6 @@ int main(int argc, char** argv)
         std::cerr << e.what() << '\n';
     }
     
-
 }
 
 void programDesc()
@@ -86,7 +84,7 @@ std::string readFileToString(const std::string& filename)
     std::ifstream file_stream(filename);
     if (!file_stream.is_open()) 
     {
-        throw std::runtime_error("Unable to access file: " + filename);
+        throw std::runtime_error("Error: Unable to access file: \'" + filename + "\'.");
     }
     
     std::ostringstream buffer;

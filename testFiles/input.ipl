@@ -1,11 +1,8 @@
-# Redefining an existing variable with the same type
-i x = 100;
-i x = 200;
+# Escaped quotes and weird characters inside strings
+s escape1 = "This string ends with an escaped slash \\";
+s escape2 = "What happens to a newline \n inside a string?";
+s escape3 = "A string with a \" quote \" in the middle";
 
-# Redefining an existing variable with a DIFFERENT type
-f x = 5.5;
-
-# Using type keywords as variable names (Shadowing)
-i f = 10;
-d = 20.0;
-s i = "confusing";
+# Concatenation syntax check (if your language allows it)
+s concat_test = "Hello " + "World";
+s mixed_concat = "Value: " + 42;

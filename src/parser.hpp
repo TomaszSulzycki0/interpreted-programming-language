@@ -101,6 +101,4 @@ public:
     explicit Parser(std::string _code) : code(std::move(_code)), tokenizer(code) {}
 };
 
-
-
 #endif

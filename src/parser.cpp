@@ -18,6 +18,7 @@ void Parser::tokenizeProgram()
 {
     tokens = tokenizer.emitTokens();
     tokens_size = tokens.size();
+
     tokenizer.debugTokens(tokens);
 }
 
@@ -53,7 +54,7 @@ std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram()
             }
             else
             {
-                throw std::runtime_error("Error: Unrecognised token.");
+                throw std::runtime_error("Error: Invalid statement starting syntax.");
             }
         }
         catch ( const std::exception& e )
@@ -147,10 +148,17 @@ std::unique_ptr<Expression> Parser::parseAtomicExpression()
     if ( check( TOKEN_TYPE::TOKEN_MINUS_SIGN ) )
     {
         Token minus_sign = advance();
-        if ( check( TOKEN_TYPE::TOKEN_LITERAL_FLOAT ) || check( TOKEN_TYPE::TOKEN_LITERAL_INTEGRAL )) // Later can pass exact info to expression obj
+        if (    check( TOKEN_TYPE::TOKEN_LITERAL_FLOAT ) ||
+                check( TOKEN_TYPE::TOKEN_LITERAL_INTEGRAL )) // Later can pass exact info to expression obj
         {
             Token literal = advance();
             return std::make_unique<LiteralExpression>( "-" + std::string(literal.value) );
+        }
+
+        if ( check( TOKEN_TYPE::TOKEN_IDENTIFIER ) )
+        {
+            Token identifier = advance();
+            return std::make_unique<VariableExpression>( "-" + std::string(identifier.value) );
         }
     }
     
@@ -193,7 +201,6 @@ std::unique_ptr<Expression> Parser::parseRPN()
             {
                 throw std::runtime_error("Error: Unknown operator.");    
             }
-        
             int op_precedence = it->second;
             
             while ( !operator_stack.empty() )

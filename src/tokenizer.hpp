@@ -72,6 +72,8 @@ private:
     std::string_view code;
     const std::size_t code_size;
 
+    Token last_emmited = { TOKEN_TYPE::TOKEN_NULL };
+
     TOKENIZER_STATE currentState() const { return state_stack.back(); }
     void pushState(TOKENIZER_STATE state) { state_stack.push_back(state); }
     void popState() { if ( state_stack.size() > 1 ) state_stack.pop_back(); }
@@ -84,6 +86,7 @@ private:
     bool isIdentifierBody(char c) const;
     bool isDigit(char c) const;
     void skipWhitespace();
+    void skipNewline();
     
     Token getNextToken(); 
     Token readIdentifier();

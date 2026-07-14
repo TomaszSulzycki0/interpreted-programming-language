@@ -201,17 +201,26 @@ void ExpressionEvaluator::visit(const LiteralExpression& expr)
 
 void ExpressionEvaluator::visit(const VariableExpression& expr) 
 {
-    auto decl = scope.lookup(expr.name);
+    const bool is_negated = expr.name.front() == '-'; 
+
+    const std::string var_name = is_negated ? expr.name.substr(1) : expr.name;
+
+    auto decl = scope.lookup(var_name);
     if ( !decl )
     {
-        throw std::runtime_error("Error: Variable '" + std::string( expr.name ) + "' is undefined.");
+        throw std::runtime_error("Error: Variable '" + std::string( var_name ) + "' is undefined.");
     }
 
     auto val_decl = std::dynamic_pointer_cast<ValueDeclaration>(decl);
     if ( !val_decl ) 
     {
-        throw std::runtime_error("Error: " + expr.name + " does not elicit a value.");
+        throw std::runtime_error("Error: " + var_name + " does not elicit a value.");
     }
     
     last_evaluated_value = val_decl->getValue();
+
+    if ( is_negated)
+    {
+        last_evaluated_value = resolveOperator( last_evaluated_value, -1.0, "*");
+    }
 }

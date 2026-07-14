@@ -11,7 +11,8 @@ std::vector<Token> Tokenizer::emitTokens()
 
     while( pos < code_size )
     {
-        tokens.push_back( getNextToken() );    
+        tokens.push_back( getNextToken() );  
+        last_emmited = tokens.back();  
     }
 
     return tokens;
@@ -122,12 +123,14 @@ Token Tokenizer::useStateDefault()
     case '+':
         return Token{ TOKEN_TYPE::TOKEN_OPERATOR_PLUS, std::string_view("+"), current_line };
     case '-':
-        skipWhitespace();
-        if ( isDigit( peek() ) )
+        if (    last_emmited.type == TOKEN_TYPE::TOKEN_IDENTIFIER ||
+                last_emmited.type == TOKEN_TYPE::TOKEN_LITERAL_FLOAT ||
+                last_emmited.type == TOKEN_TYPE::TOKEN_LITERAL_INTEGRAL ||
+                last_emmited.type == TOKEN_TYPE::TOKEN_PARENTHESIS_CLOSE )
         {
-            return Token{ TOKEN_TYPE::TOKEN_MINUS_SIGN, std::string_view("-"), current_line };
+            return Token{ TOKEN_TYPE::TOKEN_OPERATOR_MINUS, std::string_view("-"), current_line };
         }
-        return Token{ TOKEN_TYPE::TOKEN_OPERATOR_MINUS, std::string_view("-"), current_line };
+        return Token{ TOKEN_TYPE::TOKEN_MINUS_SIGN, std::string_view("-"), current_line };
     case '*':
         return Token{ TOKEN_TYPE::TOKEN_OPERATOR_MUL, std::string_view("*"), current_line };
     case '/':
@@ -140,7 +143,7 @@ Token Tokenizer::useStateDefault()
         return Token{ TOKEN_TYPE::TOKEN_PARENTHESIS_CLOSE, std::string_view(")"), current_line };
     }
     
-    return Token{ TOKEN_TYPE::TOKEN_ERROR, std::string_view("Bad character"), current_line };
+    return Token{ TOKEN_TYPE::TOKEN_ERROR, std::string_view("Bad char"), current_line };
 }
 
 Token Tokenizer::useStateString()
@@ -229,6 +232,16 @@ void Tokenizer::skipWhitespace()
         advance();
         c = peek();
     }
+}
+
+void Tokenizer::skipNewline()
+{
+    char c = peek();
+    while ( c == '\n' )
+    {
+        advance();
+        c = peek();
+    }    
 }
 
 char Tokenizer::decodeEscapeSeq(char c) const
