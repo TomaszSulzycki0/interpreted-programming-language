@@ -13,7 +13,9 @@ class NumericDeclaration : public ValueDeclaration
 public:
     using ValueDeclaration::ValueDeclaration;
     virtual bool isFloatingPoint() const = 0;
+    virtual bool isBool() const = 0;
     virtual double asDouble() const = 0;
+    virtual bool asBool() const = 0;
     virtual long long asInteger() const = 0;
 
     void accept(DeclarationVisitor& visitor) const override { visitor.visit(*this); }
@@ -47,6 +49,16 @@ public:
     bool isFloatingPoint() const override 
     { 
         return std::is_floating_point_v<T>; 
+    }
+
+    bool isBool() const override 
+    { 
+        return std::is_same_v<T, bool>;
+    }
+
+    bool asBool() const override
+    {
+        return static_cast<bool>(value);
     }
 
     double asDouble() const override 

@@ -5,7 +5,7 @@
 #include<memory>
 #include<variant>
 
-using RuntimeValue = std::variant<int, float, double, std::string>;
+using RuntimeValue = std::variant<int, float, double, bool, std::string>;
 
 class Declaration;
 class NumericDeclaration;

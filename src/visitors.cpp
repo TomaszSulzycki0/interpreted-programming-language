@@ -52,6 +52,7 @@ void NodeMaker::visit(const DeclarationNode& node)
         if (node.type == "i") raw_value = 0;
         else if (node.type == "d" || node.type == "f") raw_value = 0.0;
         else if (node.type == "s") raw_value = "";
+        else if (node.type == "b") raw_value = 0;
     }
 
     std::shared_ptr<Declaration> concrete_decl = nullptr;
@@ -99,6 +100,17 @@ void NodeMaker::visit(const DeclarationNode& node)
                 throw std::runtime_error("Type Error: Cannot initialize string variable '" + std::string( node.name ) + "' with a numeric value.");
             }
         }
+        else if ( node.type == "b" )
+        {
+            if constexpr (std::is_arithmetic_v<EvaluatedType>) 
+            {
+                concrete_decl = std::make_shared<Numeric<bool>>(node.name, static_cast<bool>(evaluated_arg));
+            } 
+            else 
+            {
+                throw std::runtime_error("Type Error: Cannot initialize string variable '" + std::string( node.name ) + "' with a numeric value.");
+            }
+        }
     }, raw_value);
 
     if ( !concrete_decl )
@@ -121,9 +133,17 @@ void PrintVisitor::visit(const NumericDeclaration& num_decl)
     if ( num_decl.isFloatingPoint() ) 
     {
         std::cout << "(floating point) " << num_decl.asDouble();
-    } else 
+    } 
+    else  
     {
-        std::cout << "(integer) " << num_decl.asInteger();
+        if ( num_decl.isBool() )
+        {
+            std::cout << "(bool) " << std::boolalpha << num_decl.asBool();
+        }
+        else
+        {        
+            std::cout << "(integer) " << num_decl.asInteger();
+        }   
     }
 }
 
@@ -196,6 +216,14 @@ void ExpressionEvaluator::visit(const LiteralExpression& expr)
     else if ( expr.value.front() == '"' && expr.value.back() == '"' )
     {
         last_evaluated_value = expr.value.substr(1, expr.value.length() - 2);
+    }
+    else if ( expr.value == "true" )
+    {
+        last_evaluated_value = true;
+    }
+    else if ( expr.value == "false" )
+    {
+        last_evaluated_value = false;
     }
     else
     {

@@ -147,7 +147,7 @@ std::unique_ptr<Expression> Parser::parseAtomicExpression()
 
     if ( check( TOKEN_TYPE::TOKEN_MINUS_SIGN ) )
     {
-        Token minus_sign = advance();
+        advance();
         if (    check( TOKEN_TYPE::TOKEN_LITERAL_FLOAT ) ||
                 check( TOKEN_TYPE::TOKEN_LITERAL_INTEGRAL )) // Later can pass exact info to expression obj
         {
@@ -162,7 +162,9 @@ std::unique_ptr<Expression> Parser::parseAtomicExpression()
         }
     }
     
-    if ( check( TOKEN_TYPE::TOKEN_LITERAL_FLOAT ) || check( TOKEN_TYPE::TOKEN_LITERAL_INTEGRAL )) // Later can pass exact info to expression obj
+    if (    check( TOKEN_TYPE::TOKEN_LITERAL_FLOAT ) || 
+            check( TOKEN_TYPE::TOKEN_LITERAL_INTEGRAL ) || 
+            check( TOKEN_TYPE::TOKEN_KEYWORD_BOOL ) ) // Later can pass exact info to expression obj
     {
         Token literal = advance();
         return std::make_unique<LiteralExpression>( std::string(literal.value) );

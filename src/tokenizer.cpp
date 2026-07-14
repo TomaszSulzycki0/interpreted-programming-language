@@ -262,6 +262,7 @@ std::ostream& operator<<(std::ostream& os, TOKEN_TYPE type)
     switch (type) 
     {
         case TOKEN_TYPE::TOKEN_IDENTIFIER:              return os << "IDENTIFIER";
+        case TOKEN_TYPE::TOKEN_KEYWORD_BOOL:            return os << "BOOL";
         case TOKEN_TYPE::TOKEN_KEYWORD_TYPE:            return os << "TYPE";
         case TOKEN_TYPE::TOKEN_MINUS_SIGN:              return os << "MINUS_SIGN";
         case TOKEN_TYPE::TOKEN_OPERATOR_EQUALS:         return os << "OPERATOR_EQUALS";

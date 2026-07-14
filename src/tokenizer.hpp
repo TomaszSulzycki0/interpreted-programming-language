@@ -39,6 +39,7 @@ enum class TOKEN_TYPE
     TOKEN_STRING_END,
     TOKEN_COMMENT_START,
     TOKEN_COMMENT_END,
+    TOKEN_KEYWORD_BOOL,
     TOKEN_ERROR,
     TOKEN_NULL,
     TOKEN_EOF
@@ -61,7 +62,10 @@ private:
         { std::string_view("i"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
         { std::string_view("f"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
         { std::string_view("d"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
-        { std::string_view("s"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE }
+        { std::string_view("b"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
+        { std::string_view("s"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
+        { std::string_view("true"), TOKEN_TYPE::TOKEN_KEYWORD_BOOL },
+        { std::string_view("false"), TOKEN_TYPE::TOKEN_KEYWORD_BOOL }
     };
 
     std::vector<TOKENIZER_STATE> state_stack { TOKENIZER_STATE::DEFAULT };

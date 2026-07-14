@@ -87,6 +87,7 @@ private:
                 t.type == TOKEN_TYPE::TOKEN_LITERAL_FLOAT ||
                 t.type == TOKEN_TYPE::TOKEN_LITERAL_INTEGRAL ||
                 t.type == TOKEN_TYPE::TOKEN_STRING_START ||
+                t.type == TOKEN_TYPE::TOKEN_KEYWORD_BOOL ||
                 t.type == TOKEN_TYPE::TOKEN_MINUS_SIGN;
     }
 
