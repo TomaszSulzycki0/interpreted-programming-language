@@ -72,15 +72,6 @@ private:
         }
         throw std::runtime_error( std::string(error_message) );
     }
-
-    bool isOperator(Token t) const
-    { 
-        return  t.type == TOKEN_TYPE::TOKEN_OPERATOR_MINUS ||
-                t.type == TOKEN_TYPE::TOKEN_OPERATOR_PLUS ||
-                t.type == TOKEN_TYPE::TOKEN_OPERATOR_MUL ||
-                t.type == TOKEN_TYPE::TOKEN_OPERATOR_DIV ||
-                t.type == TOKEN_TYPE::TOKEN_OPERATOR_EQUALEQUALS;
-            }
             
     bool isAtomicExpr(Token t) const
     {

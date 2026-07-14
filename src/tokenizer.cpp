@@ -121,27 +121,31 @@ Token Tokenizer::useStateDefault()
     case ';':
         return Token{ TOKEN_TYPE::TOKEN_SEMICOLON, std::string_view(";"), current_line };
     case '+':
-        return Token{ TOKEN_TYPE::TOKEN_OPERATOR_PLUS, std::string_view("+"), current_line };
+        return Token{ TOKEN_TYPE::TOKEN_OPERATOR, std::string_view("+"), current_line };
     case '-':
         if (    last_emmited.type == TOKEN_TYPE::TOKEN_IDENTIFIER ||
                 last_emmited.type == TOKEN_TYPE::TOKEN_LITERAL_FLOAT ||
                 last_emmited.type == TOKEN_TYPE::TOKEN_LITERAL_INTEGRAL ||
                 last_emmited.type == TOKEN_TYPE::TOKEN_PARENTHESIS_CLOSE )
         {
-            return Token{ TOKEN_TYPE::TOKEN_OPERATOR_MINUS, std::string_view("-"), current_line };
+            return Token{ TOKEN_TYPE::TOKEN_OPERATOR, std::string_view("-"), current_line };
         }
         return Token{ TOKEN_TYPE::TOKEN_MINUS_SIGN, std::string_view("-"), current_line };
     case '*':
-        return Token{ TOKEN_TYPE::TOKEN_OPERATOR_MUL, std::string_view("*"), current_line };
+        return Token{ TOKEN_TYPE::TOKEN_OPERATOR, std::string_view("*"), current_line };
     case '/':
-        return Token{ TOKEN_TYPE::TOKEN_OPERATOR_DIV, std::string_view("/"), current_line };
+        return Token{ TOKEN_TYPE::TOKEN_OPERATOR, std::string_view("/"), current_line };
+    case '>':
+        return Token{ TOKEN_TYPE::TOKEN_OPERATOR, std::string_view("/"), current_line };
+    case '<':
+        return Token{ TOKEN_TYPE::TOKEN_OPERATOR, std::string_view("/"), current_line };
     case '=':
         if ( peek() == '=')
         {
             advance();
-            return Token{ TOKEN_TYPE::TOKEN_OPERATOR_EQUALEQUALS, std::string_view("=="), current_line };
+            return Token{ TOKEN_TYPE::TOKEN_OPERATOR, std::string_view("=="), current_line };
         }
-        return Token{ TOKEN_TYPE::TOKEN_OPERATOR_EQUALS, std::string_view("="), current_line };
+        return Token{ TOKEN_TYPE::TOKEN_EQUALS, std::string_view("="), current_line };
     case '(':
         return Token{ TOKEN_TYPE::TOKEN_PARENTHESIS_OPEN, std::string_view("("), current_line };
     case ')':
@@ -270,12 +274,8 @@ std::ostream& operator<<(std::ostream& os, TOKEN_TYPE type)
         case TOKEN_TYPE::TOKEN_KEYWORD_BOOL:            return os << "BOOL";
         case TOKEN_TYPE::TOKEN_KEYWORD_TYPE:            return os << "TYPE";
         case TOKEN_TYPE::TOKEN_MINUS_SIGN:              return os << "MINUS_SIGN";
-        case TOKEN_TYPE::TOKEN_OPERATOR_EQUALS:         return os << "OPERATOR_EQUALS";
-        case TOKEN_TYPE::TOKEN_OPERATOR_DIV:            return os << "OPERATOR_DIV";
-        case TOKEN_TYPE::TOKEN_OPERATOR_MUL:            return os << "OPERATOR_MUL";
-        case TOKEN_TYPE::TOKEN_OPERATOR_PLUS:           return os << "OPERATOR_PLUS";
-        case TOKEN_TYPE::TOKEN_OPERATOR_MINUS:          return os << "OPERATOR_MINUS";
-        case TOKEN_TYPE::TOKEN_OPERATOR_EQUALEQUALS:    return os << "OPERATOR_EQUALEQUALS";
+        case TOKEN_TYPE::TOKEN_EQUALS:                  return os << "EQUALS";
+        case TOKEN_TYPE::TOKEN_OPERATOR:                return os << "OPERATOR";
         case TOKEN_TYPE::TOKEN_SEMICOLON:               return os << "SEMICOLON";
         case TOKEN_TYPE::TOKEN_LITERAL_FLOAT:           return os << "LITERAL_FLOAT";
         case TOKEN_TYPE::TOKEN_LITERAL_INTEGRAL:        return os << "LITERAL_INTEGRAL";
@@ -298,11 +298,11 @@ void Tokenizer::debugTokens(const std::vector<Token>& tokens)
     {
         std::cout   << std::left
                     << std::setw(0) << "[" 
-                    << std::setw(17) << token.type 
+                    << std::setw(21) << token.type 
                     << std::setw(0) << "]" 
                     << std::setw(7) << "  ->"
                     << std::setw(12) << token.value 
-                    << std::setw(10) << " line: " 
+                    << std::setw(8) << " line: " 
                     << token.line 
                     << std::endl;
     }

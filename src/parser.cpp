@@ -84,7 +84,7 @@ std::unique_ptr<ASTNode> Parser::parseAssignment()
     Token assignee_name = consume( TOKEN_TYPE::TOKEN_IDENTIFIER, std::string_view("Error: Expected declaration identifier.") );
     
     
-    consume( TOKEN_TYPE::TOKEN_OPERATOR_EQUALS, std::string_view("Error: Expected equal sign.") );
+    consume( TOKEN_TYPE::TOKEN_EQUALS, std::string_view("Error: Expected equal sign.") );
     
     std::unique_ptr<Expression> expr = parseRPN();
 
@@ -111,7 +111,7 @@ std::unique_ptr<ASTNode> Parser::parseDeclaration()
     Token declared_name = consume( TOKEN_TYPE::TOKEN_IDENTIFIER, std::string_view("Error: Invalid declaration syntax.") );
     std::unique_ptr<Expression> expr = nullptr;
     
-    if ( check( TOKEN_TYPE::TOKEN_OPERATOR_EQUALS ) )
+    if ( check( TOKEN_TYPE::TOKEN_EQUALS ) )
     {
         advance();
         expr = parseRPN();
@@ -181,12 +181,14 @@ std::unique_ptr<Expression> Parser::parseAtomicExpression()
 
 std::unique_ptr<Expression> Parser::parseRPN()
 {   
-    const static std::unordered_map<TOKEN_TYPE, int> operator_precedence {
-        { TOKEN_TYPE::TOKEN_OPERATOR_EQUALEQUALS, 0 }, 
-        { TOKEN_TYPE::TOKEN_OPERATOR_MINUS, 1 }, 
-        { TOKEN_TYPE::TOKEN_OPERATOR_PLUS, 1 },
-        { TOKEN_TYPE::TOKEN_OPERATOR_MUL, 2 },
-        { TOKEN_TYPE::TOKEN_OPERATOR_DIV, 2 }
+    const static std::unordered_map<std::string, int> operator_precedence {
+        { "<", 0 }, 
+        { ">", 0 }, 
+        { "==", 0 }, 
+        { "-", 1 }, 
+        { "+", 1 },
+        { "*", 2 },
+        { "/", 2 }
     };
 
     std::vector<Token> operator_stack {};
@@ -195,11 +197,11 @@ std::unique_ptr<Expression> Parser::parseRPN()
 
     while ( pos < tokens_size )
     {
-        if ( isOperator( peek() ) )
+        if ( peek().type == TOKEN_TYPE::TOKEN_OPERATOR  )
         {
             Token op = advance();
 
-            auto it = operator_precedence.find(op.type);
+            auto it = operator_precedence.find( std::string(op.value) );
             if ( it == operator_precedence.end() )
             {
                 throw std::runtime_error("Error: Unknown operator.");    
@@ -209,7 +211,7 @@ std::unique_ptr<Expression> Parser::parseRPN()
             while ( !operator_stack.empty() )
             {   
                 auto last_op = operator_stack.back();
-                auto _it = operator_precedence.find(last_op.type);
+                auto _it = operator_precedence.find( std::string(last_op.value) );
 
                 if ( _it == operator_precedence.end() )
                 {
