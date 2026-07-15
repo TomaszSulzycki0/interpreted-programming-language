@@ -1,10 +1,8 @@
-i x = 5;
-b is_x1 = x <= 5; 
-b is_x2 = x <= 0; 
-b is_x3 = x >= 2;
-b is_x4 = x >= 20;
+i x1 = - (1+2);
+i x2 = -1;
+i x3 = --1;
+i x4 = 1-1;
+i x5 = -1 * 8;
 
-b and_test1 = is_x1 and is_x2; 
-b and_test2 = is_x1 and is_x3; 
-b and_test3 = is_x1 or is_x2; 
-b and_test4 = is_x1 or is_x3; 
+# to do
+# make unary operators ! - work.

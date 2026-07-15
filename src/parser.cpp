@@ -144,23 +144,6 @@ std::unique_ptr<Expression> Parser::parseAtomicExpression()
         }
         return nullptr;
     }
-
-    if ( check( TOKEN_TYPE::TOKEN_MINUS_SIGN ) )
-    {
-        advance();
-        if (    check( TOKEN_TYPE::TOKEN_LITERAL_FLOAT ) ||
-                check( TOKEN_TYPE::TOKEN_LITERAL_INTEGRAL )) // Later can pass exact info to expression obj
-        {
-            Token literal = advance();
-            return std::make_unique<LiteralExpression>( "-" + std::string(literal.value) );
-        }
-
-        if ( check( TOKEN_TYPE::TOKEN_IDENTIFIER ) )
-        {
-            Token identifier = advance();
-            return std::make_unique<VariableExpression>( "-" + std::string(identifier.value) );
-        }
-    }
     
     if (    check( TOKEN_TYPE::TOKEN_LITERAL_FLOAT ) || 
             check( TOKEN_TYPE::TOKEN_LITERAL_INTEGRAL ) || 
@@ -194,14 +177,24 @@ std::unique_ptr<Expression> Parser::parseRPN()
         { "*", 2 },
         { "/", 2 }
     };
+    
+    const int unary_precedence = 3;
 
     std::vector<Token> operator_stack {};
     std::vector<std::unique_ptr<Expression>> expr_stack {};
     int open_parenthesis = 0;
+    bool expect_value = true;
 
     while ( pos < tokens_size )
     {
-        if ( peek().type == TOKEN_TYPE::TOKEN_OPERATOR  )
+        if ( peek().type == TOKEN_TYPE::TOKEN_OPERATOR && expect_value )
+        {
+            Token op = advance();
+            op.type = TOKEN_TYPE::TOKEN_UNARY_OPERATOR;
+
+            operator_stack.push_back( op );
+        }
+        else if ( peek().type == TOKEN_TYPE::TOKEN_OPERATOR )
         {
             Token op = advance();
 
@@ -224,6 +217,11 @@ std::unique_ptr<Expression> Parser::parseRPN()
                 }
                 
                 int last_op_precedence = _it->second;
+                
+                if ( last_op.type == TOKEN_TYPE::TOKEN_UNARY_OPERATOR )
+                {
+                    last_op_precedence = unary_precedence;
+                }
 
                 if ( last_op_precedence >= op_precedence )
                 {
@@ -236,10 +234,12 @@ std::unique_ptr<Expression> Parser::parseRPN()
             }
 
             operator_stack.push_back( op );
+            expect_value = true;
         }
         else if ( check( TOKEN_TYPE::TOKEN_PARENTHESIS_OPEN ) )
         {
             operator_stack.push_back( advance() );
+            expect_value = true;
             ++open_parenthesis;
         }
         else if ( check( TOKEN_TYPE::TOKEN_PARENTHESIS_CLOSE ) )
@@ -282,7 +282,7 @@ std::unique_ptr<Expression> Parser::parseRPN()
             }
 
             --open_parenthesis;
-
+            expect_value = false;
         }
         else if ( isAtomicExpr( peek() ) )
         {
@@ -292,6 +292,7 @@ std::unique_ptr<Expression> Parser::parseRPN()
                 throw std::runtime_error("Error: Could not parse expression");
             }
             expr_stack.push_back( std::move( expr ) );
+            expect_value = false;
         }
         else if ( check( TOKEN_TYPE::TOKEN_SEMICOLON ) )
         {
@@ -334,6 +335,14 @@ void Parser::makeBinExprRPN( std::vector<Token>& operator_stack, std::vector<std
     auto expr_right = std::move( expr_stack.back() );
     expr_stack.pop_back();
 
+    if ( last_op.type == TOKEN_TYPE::TOKEN_UNARY_OPERATOR )
+    {
+        expr_stack.push_back( std::make_unique<UnaryExpression>(
+                std::string( last_op.value ),
+                std::move( expr_right ) ) );
+        return;
+    }
+
     if ( expr_stack.empty() )
     {
         throw std::runtime_error("Error: Unexpected operator.");
@@ -342,7 +351,7 @@ void Parser::makeBinExprRPN( std::vector<Token>& operator_stack, std::vector<std
     expr_stack.pop_back();
 
     expr_stack.push_back( std::make_unique<BinaryExpression>( 
-            std::string(last_op.value), 
+            std::string( last_op.value ), 
             std::move( expr_left ), 
             std::move( expr_right ) ) );
 }

@@ -18,5 +18,9 @@ void BinaryExpression::accept(ExpressionVisitor& visitor) const
     visitor.visit(*this); 
 }
 
+void UnaryExpression::accept(ExpressionVisitor& visitor) const
+{
+    visitor.visit(*this);
+}
 
 

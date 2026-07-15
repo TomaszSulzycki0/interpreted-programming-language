@@ -15,6 +15,7 @@ class Expression;
 class BinaryExpression;
 class LiteralExpression;
 class VariableExpression;
+class UnaryExpression;
 
 class ASTNode;
 class AssignmentNode;
@@ -64,6 +65,7 @@ public:
     virtual void visit(const LiteralExpression& expr) = 0;
     virtual void visit(const VariableExpression& expr) = 0;
     virtual void visit(const BinaryExpression& expr) = 0;
+    virtual void visit(const UnaryExpression& expr) = 0;
 
     virtual ~ExpressionVisitor() = default;
 };
@@ -82,6 +84,7 @@ public:
     void visit(const LiteralExpression& expr) override;
     void visit(const VariableExpression& expr) override;
     void visit(const BinaryExpression& expr) override;
+    void visit(const UnaryExpression& expr) override;
 
     explicit ExpressionEvaluator(const Scope& s) : scope(s) {}
 };

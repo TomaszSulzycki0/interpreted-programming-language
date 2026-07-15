@@ -240,9 +240,7 @@ void ExpressionEvaluator::visit(const LiteralExpression& expr)
 
 void ExpressionEvaluator::visit(const VariableExpression& expr) 
 {
-    const bool is_negated = expr.name.front() == '-'; 
-
-    const std::string var_name = is_negated ? expr.name.substr(1) : expr.name;
+    const std::string var_name = expr.name;
 
     auto decl = scope.lookup(var_name);
     if ( !decl )
@@ -257,9 +255,39 @@ void ExpressionEvaluator::visit(const VariableExpression& expr)
     }
     
     last_evaluated_value = val_decl->getValue();
+}
 
-    if ( is_negated)
+void ExpressionEvaluator::visit(const UnaryExpression& expr)
+{
+    RuntimeValue eval_child = evaluate(*expr.child);
+    
+    if ( expr.unary_op == "-")
     {
-        last_evaluated_value = resolveOperator( last_evaluated_value, -1.0, "*");
+        last_evaluated_value = std::visit([&](auto&& unpacked_val) -> RuntimeValue {
+            using T = std::decay_t<decltype(unpacked_val)>;
+            if constexpr ( std::is_arithmetic_v<T> )
+            {
+                return -unpacked_val;
+            }
+            else
+            {
+                throw std::runtime_error("Error: Unsupported operand types for this operation.");
+            }
+
+        }, eval_child);
+    }
+    else if ( expr.unary_op == "!")
+    {
+        last_evaluated_value = std::visit([&](auto&& unpacked_val) -> RuntimeValue {
+            using T = std::decay_t<decltype(unpacked_val)>;
+            if constexpr ( std::is_arithmetic_v<T> )
+            {
+                return !unpacked_val;
+            }
+            else
+            {
+                throw std::runtime_error("Error: Unsupported operand types for this operation.");
+            }
+        }, eval_child);
     }
 }

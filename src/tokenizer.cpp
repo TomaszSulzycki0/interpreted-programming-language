@@ -123,14 +123,7 @@ Token Tokenizer::useStateDefault()
     case '+':
         return Token{ TOKEN_TYPE::TOKEN_OPERATOR, std::string_view("+"), current_line };
     case '-':
-        if (    last_emmited.type == TOKEN_TYPE::TOKEN_IDENTIFIER ||
-                last_emmited.type == TOKEN_TYPE::TOKEN_LITERAL_FLOAT ||
-                last_emmited.type == TOKEN_TYPE::TOKEN_LITERAL_INTEGRAL ||
-                last_emmited.type == TOKEN_TYPE::TOKEN_PARENTHESIS_CLOSE )
-        {
-            return Token{ TOKEN_TYPE::TOKEN_OPERATOR, std::string_view("-"), current_line };
-        }
-        return Token{ TOKEN_TYPE::TOKEN_MINUS_SIGN, std::string_view("-"), current_line };
+        return Token{ TOKEN_TYPE::TOKEN_OPERATOR, std::string_view("-"), current_line };        
     case '*':
         return Token{ TOKEN_TYPE::TOKEN_OPERATOR, std::string_view("*"), current_line };
     case '/':
@@ -160,6 +153,8 @@ Token Tokenizer::useStateDefault()
         return Token{ TOKEN_TYPE::TOKEN_PARENTHESIS_OPEN, std::string_view("("), current_line };
     case ')':
         return Token{ TOKEN_TYPE::TOKEN_PARENTHESIS_CLOSE, std::string_view(")"), current_line };
+    case '!':
+        return Token{ TOKEN_TYPE::TOKEN_NEGATION, std::string_view("!"), current_line };
     }
     
     return Token{ TOKEN_TYPE::TOKEN_ERROR, std::string_view("Bad char"), current_line };
@@ -283,9 +278,10 @@ std::ostream& operator<<(std::ostream& os, TOKEN_TYPE type)
         case TOKEN_TYPE::TOKEN_IDENTIFIER:              return os << "IDENTIFIER";
         case TOKEN_TYPE::TOKEN_KEYWORD_BOOL:            return os << "BOOL";
         case TOKEN_TYPE::TOKEN_KEYWORD_TYPE:            return os << "TYPE";
-        case TOKEN_TYPE::TOKEN_MINUS_SIGN:              return os << "MINUS_SIGN";
+        case TOKEN_TYPE::TOKEN_NEGATION:                return os << "NEGATION";
         case TOKEN_TYPE::TOKEN_EQUALS:                  return os << "EQUALS";
         case TOKEN_TYPE::TOKEN_OPERATOR:                return os << "OPERATOR";
+        case TOKEN_TYPE::TOKEN_UNARY_OPERATOR:          return os << "UNARY_OPERATOR";
         case TOKEN_TYPE::TOKEN_SEMICOLON:               return os << "SEMICOLON";
         case TOKEN_TYPE::TOKEN_LITERAL_FLOAT:           return os << "LITERAL_FLOAT";
         case TOKEN_TYPE::TOKEN_LITERAL_INTEGRAL:        return os << "LITERAL_INTEGRAL";
