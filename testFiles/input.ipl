@@ -1,5 +1,5 @@
 i x = 5;
-b is_x = x < 0; 
-is_x = x < 90; 
-is_x = x > 2;
-is_x = x > 20;
+b is_x = x <= 5; 
+is_x = x <= 90; 
+is_x = x >= 2;
+is_x = x >= 20;

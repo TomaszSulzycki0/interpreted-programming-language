@@ -136,8 +136,18 @@ Token Tokenizer::useStateDefault()
     case '/':
         return Token{ TOKEN_TYPE::TOKEN_OPERATOR, std::string_view("/"), current_line };
     case '>':
+        if ( peek() == '=') 
+        {
+            advance();
+            return Token{ TOKEN_TYPE::TOKEN_OPERATOR, std::string_view(">="), current_line };
+        }
         return Token{ TOKEN_TYPE::TOKEN_OPERATOR, std::string_view(">"), current_line };
     case '<':
+        if ( peek() == '=')
+        {
+            advance();
+            return Token{ TOKEN_TYPE::TOKEN_OPERATOR, std::string_view("<="), current_line };
+        }
         return Token{ TOKEN_TYPE::TOKEN_OPERATOR, std::string_view("<"), current_line };
     case '=':
         if ( peek() == '=')
