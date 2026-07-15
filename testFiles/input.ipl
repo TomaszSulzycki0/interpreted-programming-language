@@ -1,5 +1,10 @@
 i x = 5;
-b is_x = x <= 5; 
-is_x = x <= 90; 
-is_x = x >= 2;
-is_x = x >= 20;
+b is_x1 = x <= 5; 
+b is_x2 = x <= 0; 
+b is_x3 = x >= 2;
+b is_x4 = x >= 20;
+
+b and_test1 = is_x1 and is_x2; 
+b and_test2 = is_x1 and is_x3; 
+b and_test3 = is_x1 or is_x2; 
+b and_test4 = is_x1 or is_x3; 

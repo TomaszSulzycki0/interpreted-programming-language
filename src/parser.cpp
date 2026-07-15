@@ -182,6 +182,8 @@ std::unique_ptr<Expression> Parser::parseAtomicExpression()
 std::unique_ptr<Expression> Parser::parseRPN()
 {   
     const static std::unordered_map<std::string, int> operator_precedence {
+        { "or", 0 }, 
+        { "and", 0 }, 
         { "<", 0 }, 
         { ">", 0 }, 
         { "==", 0 }, 

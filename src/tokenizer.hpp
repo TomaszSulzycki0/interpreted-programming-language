@@ -62,7 +62,9 @@ private:
         { std::string_view("b"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
         { std::string_view("s"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
         { std::string_view("true"), TOKEN_TYPE::TOKEN_KEYWORD_BOOL },
-        { std::string_view("false"), TOKEN_TYPE::TOKEN_KEYWORD_BOOL }
+        { std::string_view("false"), TOKEN_TYPE::TOKEN_KEYWORD_BOOL },
+        { std::string_view("and"), TOKEN_TYPE::TOKEN_OPERATOR },
+        { std::string_view("or"), TOKEN_TYPE::TOKEN_OPERATOR }
     };
 
     std::vector<TOKENIZER_STATE> state_stack { TOKENIZER_STATE::DEFAULT };
