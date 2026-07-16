@@ -45,7 +45,8 @@ class UnaryExpression final : public Expression
 public:
     const std::string unary_op;
     const std::unique_ptr<Expression> child;
-    explicit UnaryExpression(std::string op, std::unique_ptr<Expression> _child) : unary_op(std::move(op)), child(std::move(_child)) {}
+    explicit UnaryExpression(std::string op, std::unique_ptr<Expression> _child) 
+        : unary_op(std::move(op)), child(std::move(_child)) {}
     void accept(ExpressionVisitor& visitor) const override;
 };
 

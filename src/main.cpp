@@ -34,7 +34,7 @@ int main(int argc, char** argv)
 
     std::string input_filename = argv[1];
 
-    if(!hasCorrectExtension(input_filename, ".ipl"))
+    if( !hasCorrectExtension(input_filename, ".ipl") )
     {
         std::cerr << "Error: Invalid input file extension. Expecting .ipl" << std::endl;
         return -1;

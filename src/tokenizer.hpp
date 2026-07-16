@@ -57,11 +57,11 @@ class Tokenizer
 private:
     const static inline std::unordered_map<std::string_view, TOKEN_TYPE> keywords 
     {
-        { std::string_view("i"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
-        { std::string_view("f"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
-        { std::string_view("d"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
-        { std::string_view("b"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
-        { std::string_view("s"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
+        { std::string_view("int"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
+        { std::string_view("float"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
+        { std::string_view("double"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
+        { std::string_view("bool"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
+        { std::string_view("string"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
         { std::string_view("true"), TOKEN_TYPE::TOKEN_KEYWORD_BOOL },
         { std::string_view("false"), TOKEN_TYPE::TOKEN_KEYWORD_BOOL },
         { std::string_view("and"), TOKEN_TYPE::TOKEN_OPERATOR },
@@ -75,8 +75,6 @@ private:
     std::size_t current_line {1};
     std::string_view code;
     const std::size_t code_size;
-
-    Token last_emmited = { TOKEN_TYPE::TOKEN_NULL };
 
     TOKENIZER_STATE currentState() const { return state_stack.back(); }
     void pushState(TOKENIZER_STATE state) { state_stack.push_back(state); }

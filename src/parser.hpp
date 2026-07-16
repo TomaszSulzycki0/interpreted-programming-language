@@ -60,10 +60,17 @@ private:
     std::unique_ptr<Expression> parseAtomicExpression(); 
     std::unique_ptr<Expression> parseRPN(); 
 
+    // Return token at current pos
     Token peek() const { return pos >= tokens_size ? Token{ TOKEN_TYPE::TOKEN_EOF } : tokens[pos]; }
+
+    // Return token at current pos and move one token forward
     Token advance() { return tokens[pos++]; }
+
+    // Check if the type of the token at current pos in the same as arg
     bool check(TOKEN_TYPE type) const { return peek().type == type; }
 
+    // If the type of the token at current pos is the same as arg1 - move one token forward
+    // else throw with error_message
     Token consume(TOKEN_TYPE type, std::string_view error_message) 
     {
         if ( check(type) ) 
@@ -85,9 +92,16 @@ private:
     void makeBinExprRPN(std::vector<Token>& operator_stack, std::vector<std::unique_ptr<Expression>>& expr_stack);
             
 public:
+    // Generate AST from the tokens
     std::vector<std::unique_ptr<ASTNode>> parseProgram(); 
+
+    // Use Tokenizer to emit tokens
     void tokenizeProgram();
+
     std::size_t getNumTokens() const { return tokens.size(); }
+
+    // If parser throws at any point, 
+    // it continues parsing but marks itself as non executable
     bool isASTExecutable() const { return is_good_for_exec; }
 
     explicit Parser(std::string _code) : code(std::move(_code)), tokenizer(code) {}

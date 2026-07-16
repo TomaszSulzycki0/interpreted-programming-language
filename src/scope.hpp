@@ -20,7 +20,7 @@ public:
         symbols[std::string(name)] = std::move(decl);
     }
 
-    // Lookup should be forwarded to parent if unsuccesful. 
+    // TODO: Lookup should be forwarded to parent if unsuccesful. 
     std::shared_ptr<Declaration> lookup(std::string_view name) const;
 
     explicit Scope(); 

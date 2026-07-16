@@ -12,7 +12,6 @@ std::vector<Token> Tokenizer::emitTokens()
     while( pos < code_size )
     {
         tokens.push_back( getNextToken() );  
-        last_emmited = tokens.back();  
     }
 
     return tokens;

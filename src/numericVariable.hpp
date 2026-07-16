@@ -19,7 +19,6 @@ public:
     virtual long long asInteger() const = 0;
 
     void accept(DeclarationVisitor& visitor) const override { visitor.visit(*this); }
-
 };
 
 template<Arithmetic T> 
@@ -71,10 +70,12 @@ public:
         return static_cast<long long>(value); 
     }
 
-    explicit Numeric(std::string_view _name, const T& _value) : NumericDeclaration(_name), value(_value) {}
+    explicit Numeric(std::string_view _name, const T& _value) 
+        : NumericDeclaration(_name), value(_value) {}
 
     template<Arithmetic U>
-    explicit Numeric(std::string_view _name, const Numeric<U>& other) : NumericDeclaration(_name), value(static_cast<T>(other.getValue())) {}
+    explicit Numeric(std::string_view _name, const Numeric<U>& other) 
+        : NumericDeclaration(_name), value(static_cast<T>(other.getValue())) {}
 
     template<Arithmetic U> 
     friend auto operator+(const Numeric<T>& lhs, const Numeric<U>& rhs) 
@@ -95,7 +96,6 @@ public:
         this->value = static_cast<T>(other); 
         return *this; 
     }
-    
 };
 
 

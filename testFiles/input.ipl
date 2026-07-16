@@ -1,8 +1,18 @@
-i x1 = - (1+2);
-i x2 = -1;
-i x3 = --1;
-i x4 = 1-1;
-i x5 = -1 * 8;
+int int1;
+float float1 = 1.78;
+double double1 = 99.999;
+string string1 = ";#daafs";
 
-# to do
-# make unary operators ! - work.
+# Comment 1
+int int2 =int1;
+float float2= float1;
+double double2  = double1;
+string string2 =  string1;
+
+int x = -15; # # "Comment 2" " ;; #;##
+
+x = int2;
+x = float2;
+x = double2;
+
+float2 = (0.1 * double1 + 2 - ( 1 + 8) ) / 2; 

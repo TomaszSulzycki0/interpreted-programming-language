@@ -31,7 +31,6 @@ public:
 
     explicit StringDeclaration(std::string_view _name, std::string _value) : ValueDeclaration(_name), value(std::move(_value))  {}
 
-
 };
 
 #endif

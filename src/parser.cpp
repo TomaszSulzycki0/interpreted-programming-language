@@ -26,6 +26,7 @@ std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram()
 {
     if ( tokens_size == 0 )
     {
+        // In case the tokenizer didnt run
         tokenizeProgram();
     }
 
@@ -83,7 +84,6 @@ std::unique_ptr<ASTNode> Parser::parseAssignment()
 {
     Token assignee_name = consume( TOKEN_TYPE::TOKEN_IDENTIFIER, std::string_view("Error: Expected declaration identifier.") );
     
-    
     consume( TOKEN_TYPE::TOKEN_EQUALS, std::string_view("Error: Expected equal sign.") );
     
     std::unique_ptr<Expression> expr = parseRPN();
@@ -102,7 +102,7 @@ std::unique_ptr<ASTNode> Parser::parseDeclaration()
 {
     Token declared_type = consume( TOKEN_TYPE::TOKEN_KEYWORD_TYPE, std::string_view("Error: Expected declaration type.") );
 
-    // More precise, for most common invalid syntax
+    // More precise, for common invalid syntax int int = 1;
     if ( check( TOKEN_TYPE::TOKEN_KEYWORD_TYPE ) )
     {
         consume( TOKEN_TYPE::TOKEN_IDENTIFIER, std::string_view("Error: Invalid combination type-type during declaration.") );
@@ -111,6 +111,9 @@ std::unique_ptr<ASTNode> Parser::parseDeclaration()
     Token declared_name = consume( TOKEN_TYPE::TOKEN_IDENTIFIER, std::string_view("Error: Invalid declaration syntax.") );
     std::unique_ptr<Expression> expr = nullptr;
     
+    // Assignment is optional
+    // int x; is allowed - results in a default value
+    // See NodeMaker::visit(const DeclarationNode& node)
     if ( check( TOKEN_TYPE::TOKEN_EQUALS ) )
     {
         advance();
@@ -130,10 +133,17 @@ std::unique_ptr<Expression> Parser::parseAtomicExpression()
 {
     if ( check( TOKEN_TYPE::TOKEN_STRING_START ) )
     {
-        advance(); // eat string start "
-        Token str_body_or_end = advance(); // string body or end if empty string
+        // Token sequences allowed: 
+        // TOKEN_STRING_START, TOKEN_STRING_END - empty string
+        // TOKEN_STRING_START, TOKEN_STRING_BODY, TOKEN_STRING_END - regular string with body
+
+        // Eat string start "
+        advance(); 
+
+        // String body or end if empty string
+        Token str_body_or_end = advance(); 
         
-        if ( str_body_or_end.type == TOKEN_TYPE::TOKEN_STRING_END ) // empty string case
+        if ( str_body_or_end.type == TOKEN_TYPE::TOKEN_STRING_END )
         {
             return std::make_unique<LiteralExpression>("");
         }
@@ -182,13 +192,22 @@ std::unique_ptr<Expression> Parser::parseRPN()
 
     std::vector<Token> operator_stack {};
     std::vector<std::unique_ptr<Expression>> expr_stack {};
+
+    // Counter for validating that ever open parenthesis is closed
     int open_parenthesis = 0;
+
+    // Flag used for identifying unary operators
+    // Set to true if next token is expected to be a value, false otherwise
+    // ...) - x -> minus is not unary
+    // ...( - x -> minus is unary
     bool expect_value = true;
 
     while ( pos < tokens_size )
     {
         if ( peek().type == TOKEN_TYPE::TOKEN_OPERATOR && expect_value )
         {
+            // There should be a procedure for handling the operator stack here
+            // For now assume that unary operators have the highest possible precedence
             Token op = advance();
             op.type = TOKEN_TYPE::TOKEN_UNARY_OPERATOR;
 
@@ -207,6 +226,8 @@ std::unique_ptr<Expression> Parser::parseRPN()
             
             while ( !operator_stack.empty() )
             {   
+                // Main RPN logic
+
                 auto last_op = operator_stack.back();
                 auto _it = operator_precedence.find( std::string(last_op.value) );
 
@@ -249,10 +270,13 @@ std::unique_ptr<Expression> Parser::parseRPN()
                 throw std::runtime_error("Error: Unexpected closing parenthesis without opening counterpart.");
             }
 
+            // Eat parenthesis
             advance();
 
             while ( !operator_stack.empty() )
             {   
+                // RPN logic
+
                 auto last_op = operator_stack.back();
                 operator_stack.pop_back();
                 
@@ -271,7 +295,7 @@ std::unique_ptr<Expression> Parser::parseRPN()
 
                 if ( expr_stack.empty() )
                 {
-                    // ( myVar ) - fine. Leave it on the stack
+                    // ( x ) - fine. Leave it on the stack
                     expr_stack.push_back( std::move( expr_right) );
                     break;
                 }
@@ -309,6 +333,7 @@ std::unique_ptr<Expression> Parser::parseRPN()
         throw std::runtime_error("Error: Unclosed parenthesis.");
     }
 
+    // Collapse the entire stack into a single Expression
     while ( !operator_stack.empty() )
     {
         makeBinExprRPN( operator_stack, expr_stack );   

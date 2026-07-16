@@ -49,10 +49,10 @@ void NodeMaker::visit(const DeclarationNode& node)
     }
     else 
     {
-        if (node.type == "i") raw_value = 0;
-        else if (node.type == "d" || node.type == "f") raw_value = 0.0;
-        else if (node.type == "s") raw_value = "";
-        else if (node.type == "b") raw_value = 0;
+        if (node.type == "int") raw_value = 0;
+        else if (node.type == "ddouble" || node.type == "float") raw_value = 0.0;
+        else if (node.type == "string") raw_value = "";
+        else if (node.type == "bool") raw_value = 0;
     }
 
     std::shared_ptr<Declaration> concrete_decl = nullptr;
@@ -60,7 +60,7 @@ void NodeMaker::visit(const DeclarationNode& node)
     std::visit([&](auto&& evaluated_arg) {
         using EvaluatedType = std::decay_t<decltype(evaluated_arg)>;
 
-        if ( node.type == "i" ) 
+        if ( node.type == "int" ) 
         {
             if constexpr ( std::is_arithmetic_v<EvaluatedType> ) {
                 concrete_decl = std::make_shared<Numeric<int>>(node.name, static_cast<int>(evaluated_arg));
@@ -68,7 +68,7 @@ void NodeMaker::visit(const DeclarationNode& node)
                 throw std::runtime_error("Type Error: Cannot initialize int variable '" + std::string( node.name ) + "' with a non-numeric value.");
             }
         } 
-        else if ( node.type == "d" ) 
+        else if ( node.type == "double" ) 
         {
             if constexpr ( std::is_arithmetic_v<EvaluatedType> ) {
                 concrete_decl = std::make_shared<Numeric<double>>(node.name, static_cast<double>(evaluated_arg));
@@ -78,7 +78,7 @@ void NodeMaker::visit(const DeclarationNode& node)
                 throw std::runtime_error("Type Error: Cannot initialize double variable '" + std::string( node.name ) + "' with a non-numeric value.");
             }
         } 
-        else if ( node.type == "f" ) 
+        else if ( node.type == "float" ) 
         {
             if constexpr ( std::is_arithmetic_v<EvaluatedType> )  
             {
@@ -89,7 +89,7 @@ void NodeMaker::visit(const DeclarationNode& node)
                 throw std::runtime_error("Type Error: Cannot initialize float variable '" + std::string( node.name ) + "' with a non-numeric value.");
             }
         }
-        else if ( node.type == "s" )
+        else if ( node.type == "string" )
         {
             if constexpr (std::is_same_v<EvaluatedType, std::string>) 
             {
@@ -100,7 +100,7 @@ void NodeMaker::visit(const DeclarationNode& node)
                 throw std::runtime_error("Type Error: Cannot initialize string variable '" + std::string( node.name ) + "' with a numeric value.");
             }
         }
-        else if ( node.type == "b" )
+        else if ( node.type == "bool" )
         {
             if constexpr (std::is_arithmetic_v<EvaluatedType>) 
             {
@@ -271,7 +271,7 @@ void ExpressionEvaluator::visit(const UnaryExpression& expr)
             }
             else
             {
-                throw std::runtime_error("Error: Unsupported operand types for this operation.");
+                throw std::runtime_error("Error: Unsupported operand type for this operation.");
             }
 
         }, eval_child);
@@ -286,7 +286,7 @@ void ExpressionEvaluator::visit(const UnaryExpression& expr)
             }
             else
             {
-                throw std::runtime_error("Error: Unsupported operand types for this operation.");
+                throw std::runtime_error("Error: Unsupported operand type for this operation.");
             }
         }, eval_child);
     }
