@@ -120,12 +120,32 @@ Token Tokenizer::useStateDefault()
     case ';':
         return Token{ TOKEN_TYPE::TOKEN_SEMICOLON, std::string_view(";"), current_line };
     case '+':
+        if ( peek() == '=') 
+        {
+            advance();
+            return Token{ TOKEN_TYPE::TOKEN_PLUS_EQUALS, std::string_view("+="), current_line };
+        }
         return Token{ TOKEN_TYPE::TOKEN_OPERATOR, std::string_view("+"), current_line };
     case '-':
+        if ( peek() == '=') 
+        {
+            advance();
+            return Token{ TOKEN_TYPE::TOKEN_MINUS_EQUALS, std::string_view("-="), current_line };
+        }
         return Token{ TOKEN_TYPE::TOKEN_OPERATOR, std::string_view("-"), current_line };        
     case '*':
+        if ( peek() == '=') 
+        {
+            advance();
+            return Token{ TOKEN_TYPE::TOKEN_MUL_EQUALS, std::string_view("*="), current_line };
+        }
         return Token{ TOKEN_TYPE::TOKEN_OPERATOR, std::string_view("*"), current_line };
     case '/':
+        if ( peek() == '=') 
+        {
+            advance();
+            return Token{ TOKEN_TYPE::TOKEN_DIV_EQUALS, std::string_view("/="), current_line };
+        }
         return Token{ TOKEN_TYPE::TOKEN_OPERATOR, std::string_view("/"), current_line };
     case '>':
         if ( peek() == '=') 
@@ -153,7 +173,7 @@ Token Tokenizer::useStateDefault()
     case ')':
         return Token{ TOKEN_TYPE::TOKEN_PARENTHESIS_CLOSE, std::string_view(")"), current_line };
     case '!':
-        return Token{ TOKEN_TYPE::TOKEN_NEGATION, std::string_view("!"), current_line };
+        return Token{ TOKEN_TYPE::TOKEN_OPERATOR, std::string_view("!"), current_line };
     }
     
     return Token{ TOKEN_TYPE::TOKEN_ERROR, std::string_view("Bad char"), current_line };
@@ -277,8 +297,11 @@ std::ostream& operator<<(std::ostream& os, TOKEN_TYPE type)
         case TOKEN_TYPE::TOKEN_IDENTIFIER:              return os << "IDENTIFIER";
         case TOKEN_TYPE::TOKEN_KEYWORD_BOOL:            return os << "BOOL";
         case TOKEN_TYPE::TOKEN_KEYWORD_TYPE:            return os << "TYPE";
-        case TOKEN_TYPE::TOKEN_NEGATION:                return os << "NEGATION";
         case TOKEN_TYPE::TOKEN_EQUALS:                  return os << "EQUALS";
+        case TOKEN_TYPE::TOKEN_PLUS_EQUALS:             return os << "PLUS_EQUALS";
+        case TOKEN_TYPE::TOKEN_MINUS_EQUALS:            return os << "EQUALS";
+        case TOKEN_TYPE::TOKEN_MUL_EQUALS:              return os << "EQUALS";
+        case TOKEN_TYPE::TOKEN_DIV_EQUALS:              return os << "EQUALS";
         case TOKEN_TYPE::TOKEN_OPERATOR:                return os << "OPERATOR";
         case TOKEN_TYPE::TOKEN_UNARY_OPERATOR:          return os << "UNARY_OPERATOR";
         case TOKEN_TYPE::TOKEN_SEMICOLON:               return os << "SEMICOLON";

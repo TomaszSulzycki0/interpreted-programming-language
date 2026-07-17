@@ -1,18 +1,9 @@
-int int1;
-float float1 = 1.78;
-double double1 = 99.999;
-string string1 = ";#daafs";
+int x = 2;
+x += 1;
+x -= 10;
 
-# Comment 1
-int int2 =int1;
-float float2= float1;
-double double2  = double1;
-string string2 =  string1;
+double y = 10;
+y /= 2 + 1;
 
-int x = -15; # # "Comment 2" " ;; #;##
-
-x = int2;
-x = float2;
-x = double2;
-
-float2 = (0.1 * double1 + 2 - ( 1 + 8) ) / 2; 
+float z = 100;
+z /= y / (1 - x);

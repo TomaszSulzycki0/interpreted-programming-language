@@ -84,13 +84,39 @@ std::unique_ptr<ASTNode> Parser::parseAssignment()
 {
     Token assignee_name = consume( TOKEN_TYPE::TOKEN_IDENTIFIER, std::string_view("Error: Expected declaration identifier.") );
     
-    consume( TOKEN_TYPE::TOKEN_EQUALS, std::string_view("Error: Expected equal sign.") );
-    
-    std::unique_ptr<Expression> expr = parseRPN();
+    // Check assignment operator
+    Token assignment_operator = peek();
+
+    std::unique_ptr<Expression> expr = nullptr;
+
+    if (    assignment_operator.type == TOKEN_TYPE::TOKEN_PLUS_EQUALS ||
+            assignment_operator.type == TOKEN_TYPE::TOKEN_MINUS_EQUALS ||
+            assignment_operator.type == TOKEN_TYPE::TOKEN_MUL_EQUALS ||
+            assignment_operator.type == TOKEN_TYPE::TOKEN_DIV_EQUALS )
+    {
+        // Eat compound assignment operator
+        advance();
+
+        expr = parseRPN();
+
+        // Change expression to include the left side of the assignment 
+        auto left_side = std::make_unique<VariableExpression>( std::string( assignee_name.value ) );
+        expr = std::make_unique<BinaryExpression>( 
+                std::string( 1, assignment_operator.value.front() ),
+                std::move( left_side ), 
+                std::move( expr ) );
+    }
+    else
+    {
+        // If assignment operator not compound - has to be regular assignment
+        consume( TOKEN_TYPE::TOKEN_EQUALS, std::string_view("Error: Expected equal sign.") );
+
+        expr = parseRPN();
+    }
 
     if ( !expr )
     {
-        throw std::runtime_error("Error: Could not parse expression");
+        throw std::runtime_error("Error: Could not parse assignment expression");
     }
     
     consume( TOKEN_TYPE::TOKEN_SEMICOLON, std::string_view("Error: Expected semicolon.") );
@@ -120,7 +146,7 @@ std::unique_ptr<ASTNode> Parser::parseDeclaration()
         expr = parseRPN();
         if ( !expr )
         {
-            throw std::runtime_error("Error: Could not parse expression");
+            throw std::runtime_error("Error: Could not parse declaration expression");
         }
     }
 
@@ -313,7 +339,7 @@ std::unique_ptr<Expression> Parser::parseRPN()
             auto expr = parseAtomicExpression();
             if ( !expr )
             {
-                throw std::runtime_error("Error: Could not parse expression");
+                throw std::runtime_error("Error: Could not parse atomic expression");
             }
             expr_stack.push_back( std::move( expr ) );
             expect_value = false;
