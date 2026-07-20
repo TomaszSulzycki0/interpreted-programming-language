@@ -43,6 +43,31 @@ public:
         : type(std::move(t)), name(std::move(n)), initializer(std::move(init)) {}
 };
 
+class FunctionDeclarationNode : public ASTNode
+{
+public:
+    std::string return_type;
+    std::string name;
+    std::vector<std::unique_ptr<DeclarationNode>> arg_nodes;
+    std::vector<std::unique_ptr<ASTNode>> body_nodes;
+    std::unique_ptr<Expression> return_expr;
+
+    void accept(NodeVisitor& visitor) const override;
+
+    explicit FunctionDeclarationNode(
+        std::string rt, 
+        std::string n, 
+        std::vector<std::unique_ptr<DeclarationNode>> _args,
+        std::vector<std::unique_ptr<ASTNode>> bdnds,
+        std::unique_ptr<Expression> ret_expr) :
+            return_type(std::move(rt)), 
+            name(std::move(n)), 
+            arg_nodes(std::move(_args)),
+            body_nodes(std::move(bdnds)),
+            return_expr(std::move(ret_expr)) {}
+
+};
+
 class Parser
 {
 private:
@@ -57,6 +82,7 @@ private:
 
     std::unique_ptr<ASTNode> parseAssignment();
     std::unique_ptr<ASTNode> parseDeclaration();
+    std::unique_ptr<ASTNode> parseFunctionDeclaration();
     std::unique_ptr<Expression> parseAtomicExpression(); 
     std::unique_ptr<Expression> parseRPN(); 
 

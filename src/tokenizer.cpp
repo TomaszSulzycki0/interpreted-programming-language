@@ -119,6 +119,8 @@ Token Tokenizer::useStateDefault()
         return Token{ TOKEN_TYPE::TOKEN_COMMENT_START, std::string_view("#"), current_line };
     case ';':
         return Token{ TOKEN_TYPE::TOKEN_SEMICOLON, std::string_view(";"), current_line };
+    case ',':
+        return Token{ TOKEN_TYPE::TOKEN_COMMA, std::string_view(";"), current_line };
     case '+':
         if ( peek() == '=') 
         {
@@ -131,6 +133,11 @@ Token Tokenizer::useStateDefault()
         {
             advance();
             return Token{ TOKEN_TYPE::TOKEN_MINUS_EQUALS, std::string_view("-="), current_line };
+        }
+        else if ( peek() == '>') 
+        {
+            advance();
+            return Token{ TOKEN_TYPE::TOKEN_ARROW, std::string_view("->"), current_line };
         }
         return Token{ TOKEN_TYPE::TOKEN_OPERATOR, std::string_view("-"), current_line };        
     case '*':
@@ -172,6 +179,10 @@ Token Tokenizer::useStateDefault()
         return Token{ TOKEN_TYPE::TOKEN_PARENTHESIS_OPEN, std::string_view("("), current_line };
     case ')':
         return Token{ TOKEN_TYPE::TOKEN_PARENTHESIS_CLOSE, std::string_view(")"), current_line };
+    case '{':
+        return Token{ TOKEN_TYPE::TOKEN_BRACE_OPEN, std::string_view("{"), current_line };
+    case '}':
+        return Token{ TOKEN_TYPE::TOKEN_BRACE_CLOSE, std::string_view("}"), current_line };
     case '!':
         return Token{ TOKEN_TYPE::TOKEN_OPERATOR, std::string_view("!"), current_line };
     }
@@ -297,6 +308,7 @@ std::ostream& operator<<(std::ostream& os, TOKEN_TYPE type)
         case TOKEN_TYPE::TOKEN_IDENTIFIER:              return os << "IDENTIFIER";
         case TOKEN_TYPE::TOKEN_KEYWORD_BOOL:            return os << "BOOL";
         case TOKEN_TYPE::TOKEN_KEYWORD_TYPE:            return os << "TYPE";
+        case TOKEN_TYPE::TOKEN_KEYWORD_FUNCTION:        return os << "FUNCTION";
         case TOKEN_TYPE::TOKEN_EQUALS:                  return os << "EQUALS";
         case TOKEN_TYPE::TOKEN_PLUS_EQUALS:             return os << "PLUS_EQUALS";
         case TOKEN_TYPE::TOKEN_MINUS_EQUALS:            return os << "EQUALS";
@@ -305,6 +317,7 @@ std::ostream& operator<<(std::ostream& os, TOKEN_TYPE type)
         case TOKEN_TYPE::TOKEN_OPERATOR:                return os << "OPERATOR";
         case TOKEN_TYPE::TOKEN_UNARY_OPERATOR:          return os << "UNARY_OPERATOR";
         case TOKEN_TYPE::TOKEN_SEMICOLON:               return os << "SEMICOLON";
+        case TOKEN_TYPE::TOKEN_ARROW:                   return os << "ARROW";
         case TOKEN_TYPE::TOKEN_LITERAL_FLOAT:           return os << "LITERAL_FLOAT";
         case TOKEN_TYPE::TOKEN_LITERAL_INTEGRAL:        return os << "LITERAL_INTEGRAL";
         case TOKEN_TYPE::TOKEN_PARENTHESIS_OPEN:        return os << "PARENTHESIS_OPEN";

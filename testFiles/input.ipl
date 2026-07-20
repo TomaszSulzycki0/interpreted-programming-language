@@ -1,9 +1,9 @@
-int x = 2;
-x += 1;
-x -= 10;
+fn foo(int y, int z) -> int
+{
+    int x = 1;
+    x += y + z;
+    return x;
+}
 
-double y = 10;
-y /= 2 + 1;
-
-float z = 100;
-z /= y / (1 - x);
+# 16
+int call = foo(10, 5);

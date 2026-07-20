@@ -128,6 +128,11 @@ void NodeMaker::visit(const DeclarationNode& node)
     std::cout << std::endl;
 }
 
+void NodeMaker::visit(const FunctionDeclarationNode& node)
+{
+    
+}
+
 void PrintVisitor::visit(const NumericDeclaration& num_decl) 
 {
     if ( num_decl.isFloatingPoint() ) 

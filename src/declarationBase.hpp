@@ -2,6 +2,7 @@
 #define DECL_BASE_HPP
 
 #include<string>
+#include<vector>
 
 #include"visitors.hpp"
 
@@ -24,6 +25,15 @@ public:
     using Declaration::Declaration;
     virtual RuntimeValue getValue() const = 0;
     virtual void setValue(const RuntimeValue& val) = 0;
+};
+
+class FunctionDeclaration : public Declaration
+{
+    std::vector<RuntimeValue> args;
+    const std::size_t num_arg;
+public:
+    using Declaration::Declaration;
+    virtual RuntimeValue call(const std::vector<RuntimeValue> _args) = 0;
 };
 
 #endif

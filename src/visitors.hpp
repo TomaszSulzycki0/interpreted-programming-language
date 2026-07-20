@@ -20,6 +20,7 @@ class UnaryExpression;
 class ASTNode;
 class AssignmentNode;
 class DeclarationNode;
+class FunctionDeclarationNode;
 
 class Scope;
 
@@ -44,6 +45,7 @@ class NodeVisitor
 public:
     virtual void visit(const AssignmentNode& node) = 0;
     virtual void visit(const DeclarationNode& node) = 0;
+    virtual void visit(const FunctionDeclarationNode& node) = 0;
 
     virtual ~NodeVisitor() = default;
 };
@@ -55,6 +57,7 @@ private:
 public:
     void visit(const AssignmentNode& node) override;
     void visit(const DeclarationNode& node) override;
+    void visit(const FunctionDeclarationNode& node) override;
 
     explicit NodeMaker(Scope& s) : scope(s) {}
 };

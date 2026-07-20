@@ -76,26 +76,6 @@ public:
     template<Arithmetic U>
     explicit Numeric(std::string_view _name, const Numeric<U>& other) 
         : NumericDeclaration(_name), value(static_cast<T>(other.getValue())) {}
-
-    template<Arithmetic U> 
-    friend auto operator+(const Numeric<T>& lhs, const Numeric<U>& rhs) 
-    {    
-        return lhs.getValue() + rhs.getValue();
-    }
-
-    template<Arithmetic U>
-    Numeric<T>& operator=(const Numeric<U>& other) 
-    {    
-        this->value = static_cast<T>(other.getValue()); 
-        return *this; 
-    }
-
-    template<Arithmetic U>
-    Numeric<T>& operator=(const U& other) 
-    {    
-        this->value = static_cast<T>(other); 
-        return *this; 
-    }
 };
 
 

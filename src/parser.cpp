@@ -14,6 +14,11 @@ void DeclarationNode::accept(NodeVisitor& visitor) const
     visitor.visit(*this); 
 }
 
+void FunctionDeclarationNode::accept(NodeVisitor& visitor) const
+{
+    visitor.visit(*this); 
+}
+
 void Parser::tokenizeProgram()
 {
     tokens = tokenizer.emitTokens();
@@ -43,6 +48,10 @@ std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram()
             else if ( check( TOKEN_TYPE::TOKEN_IDENTIFIER) )
             {
                 ast.push_back( std::move( parseAssignment() ) );
+            }
+            else if ( check( TOKEN_TYPE::TOKEN_KEYWORD_FUNCTION ) )
+            {
+                ast.push_back( std::move( parseFunctionDeclaration() ) );
             }
             else if ( check( TOKEN_TYPE::TOKEN_COMMENT_START ) )
             {
@@ -153,6 +162,39 @@ std::unique_ptr<ASTNode> Parser::parseDeclaration()
     consume( TOKEN_TYPE::TOKEN_SEMICOLON, std::string_view("Error: Expected semicolon.") );
 
     return std::make_unique<DeclarationNode>( std::string(declared_type.value), std::string(declared_name.value), std::move(expr) );
+}
+
+std::unique_ptr<ASTNode> Parser::parseFunctionDeclaration()
+{
+    consume( TOKEN_TYPE::TOKEN_KEYWORD_FUNCTION, std::string_view("Error: Expected keyword fn.") );
+
+    Token fn_identifier = consume( TOKEN_TYPE::TOKEN_IDENTIFIER, std::string_view("Error: Expected function identifier.") );
+
+    consume( TOKEN_TYPE::TOKEN_PARENTHESIS_OPEN, std::string_view("Error: Expected opening parenthesis.") );
+
+    std::vector<std::unique_ptr<DeclarationNode>> fn_args;
+
+    if ( check( TOKEN_TYPE::TOKEN_KEYWORD_TYPE ) )
+    {
+        while ( pos < tokens_size )
+        {
+            Token fn_arg_type = advance();
+            Token fn_arg_identifier = consume( TOKEN_TYPE::TOKEN_IDENTIFIER, std::string_view("Error: Expected function argument identifier.") );
+            fn_args.push_back( std::make_unique<DeclarationNode>( std::string(fn_arg_type.value), std::string(fn_arg_identifier.value) ) );
+
+            if ( check( TOKEN_TYPE::TOKEN_COMMA ) )
+            {
+                advance();
+            }
+            else if( check( TOKEN_TYPE::TOKEN_PARENTHESIS_CLOSE ) )
+            {
+                break;
+            }
+        }
+        
+    }
+
+    consume( TOKEN_TYPE::TOKEN_PARENTHESIS_CLOSE, std::string_view("Error: Expected closing parenthesis.") );
 }
 
 std::unique_ptr<Expression> Parser::parseAtomicExpression()
