@@ -83,6 +83,7 @@ private:
     std::unique_ptr<ASTNode> parseAssignment();
     std::unique_ptr<ASTNode> parseDeclaration();
     std::unique_ptr<ASTNode> parseFunctionDeclaration();
+    std::vector<std::unique_ptr<ASTNode>> parseFunctionBody();
     std::unique_ptr<Expression> parseAtomicExpression(); 
     std::unique_ptr<Expression> parseRPN(); 
 

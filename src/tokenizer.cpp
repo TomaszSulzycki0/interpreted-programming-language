@@ -314,10 +314,13 @@ std::ostream& operator<<(std::ostream& os, TOKEN_TYPE type)
         case TOKEN_TYPE::TOKEN_MINUS_EQUALS:            return os << "EQUALS";
         case TOKEN_TYPE::TOKEN_MUL_EQUALS:              return os << "EQUALS";
         case TOKEN_TYPE::TOKEN_DIV_EQUALS:              return os << "EQUALS";
-        case TOKEN_TYPE::TOKEN_OPERATOR:                return os << "OPERATOR";
         case TOKEN_TYPE::TOKEN_UNARY_OPERATOR:          return os << "UNARY_OPERATOR";
-        case TOKEN_TYPE::TOKEN_SEMICOLON:               return os << "SEMICOLON";
+        case TOKEN_TYPE::TOKEN_OPERATOR:                return os << "OPERATOR";
         case TOKEN_TYPE::TOKEN_ARROW:                   return os << "ARROW";
+        case TOKEN_TYPE::TOKEN_COMMA:                   return os << "COMMA";
+        case TOKEN_TYPE::TOKEN_BRACE_OPEN:              return os << "BRACE_OPEN";
+        case TOKEN_TYPE::TOKEN_BRACE_CLOSE:             return os << "BRACE_CLOSE";
+        case TOKEN_TYPE::TOKEN_SEMICOLON:               return os << "SEMICOLON";
         case TOKEN_TYPE::TOKEN_LITERAL_FLOAT:           return os << "LITERAL_FLOAT";
         case TOKEN_TYPE::TOKEN_LITERAL_INTEGRAL:        return os << "LITERAL_INTEGRAL";
         case TOKEN_TYPE::TOKEN_PARENTHESIS_OPEN:        return os << "PARENTHESIS_OPEN";
@@ -327,6 +330,7 @@ std::ostream& operator<<(std::ostream& os, TOKEN_TYPE type)
         case TOKEN_TYPE::TOKEN_STRING_END:              return os << "STRING_END";
         case TOKEN_TYPE::TOKEN_COMMENT_START:           return os << "COMMENT_START";
         case TOKEN_TYPE::TOKEN_COMMENT_END:             return os << "COMMENT_END";
+        case TOKEN_TYPE::TOKEN_RETURN:                  return os << "RETURN";
         case TOKEN_TYPE::TOKEN_ERROR:                   return os << "ERROR";
         case TOKEN_TYPE::TOKEN_EOF:                     return os << "EOF";
         default:                                        return os << "UNKNOWN";

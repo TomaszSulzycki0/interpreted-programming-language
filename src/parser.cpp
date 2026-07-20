@@ -89,6 +89,64 @@ std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram()
     return ast;
 }
 
+std::vector<std::unique_ptr<ASTNode>> Parser::parseFunctionBody()
+{
+    std::vector<std::unique_ptr<ASTNode>> ast;
+
+    while ( pos < tokens_size )
+    {
+        try 
+        {
+            if ( check( TOKEN_TYPE::TOKEN_KEYWORD_TYPE ) )
+            {
+                ast.push_back( std::move( parseDeclaration() ) );
+            }
+            else if ( check( TOKEN_TYPE::TOKEN_IDENTIFIER) )
+            {
+                ast.push_back( std::move( parseAssignment() ) );
+            }
+            else if ( check( TOKEN_TYPE::TOKEN_KEYWORD_FUNCTION ) )
+            {
+                ast.push_back( std::move( parseFunctionDeclaration() ) );
+            }
+            else if ( check( TOKEN_TYPE::TOKEN_COMMENT_START ) )
+            {
+                advance();
+                consume( TOKEN_TYPE::TOKEN_COMMENT_END, std::string_view("Error: Expected comment end token.") );
+            }
+            else if (   check( TOKEN_TYPE::TOKEN_RETURN ) || 
+                        check( TOKEN_TYPE::TOKEN_EOF ) ||
+                        check( TOKEN_TYPE::TOKEN_BRACE_CLOSE) )
+            {
+                break;
+            }
+            else
+            {
+                throw std::runtime_error("Error: Invalid statement starting syntax.");
+            }
+        }
+        catch ( const std::exception& e )
+        {
+            is_good_for_exec = false;
+
+            std::cerr << e.what() << " Line: " << peek().line << '\n';
+
+            // For now simply skip to semicolon.
+            while ( pos < tokens_size )
+            {
+                if ( check( TOKEN_TYPE::TOKEN_SEMICOLON ) || check( TOKEN_TYPE::TOKEN_BRACE_CLOSE ) )
+                {
+                    advance();
+                    break;
+                }
+                advance();
+            }
+        }
+    }
+
+    return ast;
+}
+
 std::unique_ptr<ASTNode> Parser::parseAssignment()
 {
     Token assignee_name = consume( TOKEN_TYPE::TOKEN_IDENTIFIER, std::string_view("Error: Expected declaration identifier.") );
@@ -176,11 +234,11 @@ std::unique_ptr<ASTNode> Parser::parseFunctionDeclaration()
 
     if ( check( TOKEN_TYPE::TOKEN_KEYWORD_TYPE ) )
     {
-        while ( pos < tokens_size )
+        do
         {
             Token fn_arg_type = advance();
             Token fn_arg_identifier = consume( TOKEN_TYPE::TOKEN_IDENTIFIER, std::string_view("Error: Expected function argument identifier.") );
-            fn_args.push_back( std::make_unique<DeclarationNode>( std::string(fn_arg_type.value), std::string(fn_arg_identifier.value) ) );
+            fn_args.push_back( std::make_unique<DeclarationNode>( std::string(fn_arg_type.value), std::string(fn_arg_identifier.value), nullptr ) );
 
             if ( check( TOKEN_TYPE::TOKEN_COMMA ) )
             {
@@ -191,10 +249,36 @@ std::unique_ptr<ASTNode> Parser::parseFunctionDeclaration()
                 break;
             }
         }
+        while ( pos < tokens_size );
         
     }
 
     consume( TOKEN_TYPE::TOKEN_PARENTHESIS_CLOSE, std::string_view("Error: Expected closing parenthesis.") );
+    
+    consume( TOKEN_TYPE::TOKEN_ARROW, std::string_view("Error: Expected return type identification arrow '->'.") );
+
+    Token fn_ret_type = consume( TOKEN_TYPE::TOKEN_KEYWORD_TYPE, std::string_view("Error: Expected function return type.") );
+
+    consume( TOKEN_TYPE::TOKEN_BRACE_OPEN, std::string_view("Error: Expected opening bracket.") );
+
+    auto fn_body = parseFunctionBody();
+
+    std::unique_ptr<Expression> fn_ret_expr = nullptr;
+
+    if ( check( TOKEN_TYPE::TOKEN_RETURN ) )
+    {
+        advance();
+        fn_ret_expr = parseRPN();
+        consume( TOKEN_TYPE::TOKEN_SEMICOLON, std::string_view("Error: Expected semicolon.") );
+    }
+
+    consume( TOKEN_TYPE::TOKEN_BRACE_CLOSE, std::string_view("Error: Expected closing bracket.") );
+
+    return std::make_unique<FunctionDeclarationNode>(   std::string( fn_ret_type.value ),
+                                                        std::string( fn_identifier.value ),
+                                                        std::move( fn_args ),
+                                                        std::move( fn_body ),
+                                                        std::move( fn_ret_expr ) );
 }
 
 std::unique_ptr<Expression> Parser::parseAtomicExpression()

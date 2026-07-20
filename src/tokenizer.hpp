@@ -46,6 +46,7 @@ enum class TOKEN_TYPE
     TOKEN_STRING_END,
     TOKEN_COMMENT_START,
     TOKEN_COMMENT_END,
+    TOKEN_RETURN,
     TOKEN_ERROR,
     TOKEN_NULL,
     TOKEN_EOF
@@ -74,7 +75,8 @@ private:
         { std::string_view("true"), TOKEN_TYPE::TOKEN_KEYWORD_BOOL },
         { std::string_view("false"), TOKEN_TYPE::TOKEN_KEYWORD_BOOL },
         { std::string_view("and"), TOKEN_TYPE::TOKEN_OPERATOR },
-        { std::string_view("or"), TOKEN_TYPE::TOKEN_OPERATOR }
+        { std::string_view("or"), TOKEN_TYPE::TOKEN_OPERATOR },
+        { std::string_view("return"), TOKEN_TYPE::TOKEN_RETURN }
     };
 
     std::vector<TOKENIZER_STATE> state_stack { TOKENIZER_STATE::DEFAULT };
