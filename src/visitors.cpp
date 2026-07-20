@@ -130,7 +130,40 @@ void NodeMaker::visit(const DeclarationNode& node)
 
 void NodeMaker::visit(const FunctionDeclarationNode& node)
 {
+    std::shared_ptr<Declaration> concrete_decl = nullptr;
     
+    if ( scope.lookup( node.name ))
+    {
+        throw std::runtime_error("Error: Function '" + std::string( node.name ) + "' redefinition.");
+    }
+
+    // Function local scope
+    std::shared_ptr<Scope> fn_scope { std::make_shared<Scope>(scope) };
+    
+    NodeMaker fn_arg_maker { *fn_scope };
+
+    // "Declare" the argument variables in the new scope
+    for ( const auto& arg_decl : node.arg_nodes )
+    {
+        fn_arg_maker.visit(*arg_decl);
+    }
+
+    concrete_decl = std::make_shared<FunctionDeclaration>(  std::string( node.name ),
+                                                            std::move( fn_scope ),
+                                                            node.arg_nodes.size(),
+                                                            std::move( node.body_nodes ) );
+    
+    if ( !concrete_decl )
+    {
+        throw std::runtime_error("Error: Could not declare function");
+    }
+    
+    scope.define(node.name, concrete_decl);
+}
+
+void NodeMaker::visit(const FunctionCallNode& node)
+{
+
 }
 
 void PrintVisitor::visit(const NumericDeclaration& num_decl) 
@@ -155,6 +188,11 @@ void PrintVisitor::visit(const NumericDeclaration& num_decl)
 void PrintVisitor::visit(const StringDeclaration& str_decl) 
 {
     std::cout << "(string) '" << str_decl.getString() << "'";
+}
+
+void PrintVisitor::visit(const FunctionDeclaration& fn_decl) 
+{
+    
 }
 
 RuntimeValue ExpressionEvaluator::evaluate(const Expression& expr) 
@@ -295,4 +333,9 @@ void ExpressionEvaluator::visit(const UnaryExpression& expr)
             }
         }, eval_child);
     }
+}
+
+void ExpressionEvaluator::visit(const FunctionCallExpression& expr)
+{
+
 }

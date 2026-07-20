@@ -23,4 +23,9 @@ void UnaryExpression::accept(ExpressionVisitor& visitor) const
     visitor.visit(*this);
 }
 
+void FunctionCallExpression::accept(ExpressionVisitor& visitor) const
+{
+    visitor.visit(*this);
+}
+
 

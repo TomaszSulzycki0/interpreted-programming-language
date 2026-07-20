@@ -2,6 +2,7 @@
 #define EXPRESSION_HPP
 
 #include<string>
+#include<vector>
 #include<memory>
 
 class ExpressionVisitor;
@@ -38,8 +39,8 @@ public:
     const std::string name;
     explicit VariableExpression(std::string n) : name(std::move(n)) {}
     void accept(ExpressionVisitor& visitor) const override;
-}
-;
+};
+
 class UnaryExpression final : public Expression 
 {
 public:
@@ -47,6 +48,16 @@ public:
     const std::unique_ptr<Expression> child;
     explicit UnaryExpression(std::string op, std::unique_ptr<Expression> _child) 
         : unary_op(std::move(op)), child(std::move(_child)) {}
+    void accept(ExpressionVisitor& visitor) const override;
+};
+
+class FunctionCallExpression final : public Expression 
+{
+public:
+    const std::string name;
+    std::vector<std::unique_ptr<Expression>> args;
+    explicit FunctionCallExpression(std::string n, std::vector<std::unique_ptr<Expression>> _args) 
+        : name(std::move(n)), args( std::move(_args)) {}
     void accept(ExpressionVisitor& visitor) const override;
 };
 

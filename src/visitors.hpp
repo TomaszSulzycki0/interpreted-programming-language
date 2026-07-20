@@ -10,17 +10,20 @@ using RuntimeValue = std::variant<int, float, double, bool, std::string>;
 class Declaration;
 class NumericDeclaration;
 class StringDeclaration;
+class FunctionDeclaration;
 
 class Expression;
 class BinaryExpression;
 class LiteralExpression;
 class VariableExpression;
 class UnaryExpression;
+class FunctionCallExpression;
 
 class ASTNode;
 class AssignmentNode;
 class DeclarationNode;
 class FunctionDeclarationNode;
+class FunctionCallNode;
 
 class Scope;
 
@@ -29,6 +32,7 @@ class DeclarationVisitor
 public:
     virtual void visit(const NumericDeclaration& num_decl) = 0;
     virtual void visit(const StringDeclaration& str_decl) = 0;
+    virtual void visit(const FunctionDeclaration& fn_decl) = 0;
 
     virtual ~DeclarationVisitor() = default;
 };
@@ -38,6 +42,7 @@ class PrintVisitor final : public DeclarationVisitor
 public:
     void visit(const NumericDeclaration& num_decl) override;
     void visit(const StringDeclaration& str_decl) override;
+    void visit(const FunctionDeclaration& fn_decl) override;
 };
 
 class NodeVisitor
@@ -46,6 +51,7 @@ public:
     virtual void visit(const AssignmentNode& node) = 0;
     virtual void visit(const DeclarationNode& node) = 0;
     virtual void visit(const FunctionDeclarationNode& node) = 0;
+    virtual void visit(const FunctionCallNode& node) = 0;
 
     virtual ~NodeVisitor() = default;
 };
@@ -58,6 +64,7 @@ public:
     void visit(const AssignmentNode& node) override;
     void visit(const DeclarationNode& node) override;
     void visit(const FunctionDeclarationNode& node) override;
+    void visit(const FunctionCallNode& node) override;
 
     explicit NodeMaker(Scope& s) : scope(s) {}
 };
@@ -69,6 +76,7 @@ public:
     virtual void visit(const VariableExpression& expr) = 0;
     virtual void visit(const BinaryExpression& expr) = 0;
     virtual void visit(const UnaryExpression& expr) = 0;
+    virtual void visit(const FunctionCallExpression& expr) = 0;
 
     virtual ~ExpressionVisitor() = default;
 };
@@ -88,6 +96,7 @@ public:
     void visit(const VariableExpression& expr) override;
     void visit(const BinaryExpression& expr) override;
     void visit(const UnaryExpression& expr) override;
+    void visit(const FunctionCallExpression& expr) override;
 
     explicit ExpressionEvaluator(const Scope& s) : scope(s) {}
 };

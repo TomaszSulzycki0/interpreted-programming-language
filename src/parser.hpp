@@ -43,6 +43,14 @@ public:
         : type(std::move(t)), name(std::move(n)), initializer(std::move(init)) {}
 };
 
+class FunctionCallNode : public ASTNode
+{
+public:
+    std::string name;
+    std::vector<std::string> args;
+    void accept(NodeVisitor& visitor) const override;
+};
+
 class FunctionDeclarationNode : public ASTNode
 {
 public:

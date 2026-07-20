@@ -5,6 +5,9 @@
 #include<vector>
 
 #include"visitors.hpp"
+#include"parser.hpp"
+
+class Scope;
 
 class Declaration
 {
@@ -29,11 +32,29 @@ public:
 
 class FunctionDeclaration : public Declaration
 {
-    std::vector<RuntimeValue> args;
-    const std::size_t num_arg;
+    const std::size_t num_args;
+    std::shared_ptr<Scope> scope;
+    std::vector<std::unique_ptr<ASTNode>> body_nodes;
+    std::unique_ptr<Expression> return_expr;
 public:
-    using Declaration::Declaration;
-    virtual RuntimeValue call(const std::vector<RuntimeValue> _args) = 0;
+    explicit FunctionDeclaration(   std::string_view _name, 
+                                    std::shared_ptr<Scope> _scope,
+                                    std::size_t _num_args,
+                                    std::vector<std::unique_ptr<ASTNode>> _body_nodes
+                                ) : Declaration(_name), 
+                                    num_args(_num_args), 
+                                    scope( std::move( _scope ) ),
+                                    body_nodes( std::move( _body_nodes ) ) 
+    {
+        
+    }
+
+    virtual RuntimeValue call(const std::vector<RuntimeValue> _args)
+    {
+
+    }
+
+    void accept(DeclarationVisitor& visitor) const override { visitor.visit(*this); }
 };
 
 #endif

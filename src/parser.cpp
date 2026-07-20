@@ -19,6 +19,11 @@ void FunctionDeclarationNode::accept(NodeVisitor& visitor) const
     visitor.visit(*this); 
 }
 
+void FunctionCallNode::accept(NodeVisitor& visitor) const
+{
+    visitor.visit(*this); 
+}
+
 void Parser::tokenizeProgram()
 {
     tokens = tokenizer.emitTokens();
@@ -318,6 +323,34 @@ std::unique_ptr<Expression> Parser::parseAtomicExpression()
     if ( check( TOKEN_TYPE::TOKEN_IDENTIFIER ) )
     {
         Token identifier = advance();
+
+        if ( check( TOKEN_TYPE::TOKEN_PARENTHESIS_OPEN ) )
+        {
+            advance();
+            std::vector<std::unique_ptr<Expression>> args;
+            while( !check( TOKEN_TYPE::TOKEN_PARENTHESIS_CLOSE ) && pos < tokens_size)
+            {
+                std::unique_ptr<Expression> arg_expr = parseAtomicExpression();
+
+                if( !arg_expr )
+                {
+                    throw std::runtime_error("Error: Could not parse function argument");
+                }
+
+                args.push_back( std::move( arg_expr ) );
+
+                if ( check( TOKEN_TYPE::TOKEN_COMMA ) )
+                {
+                    advance();
+                    // fix: "foo(x,)" is valid - should not be
+                }
+            }
+
+        consume( TOKEN_TYPE::TOKEN_PARENTHESIS_CLOSE, std::string_view("Error: Expected closing parenthesis.") );
+
+            return std::make_unique<FunctionCallExpression>( std::string(identifier.value), std::move( args ) ); 
+        }
+
         return std::make_unique<VariableExpression>( std::string(identifier.value) );
     }
     

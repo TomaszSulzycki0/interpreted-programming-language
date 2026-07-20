@@ -10,7 +10,7 @@ class Declaration;
 class Scope
 {
 private:
-    Scope* parent_scope = nullptr;
+    std::shared_ptr<Scope> parent_scope = nullptr;
     std::unordered_map<std::string, std::shared_ptr<Declaration>> symbols;
 
 public:
@@ -20,11 +20,10 @@ public:
         symbols[std::string(name)] = std::move(decl);
     }
 
-    // TODO: Lookup should be forwarded to parent if unsuccesful. 
     std::shared_ptr<Declaration> lookup(std::string_view name) const;
 
     explicit Scope(); 
-    explicit Scope(Scope& parent);
+    explicit Scope(std::shared_ptr<Scope> parent);
 
 };
 
