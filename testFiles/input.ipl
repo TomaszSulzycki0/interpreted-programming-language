@@ -2,8 +2,9 @@ fn foo(int y, int z) -> int
 {
     int x = 1;
     x += y + z;
-    return x;
+    return x / 2;
 }
 
-# 16
+# (10 + 5 + 1) / 2
+# foo(y, z) = (y + z + 1) / 2
 int call = foo(10, 5);

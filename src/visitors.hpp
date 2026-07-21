@@ -49,7 +49,7 @@ class NodeVisitor
 {
 public:
     virtual void visit(const AssignmentNode& node) = 0;
-    virtual void visit(const DeclarationNode& node) = 0;
+    virtual void visit(const DeclarationNode& node) = 0;    
     virtual void visit(const FunctionDeclarationNode& node) = 0;
     virtual void visit(const FunctionCallNode& node) = 0;
 

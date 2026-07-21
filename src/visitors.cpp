@@ -19,7 +19,7 @@ void NodeMaker::visit(const AssignmentNode& node)
     auto target_var = std::dynamic_pointer_cast<ValueDeclaration>(existing_var);
     if (!target_var) 
     {
-        throw std::runtime_error("Runtime Error: " + std::string( node.name ) + " is not a mutable variable.");
+        throw std::runtime_error("Error: " + std::string( node.name ) + " is not a mutable variable.");
     }
 
     std::visit([&](auto&&) {
@@ -142,16 +142,29 @@ void NodeMaker::visit(const FunctionDeclarationNode& node)
     
     NodeMaker fn_arg_maker { *fn_scope };
 
+    std::vector<std::string> fn_arg_names;
+
     // "Declare" the argument variables in the new scope
     for ( const auto& arg_decl : node.arg_nodes )
     {
         fn_arg_maker.visit(*arg_decl);
+        fn_arg_names.push_back( arg_decl->name );
+    }
+
+    // AST Nodes in function body are owned by FunctionDeclarationNode
+    // FunctionDeclaration stores raw pointers
+    std::vector<ASTNode*> raw_body;
+    for (const auto& ptr : node.body_nodes) 
+    {
+        raw_body.push_back(ptr.get());
     }
 
     concrete_decl = std::make_shared<FunctionDeclaration>(  std::string( node.name ),
-                                                            std::move( fn_scope ),
                                                             node.arg_nodes.size(),
-                                                            std::move( node.body_nodes ) );
+                                                            std::move( fn_scope ),
+                                                            raw_body,
+                                                            node.return_expr.get(),
+                                                            fn_arg_names );
     
     if ( !concrete_decl )
     {
@@ -163,7 +176,7 @@ void NodeMaker::visit(const FunctionDeclarationNode& node)
 
 void NodeMaker::visit(const FunctionCallNode& node)
 {
-
+    
 }
 
 void PrintVisitor::visit(const NumericDeclaration& num_decl) 
@@ -337,5 +350,36 @@ void ExpressionEvaluator::visit(const UnaryExpression& expr)
 
 void ExpressionEvaluator::visit(const FunctionCallExpression& expr)
 {
+    auto existing_fn = scope.lookup(expr.name);
+    if ( !existing_fn )
+    {
+        throw std::runtime_error("Error: Function '" + std::string( expr.name ) + "' is undefined.");
+    }
 
+    auto target_fn = std::dynamic_pointer_cast<FunctionDeclaration>(existing_fn);
+    if ( !target_fn ) 
+    {
+        throw std::runtime_error("Error: " + std::string( expr.name ) + " is not a callable object.");
+    }
+
+    if ( target_fn->getNumArgs() != expr.args.size() ) 
+    {
+        throw std::runtime_error("Error: Invalid number of arguments provided. Expected " + std::to_string( target_fn->getNumArgs() ) + "." );
+    }
+
+    NodeMaker node_exec { *(target_fn->scope) };
+    ExpressionEvaluator ret_val_eval { *(target_fn->scope) };
+
+    for( std::size_t i {}; i < target_fn->getNumArgs(); ++i )
+    {
+        std::unique_ptr<AssignmentNode> arg_subst = std::make_unique<AssignmentNode>( target_fn->getArgNames()[i], expr.args[i]->clone());
+        node_exec.visit( *arg_subst );
+    }
+
+    for ( const auto& nd : target_fn->body_nodes )
+    {
+        nd->accept(node_exec);
+    }
+
+    last_evaluated_value = ret_val_eval.evaluate( *(target_fn->return_expr) );
 }

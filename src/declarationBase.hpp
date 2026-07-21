@@ -32,22 +32,13 @@ public:
 
 class FunctionDeclaration : public Declaration
 {
-    const std::size_t num_args;
-    std::shared_ptr<Scope> scope;
-    std::vector<std::unique_ptr<ASTNode>> body_nodes;
-    std::unique_ptr<Expression> return_expr;
+    std::size_t num_args;
+    std::vector<std::string> arg_names;
+    
 public:
-    explicit FunctionDeclaration(   std::string_view _name, 
-                                    std::shared_ptr<Scope> _scope,
-                                    std::size_t _num_args,
-                                    std::vector<std::unique_ptr<ASTNode>> _body_nodes
-                                ) : Declaration(_name), 
-                                    num_args(_num_args), 
-                                    scope( std::move( _scope ) ),
-                                    body_nodes( std::move( _body_nodes ) ) 
-    {
-        
-    }
+    std::shared_ptr<Scope> scope;
+    std::vector<ASTNode*> body_nodes;
+    Expression* return_expr;
 
     virtual RuntimeValue call(const std::vector<RuntimeValue> _args)
     {
@@ -55,6 +46,24 @@ public:
     }
 
     void accept(DeclarationVisitor& visitor) const override { visitor.visit(*this); }
+
+    std::vector<std::string> getArgNames() const { return arg_names; }
+    std::size_t getNumArgs() const { return num_args; }
+    explicit FunctionDeclaration(   std::string_view _name, 
+                                    std::size_t _num_args,
+                                    std::shared_ptr<Scope> _scope,
+                                    std::vector<ASTNode*> _body_nodes,
+                                    Expression* _return_expr,
+                                    std::vector<std::string> _arg_names
+                                ) : Declaration(_name), 
+                                    num_args(_num_args), 
+                                    scope( std::move( _scope ) ),
+                                    body_nodes( _body_nodes ),
+                                    return_expr(_return_expr),
+                                    arg_names(_arg_names)
+    {
+        
+    }
 };
 
 #endif
