@@ -1,10 +1,6 @@
-fn foo(int y, int z) -> int
+fn foo(int x) -> int
 {
-    int x = 1;
-    x += y + z;
-    return x / 2;
+    return x;
 }
 
-# (10 + 5 + 1) / 2
-# foo(y, z) = (y + z + 1) / 2
-int call = foo(10, 5);
+int call = foo(10);

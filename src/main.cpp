@@ -3,6 +3,7 @@
 #include<string>
 #include<filesystem>
 #include<stdexcept>
+#include<fstream>
 
 #include"scope.hpp"
 #include"numericVariable.hpp"

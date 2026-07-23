@@ -11,6 +11,8 @@ set(SOURCE_FILES
 	src/visitors.cpp
 	src/expression.cpp
 	src/tokenizer.cpp
+	src/abstractNodes.cpp
+	src/RPNHandler.cpp
 	)
 
 add_executable(ipl ${SOURCE_FILES})

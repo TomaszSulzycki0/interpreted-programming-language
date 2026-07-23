@@ -3,6 +3,7 @@
 #include"builder.hpp"
 #include"parser.hpp"
 #include"visitors.hpp"
+#include"AbstractNodes.hpp"
 
 void Builder::buildProgram(const std::vector<std::unique_ptr<ASTNode>>& ast) 
 {

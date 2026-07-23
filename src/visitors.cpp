@@ -2,8 +2,8 @@
 #include"expression.hpp"
 #include"scope.hpp"
 #include"numericVariable.hpp"
-#include"parser.hpp"
 #include"stringVariable.hpp"
+#include"AbstractNodes.hpp"
 
 void NodeMaker::visit(const AssignmentNode& node)
 {
@@ -28,7 +28,7 @@ void NodeMaker::visit(const AssignmentNode& node)
 
     // DUBUG
     //
-    std::cout << "[ASSIGNMENT] " << existing_var->getName() << " <-- ";
+    std::cout << "[ASSIGNMENT] " << existing_var->getName() << " ";
     PrintVisitor print_visitor {};
     existing_var->accept(print_visitor);
     std::cout << std::endl;
@@ -65,7 +65,7 @@ void NodeMaker::visit(const DeclarationNode& node)
             if constexpr ( std::is_arithmetic_v<EvaluatedType> ) {
                 concrete_decl = std::make_shared<Numeric<int>>(node.name, static_cast<int>(evaluated_arg));
             } else {
-                throw std::runtime_error("Type Error: Cannot initialize int variable '" + std::string( node.name ) + "' with a non-numeric value.");
+                throw std::runtime_error("Error: Cannot initialize int variable '" + std::string( node.name ) + "' with a non-numeric value.");
             }
         } 
         else if ( node.type == "double" ) 
@@ -75,7 +75,7 @@ void NodeMaker::visit(const DeclarationNode& node)
             } 
             else 
             {
-                throw std::runtime_error("Type Error: Cannot initialize double variable '" + std::string( node.name ) + "' with a non-numeric value.");
+                throw std::runtime_error("Error: Cannot initialize double variable '" + std::string( node.name ) + "' with a non-numeric value.");
             }
         } 
         else if ( node.type == "float" ) 
@@ -86,7 +86,7 @@ void NodeMaker::visit(const DeclarationNode& node)
             } 
             else 
             {
-                throw std::runtime_error("Type Error: Cannot initialize float variable '" + std::string( node.name ) + "' with a non-numeric value.");
+                throw std::runtime_error("Error: Cannot initialize float variable '" + std::string( node.name ) + "' with a non-numeric value.");
             }
         }
         else if ( node.type == "string" )
@@ -97,7 +97,7 @@ void NodeMaker::visit(const DeclarationNode& node)
             } 
             else 
             {
-                throw std::runtime_error("Type Error: Cannot initialize string variable '" + std::string( node.name ) + "' with a numeric value.");
+                throw std::runtime_error("Error: Cannot initialize string variable '" + std::string( node.name ) + "' with a numeric value.");
             }
         }
         else if ( node.type == "bool" )
@@ -108,7 +108,7 @@ void NodeMaker::visit(const DeclarationNode& node)
             } 
             else 
             {
-                throw std::runtime_error("Type Error: Cannot initialize string variable '" + std::string( node.name ) + "' with a numeric value.");
+                throw std::runtime_error("Error: Cannot initialize string variable '" + std::string( node.name ) + "' with a numeric value.");
             }
         }
     }, raw_value);
@@ -122,7 +122,7 @@ void NodeMaker::visit(const DeclarationNode& node)
 
     // DUBUG
     //
-    std::cout << "[DECLARATION] " << concrete_decl->getName() << " <-- ";
+    std::cout << "[DECLARATION] " << concrete_decl->getName() << " ";
     PrintVisitor print_visitor {};
     concrete_decl->accept(print_visitor);
     std::cout << std::endl;
@@ -144,9 +144,9 @@ void NodeMaker::visit(const FunctionDeclarationNode& node)
 
     std::vector<std::string> fn_arg_names;
 
-    // "Declare" the argument variables in the new scope
     for ( const auto& arg_decl : node.arg_nodes )
     {
+        // "Declare" the argument variable in the new scope
         fn_arg_maker.visit(*arg_decl);
         fn_arg_names.push_back( arg_decl->name );
     }
@@ -161,10 +161,10 @@ void NodeMaker::visit(const FunctionDeclarationNode& node)
 
     concrete_decl = std::make_shared<FunctionDeclaration>(  std::string( node.name ),
                                                             node.arg_nodes.size(),
+                                                            fn_arg_names,
                                                             std::move( fn_scope ),
                                                             raw_body,
-                                                            node.return_expr.get(),
-                                                            fn_arg_names );
+                                                            node.return_expr.get() );
     
     if ( !concrete_decl )
     {
@@ -172,6 +172,13 @@ void NodeMaker::visit(const FunctionDeclarationNode& node)
     }
     
     scope.define(node.name, concrete_decl);
+
+    // DEBUG
+    //
+    std::cout << "[FUNCTION] " << concrete_decl->getName();
+    PrintVisitor print_visitor {};
+    concrete_decl->accept(print_visitor);
+    std::cout << std::endl;
 }
 
 void NodeMaker::visit(const FunctionCallNode& node)
@@ -205,7 +212,17 @@ void PrintVisitor::visit(const StringDeclaration& str_decl)
 
 void PrintVisitor::visit(const FunctionDeclaration& fn_decl) 
 {
-    
+    std::cout << "(";
+    for( auto i {0uz}; i < fn_decl.getNumArgs(); ++i  )
+    {
+        std::cout << fn_decl.getArgNames()[i];
+        if ( i < fn_decl.getNumArgs() - 1 )
+        {
+            std::cout << ", ";
+        }
+    }
+
+    std::cout << ")";
 }
 
 RuntimeValue ExpressionEvaluator::evaluate(const Expression& expr) 
