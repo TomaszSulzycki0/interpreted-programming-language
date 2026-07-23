@@ -1,6 +1,8 @@
 fn foo(int x) -> int
 {
-    return x;
+    return x + 1;
 }
 
-int call = foo(10);
+int y = 10;
+int call = foo( 1 + (1 * y) ) + foo(1);
+# 14

@@ -16,15 +16,9 @@ void Parser::tokenizeProgram()
 
 std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram() 
 {
-    if ( tokens_size == 0 )
-    {
-        // In case the tokenizer didnt run
-        tokenizeProgram();
-    }
-
     std::vector<std::unique_ptr<ASTNode>> ast;
 
-    while ( pos < tokens_size )
+    while ( !isDone() )
     {
         try 
         {
@@ -60,8 +54,7 @@ std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram()
 
             std::cerr << e.what() << " Line: " << peek().line << '\n';
 
-            // For now simply skip to semicolon.
-            while ( pos < tokens_size )
+            while ( !isDone() )
             {
                 if ( check( TOKEN_TYPE::TOKEN_SEMICOLON ) )
                 {
@@ -98,7 +91,7 @@ std::vector<std::unique_ptr<ASTNode>> Parser::parseFunctionBody()
 {
     std::vector<std::unique_ptr<ASTNode>> ast;
 
-    while ( pos < tokens_size )
+    while ( !isDone() )
     {
         try 
         {
@@ -136,8 +129,7 @@ std::vector<std::unique_ptr<ASTNode>> Parser::parseFunctionBody()
 
             std::cerr << e.what() << " Line: " << peek().line << '\n';
 
-            // For now simply skip to semicolon.
-            while ( pos < tokens_size )
+            while ( !isDone() )
             {
                 if ( check( TOKEN_TYPE::TOKEN_SEMICOLON ) || check( TOKEN_TYPE::TOKEN_BRACE_CLOSE ) )
                 {
@@ -200,12 +192,6 @@ std::unique_ptr<ASTNode> Parser::parseDeclaration()
 {
     Token declared_type = consume( TOKEN_TYPE::TOKEN_KEYWORD_TYPE, std::string_view("Error: Expected declaration type.") );
 
-    // More precise, for common invalid syntax int int = 1;
-    if ( check( TOKEN_TYPE::TOKEN_KEYWORD_TYPE ) )
-    {
-        consume( TOKEN_TYPE::TOKEN_IDENTIFIER, std::string_view("Error: Invalid combination type-type during declaration.") );
-    }
-
     Token declared_name = consume( TOKEN_TYPE::TOKEN_IDENTIFIER, std::string_view("Error: Invalid declaration syntax.") );
     std::unique_ptr<Expression> expr = nullptr;
     
@@ -254,7 +240,7 @@ std::unique_ptr<ASTNode> Parser::parseFunctionDeclaration()
                 break;
             }
         }
-        while ( pos < tokens_size );
+        while ( !isDone() );
         
     }
 
@@ -326,28 +312,24 @@ std::unique_ptr<Expression> Parser::parseAtomicExpression()
 
         if ( check( TOKEN_TYPE::TOKEN_PARENTHESIS_OPEN ) )
         {
-            advance();
+            // Function call logic
+
             std::vector<std::unique_ptr<Expression>> args;
-            while( !check( TOKEN_TYPE::TOKEN_PARENTHESIS_CLOSE ) && pos < tokens_size)
+            
+            // LOOP OVER ALL ARGS
+            // ---
+
+            std::unique_ptr<Expression> arg_expr = rpner.parseFunctionCallRPN( *this );
+
+            if( !arg_expr )
             {
-                std::unique_ptr<Expression> arg_expr = parseAtomicExpression();
-
-                if( !arg_expr )
-                {
-                    throw std::runtime_error("Error: Could not parse function argument");
-                }
-
-                args.push_back( std::move( arg_expr ) );
-
-                if ( check( TOKEN_TYPE::TOKEN_COMMA ) )
-                {
-                    advance();
-                    // fix: "foo(x,)" is valid - should not be
-                }
+                throw std::runtime_error("Error: Could not parse function argument");
             }
 
-        consume( TOKEN_TYPE::TOKEN_PARENTHESIS_CLOSE, std::string_view("Error: Expected closing parenthesis.") );
+            args.push_back( std::move( arg_expr ) );
 
+            // ---
+            
             return std::make_unique<FunctionCallExpression>( std::string(identifier.value), std::move( args ) ); 
         }
 

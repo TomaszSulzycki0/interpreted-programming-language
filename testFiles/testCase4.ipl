@@ -1,0 +1,6 @@
+fn foo(int x) -> int
+{
+    return x + 1;
+}
+
+int call = foo(10);
