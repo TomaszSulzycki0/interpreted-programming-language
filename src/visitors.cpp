@@ -389,8 +389,27 @@ void ExpressionEvaluator::visit(const FunctionCallExpression& expr)
 
     for( std::size_t i {}; i < target_fn->getNumArgs(); ++i )
     {
-        std::unique_ptr<AssignmentNode> arg_subst = std::make_unique<AssignmentNode>( target_fn->getArgNames()[i], expr.args[i]->clone());
-        node_exec.visit( *arg_subst );
+
+        // Evaluate argument in caller scope
+        ExpressionEvaluator evaluator {scope};
+        RuntimeValue arg_value = evaluator.evaluate( *( expr.args[i]->clone() ) );
+        
+        // Assign evaluated value to argument in function local scope
+        auto existing_var = target_fn->scope->lookup( target_fn->getArgNames()[i] );
+        if ( !existing_var )
+        {
+            throw std::runtime_error("Error: Variable '" + std::string( target_fn->getArgNames()[i] ) + "' is undefined.");
+        }
+
+        auto target_var = std::dynamic_pointer_cast<ValueDeclaration>(existing_var);
+        if (!target_var) 
+        {
+            throw std::runtime_error("Error: " + std::string( target_fn->getArgNames()[i] ) + " is not a mutable variable.");
+        }
+
+        std::visit([&](auto&&) {
+            target_var->setValue(arg_value);
+        }, arg_value);
     }
 
     for ( const auto& nd : target_fn->body_nodes )
