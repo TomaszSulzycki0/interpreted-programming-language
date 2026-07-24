@@ -14,7 +14,7 @@ void Parser::tokenizeProgram()
     tokenizer.debugTokens(tokens);
 }
 
-std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram() 
+std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram(const PARSING_MODE& mode) 
 {
     std::vector<std::unique_ptr<ASTNode>> ast;
 
@@ -25,6 +25,10 @@ std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram()
             if ( check( TOKEN_TYPE::TOKEN_KEYWORD_TYPE ) )
             {
                 ast.push_back( std::move( parseDeclaration() ) );
+            }
+            else if ( check( TOKEN_TYPE::TOKEN_KEYWORD_IF) )
+            {
+                ast.push_back( std::move( parseIf() ) );
             }
             else if ( check( TOKEN_TYPE::TOKEN_IDENTIFIER) )
             {
@@ -39,7 +43,9 @@ std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram()
                 advance();
                 consume( TOKEN_TYPE::TOKEN_COMMENT_END, std::string_view("Error: Expected comment end token.") );
             }
-            else if ( check( TOKEN_TYPE::TOKEN_EOF ) )
+            else if (   check( TOKEN_TYPE::TOKEN_EOF ) ||
+                        check( TOKEN_TYPE::TOKEN_RETURN ) && mode == PARSING_MODE::FUNCTION_BODY ||
+                        check( TOKEN_TYPE::TOKEN_BRACE_CLOSE ) && ( mode == PARSING_MODE::FUNCTION_BODY || mode == PARSING_MODE::IF ) )
             {
                 break;
             }
@@ -56,7 +62,8 @@ std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram()
 
             while ( !isDone() )
             {
-                if ( check( TOKEN_TYPE::TOKEN_SEMICOLON ) )
+                if (    check( TOKEN_TYPE::TOKEN_SEMICOLON ) || 
+                        check( TOKEN_TYPE::TOKEN_BRACE_CLOSE ) && (mode == PARSING_MODE::FUNCTION_BODY || mode == PARSING_MODE::IF ) )
                 {
                     advance();
                     break;
@@ -85,63 +92,6 @@ Token Parser::consume(TOKEN_TYPE type, std::string_view error_message)
         return advance();
     }
     throw std::runtime_error( std::string(error_message) );
-}
-
-std::vector<std::unique_ptr<ASTNode>> Parser::parseFunctionBody()
-{
-    std::vector<std::unique_ptr<ASTNode>> ast;
-
-    while ( !isDone() )
-    {
-        try 
-        {
-            if ( check( TOKEN_TYPE::TOKEN_KEYWORD_TYPE ) )
-            {
-                ast.push_back( std::move( parseDeclaration() ) );
-            }
-            else if ( check( TOKEN_TYPE::TOKEN_IDENTIFIER) )
-            {
-                ast.push_back( std::move( parseAssignment() ) );
-            }
-            else if ( check( TOKEN_TYPE::TOKEN_KEYWORD_FUNCTION ) )
-            {
-                ast.push_back( std::move( parseFunctionDeclaration() ) );
-            }
-            else if ( check( TOKEN_TYPE::TOKEN_COMMENT_START ) )
-            {
-                advance();
-                consume( TOKEN_TYPE::TOKEN_COMMENT_END, std::string_view("Error: Expected comment end token.") );
-            }
-            else if (   check( TOKEN_TYPE::TOKEN_RETURN ) || 
-                        check( TOKEN_TYPE::TOKEN_EOF ) ||
-                        check( TOKEN_TYPE::TOKEN_BRACE_CLOSE) )
-            {
-                break;
-            }
-            else
-            {
-                throw std::runtime_error("Error: Invalid statement starting syntax.");
-            }
-        }
-        catch ( const std::exception& e )
-        {
-            is_good_for_exec = false;
-
-            std::cerr << e.what() << " Line: " << peek().line << '\n';
-
-            while ( !isDone() )
-            {
-                if ( check( TOKEN_TYPE::TOKEN_SEMICOLON ) || check( TOKEN_TYPE::TOKEN_BRACE_CLOSE ) )
-                {
-                    advance();
-                    break;
-                }
-                advance();
-            }
-        }
-    }
-
-    return ast;
 }
 
 std::unique_ptr<ASTNode> Parser::parseAssignment()
@@ -252,14 +202,14 @@ std::unique_ptr<ASTNode> Parser::parseFunctionDeclaration()
 
     consume( TOKEN_TYPE::TOKEN_BRACE_OPEN, std::string_view("Error: Expected opening bracket.") );
 
-    auto fn_body = parseFunctionBody();
+    auto fn_body = parseProgram( PARSING_MODE::FUNCTION_BODY );
 
     std::unique_ptr<Expression> fn_ret_expr = nullptr;
 
     if ( check( TOKEN_TYPE::TOKEN_RETURN ) )
     {
         advance();
-        fn_ret_expr = rpner.parseRPN(*this);
+        fn_ret_expr = rpner.parseRPN( *this );
         consume( TOKEN_TYPE::TOKEN_SEMICOLON, std::string_view("Error: Expected semicolon.") );
     }
 
@@ -270,6 +220,22 @@ std::unique_ptr<ASTNode> Parser::parseFunctionDeclaration()
                                                         std::move( fn_args ),
                                                         std::move( fn_body ),
                                                         std::move( fn_ret_expr ) );
+}
+
+std::unique_ptr<ASTNode> Parser::parseIf()
+{
+    consume( TOKEN_TYPE::TOKEN_KEYWORD_IF, std::string_view("Error: Expected 'if' statement.") );
+    consume( TOKEN_TYPE::TOKEN_PARENTHESIS_OPEN, std::string_view("Error: Expected opening parenthesis after 'if' statement.") );
+
+    auto if_condition = rpner.parseRPN( *this );
+
+    consume( TOKEN_TYPE::TOKEN_PARENTHESIS_CLOSE, std::string_view("Error: Expected closing parenthesis.") ); 
+    
+    consume( TOKEN_TYPE::TOKEN_BRACE_OPEN, std::string_view("Error: Expected opening bracket.") );
+
+    auto if_body = parseProgram( PARSING_MODE::IF );
+
+    consume( TOKEN_TYPE::TOKEN_BRACE_CLOSE, std::string_view("Error: Expected closing bracket.") );
 }
 
 std::unique_ptr<Expression> Parser::parseAtomicExpression()

@@ -10,6 +10,13 @@
 
 class ASTNode;
 
+enum class PARSING_MODE
+{
+    DEFAULT,
+    IF,
+    FUNCTION_BODY
+};
+
 class IParserContext 
 {
 public:
@@ -36,9 +43,9 @@ private:
     std::size_t pos {};
     
     std::unique_ptr<ASTNode> parseAssignment();
+    std::unique_ptr<ASTNode> parseIf();
     std::unique_ptr<ASTNode> parseDeclaration();
     std::unique_ptr<ASTNode> parseFunctionDeclaration();
-    std::vector<std::unique_ptr<ASTNode>> parseFunctionBody();
     std::unique_ptr<Expression> parseAtomicExpression(); 
 
     // If parser throws at any point, 
@@ -65,7 +72,7 @@ private:
             
 public:
     // Generate AST from the tokens
-    std::vector<std::unique_ptr<ASTNode>> parseProgram(); 
+    std::vector<std::unique_ptr<ASTNode>> parseProgram(const PARSING_MODE& mode); 
 
     // Use Tokenizer to emit tokens
     void tokenizeProgram();

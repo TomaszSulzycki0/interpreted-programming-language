@@ -54,7 +54,7 @@ int main(int argc, char** argv)
         std::cout << "Captured: " << parser.getNumTokens() << " tokens." << std::endl;
 
         std::cout << "Parsing.." << std::endl;
-        auto program_ast = parser.parseProgram();
+        auto program_ast = parser.parseProgram( PARSING_MODE::DEFAULT );
 
         if ( parser.isASTExecutable() )
         {
