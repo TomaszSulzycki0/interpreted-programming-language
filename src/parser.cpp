@@ -312,23 +312,25 @@ std::unique_ptr<Expression> Parser::parseAtomicExpression()
 
         if ( check( TOKEN_TYPE::TOKEN_PARENTHESIS_OPEN ) )
         {
+            advance();
+            
             // Function call logic
 
             std::vector<std::unique_ptr<Expression>> args;
             
-            // LOOP OVER ALL ARGS
-            // ---
+            bool end_of_args = false;
 
-            std::unique_ptr<Expression> arg_expr = rpner.parseFunctionCallRPN( *this );
-
-            if( !arg_expr )
+            while ( !end_of_args )
             {
-                throw std::runtime_error("Error: Could not parse function argument");
+                std::unique_ptr<Expression> arg_expr = rpner.parseFunctionCallRPN( *this, end_of_args );
+
+                if( !arg_expr )
+                {
+                    throw std::runtime_error("Error: Could not parse function argument");
+                }
+
+                args.push_back( std::move( arg_expr ) );
             }
-
-            args.push_back( std::move( arg_expr ) );
-
-            // ---
             
             return std::make_unique<FunctionCallExpression>( std::string(identifier.value), std::move( args ) ); 
         }

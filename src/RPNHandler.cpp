@@ -19,7 +19,7 @@ std::unique_ptr<Expression> RPNHandler::parseRPN(IParserContext& pctx)
 
     while ( !pctx.isDone() )
     {
-        if ( pctx.peek().type == TOKEN_TYPE::TOKEN_OPERATOR && expect_value )
+        if ( pctx.check( TOKEN_TYPE::TOKEN_OPERATOR ) && expect_value )
         {
             // There should be a procedure for handling the operator stack here
             // For now assume that unary operators have the highest possible precedence
@@ -28,7 +28,7 @@ std::unique_ptr<Expression> RPNHandler::parseRPN(IParserContext& pctx)
 
             operator_stack.push_back( op );
         }
-        else if ( pctx.peek().type == TOKEN_TYPE::TOKEN_OPERATOR )
+        else if ( pctx.check( TOKEN_TYPE::TOKEN_OPERATOR ) )
         {
             handleOpRPN( pctx, operator_stack, expr_stack );
             expect_value = true;
@@ -93,13 +93,13 @@ std::unique_ptr<Expression> RPNHandler::parseRPN(IParserContext& pctx)
     return std::move( expr_stack.front() );
 }
 
-std::unique_ptr<Expression> RPNHandler::parseFunctionCallRPN(IParserContext& pctx)
+std::unique_ptr<Expression> RPNHandler::parseFunctionCallRPN(IParserContext& pctx, bool& is_fn_call_end)
 {
     std::vector<Token> operator_stack {};
     std::vector<std::unique_ptr<Expression>> expr_stack {};
 
     // Counter for validating that ever open parenthesis is closed
-    std::size_t unclosed_parenthesis {};
+    std::size_t unclosed_parenthesis { 1 };
 
     // Flag used for identifying unary operators
     // Set to true if next token is expected to be a value, false otherwise
@@ -109,7 +109,7 @@ std::unique_ptr<Expression> RPNHandler::parseFunctionCallRPN(IParserContext& pct
 
     while ( !pctx.isDone() )
     {
-        if ( pctx.peek().type == TOKEN_TYPE::TOKEN_OPERATOR && expect_value )
+        if ( pctx.check( TOKEN_TYPE::TOKEN_OPERATOR ) && expect_value )
         {
             // There should be a procedure for handling the operator stack here
             // For now assume that unary operators have the highest possible precedence
@@ -118,7 +118,7 @@ std::unique_ptr<Expression> RPNHandler::parseFunctionCallRPN(IParserContext& pct
 
             operator_stack.push_back( op );
         }
-        else if ( pctx.peek().type == TOKEN_TYPE::TOKEN_OPERATOR )
+        else if ( pctx.check( TOKEN_TYPE::TOKEN_OPERATOR ) )
         {
             handleOpRPN( pctx, operator_stack, expr_stack );
             expect_value = true;
@@ -142,13 +142,14 @@ std::unique_ptr<Expression> RPNHandler::parseFunctionCallRPN(IParserContext& pct
             handleClosingParenthesisRPN( pctx, operator_stack, expr_stack );
 
             --unclosed_parenthesis;
+            expect_value = false;
 
             if ( unclosed_parenthesis == 0 )
             {
                 // End of function call
+                is_fn_call_end = true;
                 break;
             }
-            expect_value = false;
         }
         else if ( pctx.isAtomicExpr( pctx.peek() ) )
         {
@@ -159,6 +160,11 @@ std::unique_ptr<Expression> RPNHandler::parseFunctionCallRPN(IParserContext& pct
             }
             expr_stack.push_back( std::move( expr ) );
             expect_value = false;
+        }
+        else if ( pctx.check( TOKEN_TYPE::TOKEN_COMMA ) )
+        {
+            pctx.advance();
+            break;
         }
         else
         {
