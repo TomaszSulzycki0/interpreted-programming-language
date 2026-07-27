@@ -20,3 +20,8 @@ void FunctionCallNode::accept(NodeVisitor& visitor) const
 {
     visitor.visit(*this); 
 }
+
+void IfNode::accept(NodeVisitor& visitor) const
+{
+    visitor.visit(*this);
+}

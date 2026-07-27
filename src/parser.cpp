@@ -227,15 +227,15 @@ std::unique_ptr<ASTNode> Parser::parseIf()
     consume( TOKEN_TYPE::TOKEN_KEYWORD_IF, std::string_view("Error: Expected 'if' statement.") );
     consume( TOKEN_TYPE::TOKEN_PARENTHESIS_OPEN, std::string_view("Error: Expected opening parenthesis after 'if' statement.") );
 
-    auto if_condition = rpner.parseRPN( *this );
-
-    consume( TOKEN_TYPE::TOKEN_PARENTHESIS_CLOSE, std::string_view("Error: Expected closing parenthesis.") ); 
+    auto if_condition = rpner.parseRPNCondition( *this );
     
     consume( TOKEN_TYPE::TOKEN_BRACE_OPEN, std::string_view("Error: Expected opening bracket.") );
 
     auto if_body = parseProgram( PARSING_MODE::IF );
 
     consume( TOKEN_TYPE::TOKEN_BRACE_CLOSE, std::string_view("Error: Expected closing bracket.") );
+
+    return std::make_unique<IfNode>( std::move( if_body ), std::move( if_condition ));
 }
 
 std::unique_ptr<Expression> Parser::parseAtomicExpression()

@@ -40,6 +40,7 @@ private:
                     std::vector<std::unique_ptr<Expression>>& expr_stack);
 public:
     std::unique_ptr<Expression> parseRPN(IParserContext& pctx);
+    std::unique_ptr<Expression> parseRPNCondition(IParserContext& pctx);
     std::unique_ptr<Expression> parseFunctionCallRPN(IParserContext& pctx, bool& is_fn_call_end);
 };
 

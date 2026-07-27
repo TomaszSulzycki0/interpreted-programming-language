@@ -186,6 +186,58 @@ void NodeMaker::visit(const FunctionCallNode& node)
     
 }
 
+void NodeMaker::visit(const IfNode& node)
+{
+
+    ExpressionEvaluator if_condition_evaluator { scope };
+
+    RuntimeValue if_eval = if_condition_evaluator.evaluate( *node.condition_expr ); 
+
+    std::visit([&](auto&& unpacked) {
+        using T = std::decay_t<decltype(unpacked)>;
+
+        if constexpr ( std::is_convertible_v<T, bool> )
+        {
+            if ( unpacked )
+            {
+                std::cout << "TRUE\n";
+            }
+            else
+            {
+                std::cout << "FALSE\n";
+                return;
+            }
+        }
+        else if constexpr ( std::same_as<T, std::string> )
+        {
+            if ( !unpacked.empty() )
+            {
+                std::cout << "TRUE\n";
+            }
+            else
+            {
+                std::cout << "FALSE\n";
+                return;
+            }
+        }
+        else
+        {
+            throw std::runtime_error("Error: Expression not convertible to bool.");
+        }
+
+    }, if_eval);
+
+    std::shared_ptr<Scope> if_scope { std::make_shared<Scope>( scope ) };
+
+    NodeMaker if_body_exec { *if_scope };
+
+    for( const auto& nd : node.body_nodes )
+    {
+        nd->accept( if_body_exec );
+    }
+
+}
+
 void PrintVisitor::visit(const NumericDeclaration& num_decl) 
 {
     if ( num_decl.isFloatingPoint() ) 

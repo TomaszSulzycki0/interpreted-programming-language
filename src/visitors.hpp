@@ -26,6 +26,7 @@ class AssignmentNode;
 class DeclarationNode;
 class FunctionDeclarationNode;
 class FunctionCallNode;
+class IfNode;
 
 class Scope;
 
@@ -54,6 +55,7 @@ public:
     virtual void visit(const DeclarationNode& node) = 0;    
     virtual void visit(const FunctionDeclarationNode& node) = 0;
     virtual void visit(const FunctionCallNode& node) = 0;
+    virtual void visit(const IfNode& node) = 0;
 
     virtual ~NodeVisitor() = default;
 };
@@ -67,6 +69,7 @@ public:
     void visit(const DeclarationNode& node) override;
     void visit(const FunctionDeclarationNode& node) override;
     void visit(const FunctionCallNode& node) override;
+    void visit(const IfNode& node) override;
 
     explicit NodeMaker(Scope& s) : scope(s) {}
 };
