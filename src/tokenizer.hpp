@@ -26,6 +26,7 @@ enum class TOKEN_TYPE
     TOKEN_KEYWORD_BOOL,
     TOKEN_KEYWORD_FUNCTION,
     TOKEN_KEYWORD_IF,
+    TOKEN_KEYWORD_WHILE,
     TOKEN_EQUALS,
     TOKEN_PLUS_EQUALS,
     TOKEN_MINUS_EQUALS,
@@ -76,6 +77,7 @@ private:
         { std::string_view("true"), TOKEN_TYPE::TOKEN_KEYWORD_BOOL },
         { std::string_view("false"), TOKEN_TYPE::TOKEN_KEYWORD_BOOL },
         { std::string_view("if"), TOKEN_TYPE::TOKEN_KEYWORD_IF },
+        { std::string_view("while"), TOKEN_TYPE::TOKEN_KEYWORD_WHILE },
         { std::string_view("and"), TOKEN_TYPE::TOKEN_OPERATOR },
         { std::string_view("or"), TOKEN_TYPE::TOKEN_OPERATOR },
         { std::string_view("return"), TOKEN_TYPE::TOKEN_RETURN }

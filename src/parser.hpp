@@ -14,6 +14,7 @@ enum class PARSING_MODE
 {
     DEFAULT,
     IF,
+    WHILE,  
     FUNCTION_BODY
 };
 
@@ -44,6 +45,7 @@ private:
     
     std::unique_ptr<ASTNode> parseAssignment();
     std::unique_ptr<ASTNode> parseIf();
+    std::unique_ptr<ASTNode> parseWhile();
     std::unique_ptr<ASTNode> parseDeclaration();
     std::unique_ptr<ASTNode> parseFunctionDeclaration();
     std::unique_ptr<Expression> parseAtomicExpression(); 

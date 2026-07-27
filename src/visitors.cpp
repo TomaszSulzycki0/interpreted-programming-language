@@ -188,7 +188,6 @@ void NodeMaker::visit(const FunctionCallNode& node)
 
 void NodeMaker::visit(const IfNode& node)
 {
-
     ExpressionEvaluator if_condition_evaluator { scope };
 
     RuntimeValue if_eval = if_condition_evaluator.evaluate( *node.condition_expr ); 
@@ -198,25 +197,15 @@ void NodeMaker::visit(const IfNode& node)
 
         if constexpr ( std::is_convertible_v<T, bool> )
         {
-            if ( unpacked )
+            if ( !unpacked )
             {
-                std::cout << "TRUE\n";
-            }
-            else
-            {
-                std::cout << "FALSE\n";
                 return;
             }
         }
         else if constexpr ( std::same_as<T, std::string> )
         {
-            if ( !unpacked.empty() )
+            if ( unpacked.empty() )
             {
-                std::cout << "TRUE\n";
-            }
-            else
-            {
-                std::cout << "FALSE\n";
                 return;
             }
         }
@@ -234,6 +223,80 @@ void NodeMaker::visit(const IfNode& node)
     for( const auto& nd : node.body_nodes )
     {
         nd->accept( if_body_exec );
+    }
+
+}
+
+void NodeMaker::visit(const WhileNode& node)
+{
+    ExpressionEvaluator while_condition_evaluator { scope };
+
+    RuntimeValue while_eval = while_condition_evaluator.evaluate( *node.condition_expr ); 
+
+    std::visit([&](auto&& unpacked) {
+        using T = std::decay_t<decltype(unpacked)>;
+
+        if constexpr ( std::is_convertible_v<T, bool> )
+        {
+            if ( !unpacked )
+            {
+                return;
+            }
+        }
+        else if constexpr ( std::same_as<T, std::string> )
+        {
+            if ( unpacked.empty() )
+            {
+                return;
+            }
+        }
+        else
+        {
+            throw std::runtime_error("Error: Expression not convertible to bool.");
+        }
+
+    }, while_eval);
+
+    std::shared_ptr<Scope> while_scope { std::make_shared<Scope>( scope ) };
+
+    NodeMaker while_body_exec { *while_scope };
+
+    bool while_run = true;
+
+    while( while_run )
+    {
+
+        for( const auto& nd : node.body_nodes )
+        {
+            nd->accept( while_body_exec );
+        }
+    
+        while_eval = while_condition_evaluator.evaluate( *node.condition_expr );    
+        
+        std::visit([&](auto&& unpacked) {
+        using T = std::decay_t<decltype(unpacked)>;
+
+        if constexpr ( std::is_convertible_v<T, bool> )
+        {
+            if ( !unpacked )
+            {
+                while_run = false;
+            }
+        }
+        else if constexpr ( std::same_as<T, std::string> )
+        {
+            if ( unpacked.empty() )
+            {
+                while_run = false;
+            }
+        }
+        else
+        {
+            throw std::runtime_error("Error: Expression not convertible to bool.");
+        }
+
+        }, while_eval);
+
     }
 
 }

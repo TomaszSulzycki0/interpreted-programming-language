@@ -30,6 +30,10 @@ std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram(const PARSING_MODE& m
             {
                 ast.push_back( std::move( parseIf() ) );
             }
+            else if ( check( TOKEN_TYPE::TOKEN_KEYWORD_WHILE) )
+            {
+                ast.push_back( std::move( parseWhile() ) );
+            }
             else if ( check( TOKEN_TYPE::TOKEN_IDENTIFIER) )
             {
                 ast.push_back( std::move( parseAssignment() ) );
@@ -43,9 +47,10 @@ std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram(const PARSING_MODE& m
                 advance();
                 consume( TOKEN_TYPE::TOKEN_COMMENT_END, std::string_view("Error: Expected comment end token.") );
             }
-            else if (   check( TOKEN_TYPE::TOKEN_EOF ) ||
-                        check( TOKEN_TYPE::TOKEN_RETURN ) && mode == PARSING_MODE::FUNCTION_BODY ||
-                        check( TOKEN_TYPE::TOKEN_BRACE_CLOSE ) && ( mode == PARSING_MODE::FUNCTION_BODY || mode == PARSING_MODE::IF ) )
+            else if (   ( check( TOKEN_TYPE::TOKEN_EOF ) ) ||
+                        ( check( TOKEN_TYPE::TOKEN_RETURN ) && mode == PARSING_MODE::FUNCTION_BODY ) ||
+                        ( check( TOKEN_TYPE::TOKEN_BRACE_CLOSE ) && ( mode == PARSING_MODE::FUNCTION_BODY || mode == PARSING_MODE::IF || mode == PARSING_MODE::WHILE ) ) 
+                    )
             {
                 break;
             }
@@ -63,7 +68,7 @@ std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram(const PARSING_MODE& m
             while ( !isDone() )
             {
                 if (    check( TOKEN_TYPE::TOKEN_SEMICOLON ) || 
-                        check( TOKEN_TYPE::TOKEN_BRACE_CLOSE ) && (mode == PARSING_MODE::FUNCTION_BODY || mode == PARSING_MODE::IF ) )
+                        check( TOKEN_TYPE::TOKEN_BRACE_CLOSE ) && (mode == PARSING_MODE::FUNCTION_BODY || mode == PARSING_MODE::IF || mode == PARSING_MODE::WHILE ) )
                 {
                     advance();
                     break;
@@ -236,6 +241,22 @@ std::unique_ptr<ASTNode> Parser::parseIf()
     consume( TOKEN_TYPE::TOKEN_BRACE_CLOSE, std::string_view("Error: Expected closing bracket.") );
 
     return std::make_unique<IfNode>( std::move( if_body ), std::move( if_condition ));
+}
+
+std::unique_ptr<ASTNode> Parser::parseWhile()
+{
+    consume( TOKEN_TYPE::TOKEN_KEYWORD_WHILE, std::string_view("Error: Expected 'while' statement.") );
+    consume( TOKEN_TYPE::TOKEN_PARENTHESIS_OPEN, std::string_view("Error: Expected opening parenthesis after 'while' statement.") );
+
+    auto while_condition = rpner.parseRPNCondition( *this );
+    
+    consume( TOKEN_TYPE::TOKEN_BRACE_OPEN, std::string_view("Error: Expected opening bracket.") );
+
+    auto while_body = parseProgram( PARSING_MODE::IF );
+
+    consume( TOKEN_TYPE::TOKEN_BRACE_CLOSE, std::string_view("Error: Expected closing bracket.") );
+
+    return std::make_unique<WhileNode>( std::move( while_body ), std::move( while_condition ));
 }
 
 std::unique_ptr<Expression> Parser::parseAtomicExpression()

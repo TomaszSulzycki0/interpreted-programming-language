@@ -310,11 +310,12 @@ std::ostream& operator<<(std::ostream& os, TOKEN_TYPE type)
         case TOKEN_TYPE::TOKEN_KEYWORD_TYPE:            return os << "TYPE";
         case TOKEN_TYPE::TOKEN_KEYWORD_FUNCTION:        return os << "FUNCTION";
         case TOKEN_TYPE::TOKEN_KEYWORD_IF:              return os << "IF";
+        case TOKEN_TYPE::TOKEN_KEYWORD_WHILE:           return os << "WHILE";
         case TOKEN_TYPE::TOKEN_EQUALS:                  return os << "EQUALS";
         case TOKEN_TYPE::TOKEN_PLUS_EQUALS:             return os << "PLUS_EQUALS";
-        case TOKEN_TYPE::TOKEN_MINUS_EQUALS:            return os << "EQUALS";
-        case TOKEN_TYPE::TOKEN_MUL_EQUALS:              return os << "EQUALS";
-        case TOKEN_TYPE::TOKEN_DIV_EQUALS:              return os << "EQUALS";
+        case TOKEN_TYPE::TOKEN_MINUS_EQUALS:            return os << "MINUS_EQUALS";
+        case TOKEN_TYPE::TOKEN_MUL_EQUALS:              return os << "MUL_EQUALS";
+        case TOKEN_TYPE::TOKEN_DIV_EQUALS:              return os << "DIV_EQUALS";
         case TOKEN_TYPE::TOKEN_UNARY_OPERATOR:          return os << "UNARY_OPERATOR";
         case TOKEN_TYPE::TOKEN_OPERATOR:                return os << "OPERATOR";
         case TOKEN_TYPE::TOKEN_ARROW:                   return os << "ARROW";

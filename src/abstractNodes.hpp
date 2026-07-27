@@ -89,5 +89,20 @@ public:
             condition_expr(std::move( c_expr ) ) {}
 };
 
+class WhileNode : public ASTNode
+{
+public:
+    std::vector<std::unique_ptr<ASTNode>> body_nodes;
+    std::unique_ptr<Expression> condition_expr;
+
+    void accept(NodeVisitor& visitor) const override;
+
+    explicit WhileNode(
+        std::vector<std::unique_ptr<ASTNode>> bdnds,
+        std::unique_ptr<Expression> c_expr) :
+            body_nodes(std::move( bdnds ) ),
+            condition_expr(std::move( c_expr ) ) {}
+};
+
 
 #endif
