@@ -1,8 +1,7 @@
-fn foo(int x) -> void
+fn foo(int x, int y) -> int
 {
-    x += 5;
+    return (x + y) / 2;
 }
 
-int i = 10;
-
-foo(i);
+int y = 0;
+int call = foo( (1+1), (y+4) );

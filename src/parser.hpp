@@ -29,7 +29,8 @@ public:
     virtual bool isDone() const = 0;
     virtual bool check(TOKEN_TYPE type) const = 0;
     virtual std::unique_ptr<Expression> parseAtomicExpression() = 0; 
-    
+    virtual std::unique_ptr<FunctionCallExpression> parseNonVoidFunctionCall() = 0;
+
 };
 
 class Parser : public IParserContext
@@ -49,7 +50,10 @@ private:
     std::unique_ptr<ASTNode> parseDeclaration();
     std::unique_ptr<ASTNode> parseFunctionDeclaration();
     std::unique_ptr<ASTNode> parseVoidFunctionCall();
+
     std::unique_ptr<Expression> parseAtomicExpression(); 
+    std::unique_ptr<FunctionCallExpression> parseNonVoidFunctionCall();
+    std::unique_ptr<FunctionCallExpression> parseFunctionCallArguments( std::string_view f_identifier ); 
 
     // If parser throws at any point, 
     // it continues parsing but marks itself as non executable

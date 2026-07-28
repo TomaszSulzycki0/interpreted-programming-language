@@ -237,25 +237,9 @@ std::unique_ptr<ASTNode> Parser::parseVoidFunctionCall()
     
     consume( TOKEN_TYPE::TOKEN_PARENTHESIS_OPEN, std::string_view("Error: Expected opening parenthesis.") );
 
-    std::vector<std::unique_ptr<Expression>> args;
-            
-    bool end_of_args = false;
-
-    while ( !end_of_args )
-    {
-        std::unique_ptr<Expression> arg_expr = rpner.parseFunctionCallRPN( *this, end_of_args );
-
-        if( !arg_expr )
-        {
-            throw std::runtime_error("Error: Could not parse function argument");
-        }
-
-        args.push_back( std::move( arg_expr ) );
-    }
+    auto fn_expr = parseFunctionCallArguments( fn_identifier.value );
     
     consume( TOKEN_TYPE::TOKEN_SEMICOLON, std::string_view("Error: Expected semicolon.") );
-    
-    std::unique_ptr<FunctionCallExpression> fn_expr = std::make_unique<FunctionCallExpression>( std::string(fn_identifier.value), std::move( args ) ); 
 
     return std::make_unique<FunctionCallNode>( std::string( fn_identifier.value ), std::move( fn_expr) );
 }
@@ -330,33 +314,38 @@ std::unique_ptr<Expression> Parser::parseAtomicExpression()
     {
         Token identifier = advance();
 
-        if ( check( TOKEN_TYPE::TOKEN_PARENTHESIS_OPEN ) )
-        {
-            advance();
-            
-            // Function call logic
-
-            std::vector<std::unique_ptr<Expression>> args;
-            
-            bool end_of_args = false;
-
-            while ( !end_of_args )
-            {
-                std::unique_ptr<Expression> arg_expr = rpner.parseFunctionCallRPN( *this, end_of_args );
-
-                if( !arg_expr )
-                {
-                    throw std::runtime_error("Error: Could not parse function argument");
-                }
-
-                args.push_back( std::move( arg_expr ) );
-            }
-            
-            return std::make_unique<FunctionCallExpression>( std::string(identifier.value), std::move( args ) ); 
-        }
-
         return std::make_unique<VariableExpression>( std::string(identifier.value) );
     }
     
     return nullptr;
 } 
+
+std::unique_ptr<FunctionCallExpression> Parser::parseFunctionCallArguments( std::string_view f_identifier )
+{
+    std::vector<std::unique_ptr<Expression>> args;
+            
+    bool end_of_args = false;
+
+    while ( !end_of_args )
+    {
+        std::unique_ptr<Expression> arg_expr = rpner.parseFunctionCallRPN( *this, end_of_args );
+
+        if( !arg_expr )
+        {
+            throw std::runtime_error("Error: Could not parse function argument");
+        }
+
+        args.push_back( std::move( arg_expr ) );
+    }
+    
+    return std::make_unique<FunctionCallExpression>( std::string( f_identifier ), std::move( args ) );
+} 
+
+std::unique_ptr<FunctionCallExpression> Parser::parseNonVoidFunctionCall()
+{
+    Token fn_identifier = consume( TOKEN_TYPE::TOKEN_FUNCTION_IDENTIFIER, std::string_view("Error: Expected function identifier.") );
+
+    consume( TOKEN_TYPE::TOKEN_PARENTHESIS_OPEN, std::string_view("Error: Expected opening parenthesis.") );
+    
+    return parseFunctionCallArguments( fn_identifier.value );
+}

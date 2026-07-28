@@ -64,6 +64,16 @@ std::unique_ptr<Expression> RPNHandler::parseRPN(IParserContext& pctx)
             expr_stack.push_back( std::move( expr ) );
             expect_value = false;
         }
+        else if ( pctx.check( TOKEN_TYPE::TOKEN_FUNCTION_IDENTIFIER ) )
+        {
+            auto expr = pctx.parseNonVoidFunctionCall();
+            if ( !expr )
+            {
+                throw std::runtime_error("Error: Could not parse function call expression");
+            }
+            expr_stack.push_back( std::move( expr ) );
+            expect_value = false;
+        }
         else if ( pctx.check( TOKEN_TYPE::TOKEN_SEMICOLON ) )
         {
             break;
@@ -157,6 +167,16 @@ std::unique_ptr<Expression> RPNHandler::parseFunctionCallRPN(IParserContext& pct
             if ( !expr )
             {
                 throw std::runtime_error("Error: Could not parse atomic expression");
+            }
+            expr_stack.push_back( std::move( expr ) );
+            expect_value = false;
+        }
+        else if ( pctx.check( TOKEN_TYPE::TOKEN_FUNCTION_IDENTIFIER ) )
+        {
+            auto expr = pctx.parseNonVoidFunctionCall();
+            if ( !expr )
+            {
+                throw std::runtime_error("Error: Could not parse function call expression");
             }
             expr_stack.push_back( std::move( expr ) );
             expect_value = false;
