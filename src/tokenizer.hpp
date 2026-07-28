@@ -22,6 +22,7 @@ enum class TOKENIZER_STATE
 enum class TOKEN_TYPE
 {
     TOKEN_IDENTIFIER,
+    TOKEN_FUNCTION_IDENTIFIER,
     TOKEN_KEYWORD_TYPE,
     TOKEN_KEYWORD_BOOL,
     TOKEN_KEYWORD_FUNCTION,
@@ -72,6 +73,7 @@ private:
         { std::string_view("float"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
         { std::string_view("double"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
         { std::string_view("bool"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
+        { std::string_view("void"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
         { std::string_view("string"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
         { std::string_view("fn"), TOKEN_TYPE::TOKEN_KEYWORD_FUNCTION },
         { std::string_view("true"), TOKEN_TYPE::TOKEN_KEYWORD_BOOL },

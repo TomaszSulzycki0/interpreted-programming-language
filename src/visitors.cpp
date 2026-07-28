@@ -183,7 +183,9 @@ void NodeMaker::visit(const FunctionDeclarationNode& node)
 
 void NodeMaker::visit(const FunctionCallNode& node)
 {
-    
+    ExpressionEvaluator fn_eval { scope };
+
+    fn_eval.visit( *(node.expr) );
 }
 
 void NodeMaker::visit(const IfNode& node)
@@ -532,5 +534,9 @@ void ExpressionEvaluator::visit(const FunctionCallExpression& expr)
         nd->accept(node_exec);
     }
 
-    last_evaluated_value = ret_val_eval.evaluate( *(target_fn->return_expr) );
+    // if non void
+    if ( target_fn->return_expr )
+    {
+        last_evaluated_value = ret_val_eval.evaluate( *(target_fn->return_expr) );
+    }
 }

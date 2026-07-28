@@ -33,8 +33,7 @@ private:
     void handleOpRPN(IParserContext& pctx,
                     std::vector<Token>& operator_stack, 
                     std::vector<std::unique_ptr<Expression>>& expr_stack);
-    void handleClosingParenthesisRPN(IParserContext& pctx,
-                    std::vector<Token>& operator_stack, 
+    void handleClosingParenthesisRPN(std::vector<Token>& operator_stack, 
                     std::vector<std::unique_ptr<Expression>>& expr_stack);
     void makeBinExprRPN(std::vector<Token>& operator_stack, 
                     std::vector<std::unique_ptr<Expression>>& expr_stack);

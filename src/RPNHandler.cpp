@@ -49,7 +49,7 @@ std::unique_ptr<Expression> RPNHandler::parseRPN(IParserContext& pctx)
             // Eat parenthesis
             pctx.advance();
 
-            handleClosingParenthesisRPN( pctx, operator_stack, expr_stack );
+            handleClosingParenthesisRPN( operator_stack, expr_stack );
 
             --unclosed_parenthesis;
             expect_value = false;
@@ -139,7 +139,7 @@ std::unique_ptr<Expression> RPNHandler::parseFunctionCallRPN(IParserContext& pct
             // Eat parenthesis
             pctx.advance();
 
-            handleClosingParenthesisRPN( pctx, operator_stack, expr_stack );
+            handleClosingParenthesisRPN( operator_stack, expr_stack );
 
             --unclosed_parenthesis;
             expect_value = false;
@@ -232,7 +232,7 @@ std::unique_ptr<Expression> RPNHandler::parseRPNCondition(IParserContext& pctx)
             // Eat parenthesis
             pctx.advance();
 
-            handleClosingParenthesisRPN( pctx, operator_stack, expr_stack );
+            handleClosingParenthesisRPN( operator_stack, expr_stack );
 
             --unclosed_parenthesis;
             expect_value = false;
@@ -311,7 +311,7 @@ void RPNHandler::handleOpRPN(IParserContext& pctx, std::vector<Token>& operator_
     operator_stack.push_back( op );
 }
 
-void RPNHandler::handleClosingParenthesisRPN(IParserContext& pctx, std::vector<Token>& operator_stack, std::vector<std::unique_ptr<Expression>>& expr_stack)
+void RPNHandler::handleClosingParenthesisRPN(std::vector<Token>& operator_stack, std::vector<std::unique_ptr<Expression>>& expr_stack)
 {
     while ( !operator_stack.empty() )
     {   

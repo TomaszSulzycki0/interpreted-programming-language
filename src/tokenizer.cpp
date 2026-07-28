@@ -100,7 +100,12 @@ Token Tokenizer::useStateDefault()
     
     if ( isIdentifierStart(c) )
     {
-        return readIdentifier(); 
+        Token identifier = readIdentifier();
+        if ( peek() == '(' ) 
+        {
+            identifier.type = TOKEN_TYPE::TOKEN_FUNCTION_IDENTIFIER;
+        }
+        return identifier; 
     } 
     else if ( isDigit(c) )
     {
@@ -306,6 +311,7 @@ std::ostream& operator<<(std::ostream& os, TOKEN_TYPE type)
     switch (type) 
     {
         case TOKEN_TYPE::TOKEN_IDENTIFIER:              return os << "IDENTIFIER";
+        case TOKEN_TYPE::TOKEN_FUNCTION_IDENTIFIER:     return os << "FUNCTION_IDENTIFIER";
         case TOKEN_TYPE::TOKEN_KEYWORD_BOOL:            return os << "BOOL";
         case TOKEN_TYPE::TOKEN_KEYWORD_TYPE:            return os << "TYPE";
         case TOKEN_TYPE::TOKEN_KEYWORD_FUNCTION:        return os << "FUNCTION";

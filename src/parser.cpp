@@ -42,6 +42,10 @@ std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram(const PARSING_MODE& m
             {
                 ast.push_back( std::move( parseFunctionDeclaration() ) );
             }
+            else if ( check( TOKEN_TYPE::TOKEN_FUNCTION_IDENTIFIER ) )
+            {
+                ast.push_back( std::move( parseVoidFunctionCall() ) );
+            }
             else if ( check( TOKEN_TYPE::TOKEN_COMMENT_START ) )
             {
                 advance();
@@ -68,7 +72,7 @@ std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram(const PARSING_MODE& m
             while ( !isDone() )
             {
                 if (    check( TOKEN_TYPE::TOKEN_SEMICOLON ) || 
-                        check( TOKEN_TYPE::TOKEN_BRACE_CLOSE ) && (mode == PARSING_MODE::FUNCTION_BODY || mode == PARSING_MODE::IF || mode == PARSING_MODE::WHILE ) )
+                        ( check( TOKEN_TYPE::TOKEN_BRACE_CLOSE ) && (mode == PARSING_MODE::FUNCTION_BODY || mode == PARSING_MODE::IF || mode == PARSING_MODE::WHILE ) ) )
                 {
                     advance();
                     break;
@@ -172,7 +176,7 @@ std::unique_ptr<ASTNode> Parser::parseFunctionDeclaration()
 {
     consume( TOKEN_TYPE::TOKEN_KEYWORD_FUNCTION, std::string_view("Error: Expected keyword fn.") );
 
-    Token fn_identifier = consume( TOKEN_TYPE::TOKEN_IDENTIFIER, std::string_view("Error: Expected function identifier.") );
+    Token fn_identifier = consume( TOKEN_TYPE::TOKEN_FUNCTION_IDENTIFIER, std::string_view("Error: Expected function identifier.") );
 
     consume( TOKEN_TYPE::TOKEN_PARENTHESIS_OPEN, std::string_view("Error: Expected opening parenthesis.") );
 
@@ -225,6 +229,35 @@ std::unique_ptr<ASTNode> Parser::parseFunctionDeclaration()
                                                         std::move( fn_args ),
                                                         std::move( fn_body ),
                                                         std::move( fn_ret_expr ) );
+}
+
+std::unique_ptr<ASTNode> Parser::parseVoidFunctionCall()
+{
+    Token fn_identifier = consume( TOKEN_TYPE::TOKEN_FUNCTION_IDENTIFIER, std::string_view("Error: Expected function identifier.") );
+    
+    consume( TOKEN_TYPE::TOKEN_PARENTHESIS_OPEN, std::string_view("Error: Expected opening parenthesis.") );
+
+    std::vector<std::unique_ptr<Expression>> args;
+            
+    bool end_of_args = false;
+
+    while ( !end_of_args )
+    {
+        std::unique_ptr<Expression> arg_expr = rpner.parseFunctionCallRPN( *this, end_of_args );
+
+        if( !arg_expr )
+        {
+            throw std::runtime_error("Error: Could not parse function argument");
+        }
+
+        args.push_back( std::move( arg_expr ) );
+    }
+    
+    consume( TOKEN_TYPE::TOKEN_SEMICOLON, std::string_view("Error: Expected semicolon.") );
+    
+    std::unique_ptr<FunctionCallExpression> fn_expr = std::make_unique<FunctionCallExpression>( std::string(fn_identifier.value), std::move( args ) ); 
+
+    return std::make_unique<FunctionCallNode>( std::string( fn_identifier.value ), std::move( fn_expr) );
 }
 
 std::unique_ptr<ASTNode> Parser::parseIf()

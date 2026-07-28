@@ -45,8 +45,14 @@ class FunctionCallNode : public ASTNode
 {
 public:
     std::string name;
-    std::vector<std::string> args;
+    std::unique_ptr<FunctionCallExpression> expr;
     void accept(NodeVisitor& visitor) const override;
+
+    explicit FunctionCallNode(
+        std::string n,
+        std::unique_ptr<FunctionCallExpression> _expr) :
+            name(std::move(n)),
+            expr(std::move(_expr)) {}
 };
 
 class FunctionDeclarationNode : public ASTNode

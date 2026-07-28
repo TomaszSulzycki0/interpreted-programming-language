@@ -48,6 +48,7 @@ private:
     std::unique_ptr<ASTNode> parseWhile();
     std::unique_ptr<ASTNode> parseDeclaration();
     std::unique_ptr<ASTNode> parseFunctionDeclaration();
+    std::unique_ptr<ASTNode> parseVoidFunctionCall();
     std::unique_ptr<Expression> parseAtomicExpression(); 
 
     // If parser throws at any point, 
