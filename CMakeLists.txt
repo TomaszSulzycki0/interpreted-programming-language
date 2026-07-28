@@ -1,9 +1,13 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.20)
 project(ipl)
 
 set(CMAKE_CXX_STANDARD 23)
 
-set(SOURCE_FILES
+add_executable(ipl)
+
+target_compile_features(ipl PRIVATE cxx_std_23)
+
+target_sources(ipl PRIVATE
 	src/main.cpp
 	src/scope.cpp
 	src/parser.cpp
@@ -15,15 +19,24 @@ set(SOURCE_FILES
 	src/RPNHandler.cpp
 	)
 
-add_executable(ipl ${SOURCE_FILES})
+target_include_directories(ipl PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_compile_options(ipl PRIVATE
-    $<$<CONFIG:Debug>:-Wall -Wextra -O0 -g>
-)
+if(MSVC)
+    target_compile_options(ipl PRIVATE /W4 /WX)
+else()
+    target_compile_options(ipl PRIVATE 
+        -Wall 
+        -Wextra 
+        -Wpedantic
+		-Werror
+        $<$<CONFIG:Debug>:-O0 -g>
+        $<$<CONFIG:Release>:-O3>
+    )
+endif()
 
 
 configure_file(
-    "${CMAKE_SOURCE_DIR}/testFiles/input.ipl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/testFiles/input.ipl"
     "${CMAKE_CURRENT_BINARY_DIR}/testFiles/input.ipl"
     COPYONLY
 )
