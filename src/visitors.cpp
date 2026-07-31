@@ -162,6 +162,7 @@ void NodeMaker::visit(const FunctionDeclarationNode& node)
     concrete_decl = std::make_shared<FunctionDeclaration>(  std::string( node.name ),
                                                             node.arg_nodes.size(),
                                                             fn_arg_names,
+                                                            node.return_type,
                                                             std::move( fn_scope ),
                                                             raw_body,
                                                             node.return_expr.get() );

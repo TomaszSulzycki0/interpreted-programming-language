@@ -1,7 +1,0 @@
-fn foo(int x, int y) -> int
-{
-    return (x + y) / 2;
-}
-
-int y = 0;
-int call = foo( (1+1), (y+4) );

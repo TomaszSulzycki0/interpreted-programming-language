@@ -28,6 +28,7 @@ public:
     using Declaration::Declaration;
     virtual RuntimeValue getValue() const = 0;
     virtual void setValue(const RuntimeValue& val) = 0;
+    virtual std::string getType() const = 0;
 };
 
 class FunctionDeclaration : public Declaration
@@ -35,6 +36,7 @@ class FunctionDeclaration : public Declaration
 private:
     std::size_t num_args;
     std::vector<std::string> arg_names;
+    std::string_view return_type;
     
 public:
     std::shared_ptr<Scope> scope;
@@ -45,21 +47,22 @@ public:
 
     std::vector<std::string> getArgNames() const { return arg_names; }
     std::size_t getNumArgs() const { return num_args; }
+    std::string_view getReturnType() const { return return_type; }
+
     explicit FunctionDeclaration(   std::string_view _name, 
                                     std::size_t _num_args,
                                     std::vector<std::string> _arg_names,
+                                    std::string_view _return_type,
                                     std::shared_ptr<Scope> _scope,
                                     std::vector<ASTNode*> _body_nodes,
                                     Expression* _return_expr
                                 ) : Declaration(_name), 
                                     num_args(_num_args), 
                                     arg_names(_arg_names),
+                                    return_type(_return_type),
                                     scope( std::move( _scope ) ),
                                     body_nodes( _body_nodes ),
-                                    return_expr(_return_expr)
-    {
-        
-    }
+                                    return_expr(_return_expr) {}
 };
 
 #endif
