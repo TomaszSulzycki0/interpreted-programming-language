@@ -77,6 +77,22 @@ public:
     explicit NodeMaker(Scope& s) : scope(s) {}
 };
 
+class NodeTypeChecker : public NodeVisitor
+{
+private:
+    std::unordered_map<std::string, std::string> variable_types;
+    std::unordered_map<std::string, std::string> function_return_types;    
+
+public:
+    void visit(const AssignmentNode& node) override;
+    void visit(const DeclarationNode& node) override;
+    void visit(const FunctionDeclarationNode& node) override;
+    void visit(const FunctionCallNode& node) override;
+    void visit(const IfNode&) override {}
+    void visit(const WhileNode&) override {}
+
+};
+
 class ExpressionVisitor 
 {
 public:

@@ -10,6 +10,7 @@
 #include"parser.hpp"
 #include"visitors.hpp"
 #include"builder.hpp"
+#include"typeChecker.hpp"
 
 constexpr int num_args_for_default_usage = 2;
 constexpr int num_args_for_description = 1;
@@ -47,6 +48,7 @@ int main(int argc, char** argv)
         Parser parser { readFileToString(input_filename) };
         Scope main_scope {};
         Builder builder {main_scope};
+        TypeChecker type_checker {};
         
         std::cout << "Lexing.." << std::endl;
         parser.tokenizeProgram();
@@ -58,8 +60,12 @@ int main(int argc, char** argv)
 
         if ( parser.isASTExecutable() )
         {
+            std::cout << "Resolving types.." << std::endl;
+
+            type_checker.run_check( program_ast );
+
             std::cout << "Executing.." << std::endl;
-            builder.buildProgram(program_ast); 
+            builder.buildProgram( program_ast ); 
         }
 
     }

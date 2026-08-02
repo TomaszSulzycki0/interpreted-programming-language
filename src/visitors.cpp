@@ -541,3 +541,23 @@ void ExpressionEvaluator::visit(const FunctionCallExpression& expr)
         last_evaluated_value = ret_val_eval.evaluate( *(target_fn->return_expr) );
     }
 }
+
+void NodeTypeChecker::visit(const AssignmentNode& )
+{
+
+}
+
+void NodeTypeChecker::visit(const DeclarationNode& )
+{
+
+}
+
+void NodeTypeChecker::visit(const FunctionDeclarationNode& )
+{
+
+}
+
+void NodeTypeChecker::visit(const FunctionCallNode& )
+{
+
+}
