@@ -42,8 +42,9 @@ class LiteralExpression final : public Expression
 {
 public:
     const std::string value;
-    explicit LiteralExpression(std::string v) : value(std::move(v)) {}
-    LiteralExpression(const LiteralExpression& other) : value(other.value) {}
+    const std::string tp;
+    explicit LiteralExpression(std::string v, std::string _tp) : value(std::move(v)), tp(std::move(_tp)) {}
+    LiteralExpression(const LiteralExpression& other) : value(other.value), tp(other.tp) {}
 
     void accept(ExpressionVisitor& visitor) const override;
 

@@ -292,22 +292,32 @@ std::unique_ptr<Expression> Parser::parseAtomicExpression()
         
         if ( str_body_or_end.type == TOKEN_TYPE::TOKEN_STRING_END )
         {
-            return std::make_unique<LiteralExpression>("");
+            return std::make_unique<LiteralExpression>("", "string");
         }
         else if ( str_body_or_end.type == TOKEN_TYPE::TOKEN_STRING_BODY )
         {
             consume( TOKEN_TYPE::TOKEN_STRING_END, std::string_view("Error: Expected string end literal.") );
-            return std::make_unique<LiteralExpression>("\"" + std::string(str_body_or_end.value) + "\"");
+            return std::make_unique<LiteralExpression>("\"" + std::string(str_body_or_end.value) + "\"", "string");
         }
         return nullptr;
     }
-    
-    if (    check( TOKEN_TYPE::TOKEN_LITERAL_FLOAT ) || 
-            check( TOKEN_TYPE::TOKEN_LITERAL_INTEGRAL ) || 
-            check( TOKEN_TYPE::TOKEN_KEYWORD_BOOL ) ) // Later can pass exact info to expression obj
+
+    if ( check( TOKEN_TYPE::TOKEN_LITERAL_FLOAT ) )
     {
         Token literal = advance();
-        return std::make_unique<LiteralExpression>( std::string(literal.value) );
+        return std::make_unique<LiteralExpression>( std::string(literal.value), "float" );
+    }
+
+    if ( check( TOKEN_TYPE::TOKEN_LITERAL_INTEGRAL ) )
+    {
+        Token literal = advance();
+        return std::make_unique<LiteralExpression>( std::string(literal.value), "int" );
+    }
+    
+    if ( check( TOKEN_TYPE::TOKEN_KEYWORD_BOOL ) )
+    {
+        Token literal = advance();
+        return std::make_unique<LiteralExpression>( std::string(literal.value), "bool" );
     }
     
     if ( check( TOKEN_TYPE::TOKEN_IDENTIFIER ) )

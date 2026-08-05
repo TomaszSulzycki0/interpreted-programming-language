@@ -589,7 +589,7 @@ std::string ExpressionTypeEvaluator::evaluateType(const Expression& expr)
 
 void ExpressionTypeEvaluator::visit(const LiteralExpression& expr)
 {
-
+    last_evaluated_type = expr.tp;
 }
 
 void ExpressionTypeEvaluator::visit(const VariableExpression&)
