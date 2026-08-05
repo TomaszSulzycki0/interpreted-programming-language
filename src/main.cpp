@@ -46,9 +46,12 @@ int main(int argc, char** argv)
     {
         std::cout << "Evaluating: " + input_filename << std::endl;
         Parser parser { readFileToString(input_filename) };
+
+        SemanticScope main_semantic_scope {};
+        TypeChecker type_checker {main_semantic_scope};
+        
         Scope main_scope {};
         Builder builder {main_scope};
-        TypeChecker type_checker {};
         
         std::cout << "Lexing.." << std::endl;
         parser.tokenizeProgram();
@@ -60,7 +63,7 @@ int main(int argc, char** argv)
 
         if ( parser.isASTExecutable() )
         {
-            std::cout << "Resolving types.." << std::endl;
+            std::cout << "Checking types.." << std::endl;
 
             type_checker.run_check( program_ast );
 

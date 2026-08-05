@@ -7,6 +7,7 @@
 
 class Declaration;
 
+// Scope class for declarations
 class Scope
 {
 private:
@@ -24,6 +25,28 @@ public:
 
     explicit Scope(); 
     explicit Scope(std::shared_ptr<Scope> parent);
+
+};
+
+// Scope class for running the type checker.
+// Stores the types / return types in case of functions
+class SemanticScope
+{
+private:
+    std::shared_ptr<SemanticScope> parent_scope = nullptr;
+    std::unordered_map<std::string, std::string> variable_types;
+
+public:
+
+    void define(std::string_view name, std::string_view tp) 
+    {
+        variable_types[std::string(name)] = std::string(tp);
+    }
+
+    std::string lookup(std::string_view name) const;
+
+    explicit SemanticScope(); 
+    explicit SemanticScope(std::shared_ptr<SemanticScope> parent);
 
 };
 

@@ -4,7 +4,7 @@
 
 void TypeChecker::run_check(const std::vector<std::unique_ptr<ASTNode>>& nodes)
 {
-    NodeTypeChecker node_visitor {};
+    NodeTypeChecker node_visitor {scope};
 
     for ( const auto& node : nodes )
     {

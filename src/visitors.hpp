@@ -30,6 +30,7 @@ class IfNode;
 class WhileNode;
 
 class Scope;
+class SemanticScope;
 
 class DeclarationVisitor 
 {
@@ -80,8 +81,7 @@ public:
 class NodeTypeChecker : public NodeVisitor
 {
 private:
-    std::unordered_map<std::string, std::string> variable_types;
-    std::unordered_map<std::string, std::string> function_return_types;    
+    SemanticScope& scope;
 
 public:
     void visit(const AssignmentNode& node) override;
@@ -91,6 +91,7 @@ public:
     void visit(const IfNode&) override {}
     void visit(const WhileNode&) override {}
 
+    explicit NodeTypeChecker(SemanticScope& s) : scope(s) {}
 };
 
 class ExpressionVisitor 
@@ -123,6 +124,22 @@ public:
     void visit(const FunctionCallExpression& expr) override;
 
     explicit ExpressionEvaluator(const Scope& s) : scope(s) {}
+};
+
+class ExpressionTypeEvaluator final : public ExpressionVisitor 
+{
+private:
+    const SemanticScope& scope;
+    std::string last_evaluated_type;
+public:
+    std::string evaluateType(const Expression& expr);
+    void visit(const LiteralExpression& expr) override;
+    void visit(const VariableExpression& expr) override;
+    void visit(const BinaryExpression& expr) override;
+    void visit(const UnaryExpression& expr) override;
+    void visit(const FunctionCallExpression& expr) override;
+
+    explicit ExpressionTypeEvaluator(const SemanticScope& s) : scope(s) {}
 };
 
 #endif

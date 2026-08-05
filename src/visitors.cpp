@@ -547,9 +547,9 @@ void NodeTypeChecker::visit(const AssignmentNode& )
 
 }
 
-void NodeTypeChecker::visit(const DeclarationNode& )
+void NodeTypeChecker::visit(const DeclarationNode& node)
 {
-
+    const auto decl_tp = node.type;
 }
 
 void NodeTypeChecker::visit(const FunctionDeclarationNode& )
@@ -561,3 +561,36 @@ void NodeTypeChecker::visit(const FunctionCallNode& )
 {
 
 }
+
+std::string ExpressionTypeEvaluator::evaluateType(const Expression&)
+{
+    return "";
+}
+
+void ExpressionTypeEvaluator::visit(const LiteralExpression&)
+{
+    
+}
+
+void ExpressionTypeEvaluator::visit(const VariableExpression&)
+{
+
+}
+
+void ExpressionTypeEvaluator::visit(const BinaryExpression&)
+{
+
+}
+
+void ExpressionTypeEvaluator::visit(const UnaryExpression&)
+{
+
+}
+
+void ExpressionTypeEvaluator::visit(const FunctionCallExpression&)
+{
+
+}
+
+
+

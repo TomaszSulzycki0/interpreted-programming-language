@@ -8,12 +8,15 @@
 
 class NodeTypeChecker;
 class ASTNode;
+class SemanticScope;
 
-// TODO: TypeChecker should check scope
 class TypeChecker
 {
+private: 
+    SemanticScope& scope;
 public:
     void run_check(const std::vector<std::unique_ptr<ASTNode>>& nodes);
+    explicit TypeChecker(SemanticScope& s) : scope(s) {}
 };
 
 #endif
