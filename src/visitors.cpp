@@ -550,6 +550,25 @@ void NodeTypeChecker::visit(const AssignmentNode& )
 void NodeTypeChecker::visit(const DeclarationNode& node)
 {
     const auto decl_tp = node.type;
+
+    if( !node.initializer )
+    {
+        return;
+    }
+
+    ExpressionTypeEvaluator type_evaluator { scope };
+
+    std::string expr_type = type_evaluator.evaluateType( *node.initializer );
+
+    if ( expr_type.empty() )
+    {
+        throw std::runtime_error("Type error: Unable to evaluate expression type.");
+    }
+
+    if ( expr_type != decl_tp )
+    {
+        throw std::runtime_error("Type error: Declared type '" + decl_tp + "' is incompatible with '" + expr_type + "'.");
+    }
 }
 
 void NodeTypeChecker::visit(const FunctionDeclarationNode& )
@@ -562,14 +581,15 @@ void NodeTypeChecker::visit(const FunctionCallNode& )
 
 }
 
-std::string ExpressionTypeEvaluator::evaluateType(const Expression&)
+std::string ExpressionTypeEvaluator::evaluateType(const Expression& expr)
 {
-    return "";
+    expr.accept(*this);
+    return last_evaluated_type;
 }
 
-void ExpressionTypeEvaluator::visit(const LiteralExpression&)
+void ExpressionTypeEvaluator::visit(const LiteralExpression& expr)
 {
-    
+
 }
 
 void ExpressionTypeEvaluator::visit(const VariableExpression&)

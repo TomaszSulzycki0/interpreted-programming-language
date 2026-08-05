@@ -8,7 +8,14 @@ void TypeChecker::run_check(const std::vector<std::unique_ptr<ASTNode>>& nodes)
 
     for ( const auto& node : nodes )
     {
-        node->accept( node_visitor );
+        try
+        {
+            node->accept( node_visitor );
+        }
+        catch ( const std::exception& e )
+        {
+            std::cerr << e.what() << '\n';
+            is_well_typed = false;
+        }
     }
-
 }

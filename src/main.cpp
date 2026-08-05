@@ -64,13 +64,14 @@ int main(int argc, char** argv)
         if ( parser.isASTExecutable() )
         {
             std::cout << "Checking types.." << std::endl;
-
             type_checker.run_check( program_ast );
-
+        }
+        
+        if ( type_checker.isASTWellTyped() )
+        {
             std::cout << "Executing.." << std::endl;
             builder.buildProgram( program_ast ); 
         }
-
     }
     catch(const std::exception& e)
     {
