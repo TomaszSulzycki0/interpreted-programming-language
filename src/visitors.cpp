@@ -549,7 +549,12 @@ void NodeTypeChecker::visit(const AssignmentNode& )
 
 void NodeTypeChecker::visit(const DeclarationNode& node)
 {
-    const auto decl_tp = node.type;
+    const auto& declaration_type = node.type;
+
+    if ( !( scope->lookupLocal( node.name ).empty() ) )
+    {
+        throw std::runtime_error("Error: Variable '" + node.name + "' was already declared in this scope.");
+    }
 
     if( !node.initializer )
     {
@@ -567,22 +572,33 @@ void NodeTypeChecker::visit(const DeclarationNode& node)
 
     // Implicit casting here
 
-    if ( expr_type != decl_tp )
+    if ( expr_type != declaration_type )
     {
-        throw std::runtime_error("Type error: Declared type '" + decl_tp + "' is incompatible with '" + expr_type + "'.");
+        throw std::runtime_error("Type error: Declared type '" + declaration_type + "' of declaration '" + node.name + "' is incompatible with '" + expr_type + "'.");
     }
 
+    scope->define( node.name, declaration_type );
 
 }
 
-void NodeTypeChecker::visit(const FunctionDeclarationNode& )
+void NodeTypeChecker::visit(const FunctionDeclarationNode& node)
 {
+    // TODO: Save argument types, number of arguments
+    // TODO: Run type checker inside function body
 
+    scope->define( node.name, node.return_type );
 }
 
-void NodeTypeChecker::visit(const FunctionCallNode& )
+void NodeTypeChecker::visit(const FunctionCallNode& node)
 {
+    std::string fn_type = scope->lookup( node.name );
 
+    if ( fn_type.empty() )
+    {
+        throw std::runtime_error("Type error: Function '" + node.name + "' is undefined.");
+    }
+
+    // TODO: Warning about ignoring return value for non-void functions
 }
 
 std::string ExpressionTypeEvaluator::evaluateType(const Expression& expr)
@@ -596,24 +612,55 @@ void ExpressionTypeEvaluator::visit(const LiteralExpression& expr)
     last_evaluated_type = expr.tp;
 }
 
-void ExpressionTypeEvaluator::visit(const VariableExpression&)
+void ExpressionTypeEvaluator::visit(const VariableExpression& expr)
 {
+    std::string var_type = scope->lookup( expr.name );
+
+    if ( var_type.empty() )
+    {
+        throw std::runtime_error("Type error: Variable '" + expr.name + "' is undefined.");
+    }
+
+    last_evaluated_type = var_type;
+}
+
+void ExpressionTypeEvaluator::visit(const BinaryExpression& expr)
+{
+    // TODO: Checking operand-operator compatibility
+    // TODO: Arithmetic upcasting
+
+    std::string left_type = this->evaluateType( *(expr.expr_left) );
+    std::string right_type = this->evaluateType( *(expr.expr_right) );
+
+    if ( left_type == "string" && right_type == "string" && expr.expr_operator == "+" )
+    {
+        last_evaluated_type = "string";
+    }
+
+    // const static std::unordered_map<std::string, int> numeric_type_hierarchy = 
+    // {
+    //     { "int", 0 },
+    //     { "float", 1 },
+    //     { "double", 2 }
+    // };
 
 }
 
-void ExpressionTypeEvaluator::visit(const BinaryExpression&)
+void ExpressionTypeEvaluator::visit(const UnaryExpression& expr)
 {
-
+    last_evaluated_type = this->evaluateType( *(expr.child) );
 }
 
-void ExpressionTypeEvaluator::visit(const UnaryExpression&)
+void ExpressionTypeEvaluator::visit(const FunctionCallExpression& expr)
 {
+    std::string fn_ret_type = scope->lookup( expr.name );
 
-}
+    if ( fn_ret_type.empty() )
+    {
+        throw std::runtime_error("Type error: Function '" + expr.name + "' is undefined.");
+    }
 
-void ExpressionTypeEvaluator::visit(const FunctionCallExpression&)
-{
-
+    last_evaluated_type = fn_ret_type;
 }
 
 
