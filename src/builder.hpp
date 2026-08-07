@@ -10,9 +10,9 @@ class ASTNode;
 class Builder 
 {
 private:
-    Scope& scope;
+    std::shared_ptr<Scope> scope;
 public:
-    explicit Builder(Scope& s) : scope(s) {}
+    explicit Builder(std::shared_ptr<Scope> s) : scope(std::move(s)) {}
     void buildProgram(const std::vector<std::unique_ptr<ASTNode>>& ast); 
 };
 

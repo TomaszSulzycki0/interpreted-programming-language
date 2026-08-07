@@ -47,11 +47,11 @@ int main(int argc, char** argv)
         std::cout << "Evaluating: " + input_filename << std::endl;
         Parser parser { readFileToString(input_filename) };
 
-        SemanticScope main_semantic_scope {};
-        TypeChecker type_checker {main_semantic_scope};
+        std::shared_ptr<SemanticScope> main_semantic_scope { std::make_shared<SemanticScope>() };
+        TypeChecker type_checker { main_semantic_scope };
         
-        Scope main_scope {};
-        Builder builder {main_scope};
+        std::shared_ptr<Scope> main_scope { std::make_shared<Scope>() };
+        Builder builder { main_scope };
         
         std::cout << "Lexing.." << std::endl;
         parser.tokenizeProgram();

@@ -10,10 +10,10 @@ void NodeMaker::visit(const AssignmentNode& node)
     ExpressionEvaluator evaluator {scope};
     RuntimeValue new_value = evaluator.evaluate(*node.value_expr);
     
-    auto existing_var = scope.lookup(node.name);
+    auto existing_var = scope->lookup(node.name);
     if ( !existing_var )
     {
-        throw std::runtime_error("Error: Variable '" + std::string( node.name ) + "' is undefined.");
+        throw std::runtime_error("Error: '" + std::string( node.name ) + "' is undefined.");
     }
 
     auto target_var = std::dynamic_pointer_cast<ValueDeclaration>(existing_var);
@@ -36,7 +36,7 @@ void NodeMaker::visit(const AssignmentNode& node)
 
 void NodeMaker::visit(const DeclarationNode& node)
 {
-    if ( scope.lookup( node.name ))
+    if ( scope->lookupLocal( node.name ))
     {
         throw std::runtime_error("Error: Variable '" + std::string( node.name ) + "' redefinition.");
     }
@@ -118,7 +118,7 @@ void NodeMaker::visit(const DeclarationNode& node)
         throw std::runtime_error("Error: Could not declare variable of type: " + std::string( node.type ));
     }
 
-    scope.define(node.name, concrete_decl);
+    scope->define(node.name, concrete_decl);
 
     // DUBUG
     //
@@ -132,7 +132,7 @@ void NodeMaker::visit(const FunctionDeclarationNode& node)
 {
     std::shared_ptr<Declaration> concrete_decl = nullptr;
     
-    if ( scope.lookup( node.name ))
+    if ( scope->lookupLocal( node.name ))
     {
         throw std::runtime_error("Error: Function '" + std::string( node.name ) + "' redefinition.");
     }
@@ -140,7 +140,7 @@ void NodeMaker::visit(const FunctionDeclarationNode& node)
     // Function local scope
     std::shared_ptr<Scope> fn_scope { std::make_shared<Scope>(scope) };
     
-    NodeMaker fn_arg_maker { *fn_scope };
+    NodeMaker fn_arg_maker { fn_scope };
 
     std::vector<std::string> fn_arg_names;
 
@@ -172,7 +172,7 @@ void NodeMaker::visit(const FunctionDeclarationNode& node)
         throw std::runtime_error("Error: Could not declare function");
     }
     
-    scope.define(node.name, concrete_decl);
+    scope->define(node.name, concrete_decl);
 
     // DEBUG
     //
@@ -221,7 +221,7 @@ void NodeMaker::visit(const IfNode& node)
 
     std::shared_ptr<Scope> if_scope { std::make_shared<Scope>( scope ) };
 
-    NodeMaker if_body_exec { *if_scope };
+    NodeMaker if_body_exec { if_scope };
 
     for( const auto& nd : node.body_nodes )
     {
@@ -262,7 +262,7 @@ void NodeMaker::visit(const WhileNode& node)
 
     std::shared_ptr<Scope> while_scope { std::make_shared<Scope>( scope ) };
 
-    NodeMaker while_body_exec { *while_scope };
+    NodeMaker while_body_exec { while_scope };
 
     bool while_run = true;
 
@@ -433,7 +433,7 @@ void ExpressionEvaluator::visit(const VariableExpression& expr)
 {
     const std::string var_name = expr.name;
 
-    auto decl = scope.lookup(var_name);
+    auto decl = scope->lookup(var_name);
     if ( !decl )
     {
         throw std::runtime_error("Error: Variable '" + std::string( var_name ) + "' is undefined.");
@@ -485,7 +485,7 @@ void ExpressionEvaluator::visit(const UnaryExpression& expr)
 
 void ExpressionEvaluator::visit(const FunctionCallExpression& expr)
 {
-    auto existing_fn = scope.lookup(expr.name);
+    auto existing_fn = scope->lookup(expr.name);
     if ( !existing_fn )
     {
         throw std::runtime_error("Error: Function '" + std::string( expr.name ) + "' is undefined.");
@@ -502,8 +502,8 @@ void ExpressionEvaluator::visit(const FunctionCallExpression& expr)
         throw std::runtime_error("Error: Invalid number of arguments provided. Expected " + std::to_string( target_fn->getNumArgs() ) + "." );
     }
 
-    NodeMaker node_exec { *(target_fn->scope) };
-    ExpressionEvaluator ret_val_eval { *(target_fn->scope) };
+    NodeMaker node_exec { target_fn->scope };
+    ExpressionEvaluator ret_val_eval { target_fn->scope };
 
     for( std::size_t i {}; i < target_fn->getNumArgs(); ++i )
     {
@@ -565,10 +565,14 @@ void NodeTypeChecker::visit(const DeclarationNode& node)
         throw std::runtime_error("Type error: Unable to evaluate expression type.");
     }
 
+    // Implicit casting here
+
     if ( expr_type != decl_tp )
     {
         throw std::runtime_error("Type error: Declared type '" + decl_tp + "' is incompatible with '" + expr_type + "'.");
     }
+
+
 }
 
 void NodeTypeChecker::visit(const FunctionDeclarationNode& )

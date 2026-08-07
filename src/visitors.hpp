@@ -66,7 +66,7 @@ public:
 class NodeMaker : public NodeVisitor
 {
 private:
-    Scope& scope;
+    std::shared_ptr<Scope> scope;
 public:
     void visit(const AssignmentNode& node) override;
     void visit(const DeclarationNode& node) override;
@@ -75,13 +75,13 @@ public:
     void visit(const IfNode& node) override;
     void visit(const WhileNode& node) override;
 
-    explicit NodeMaker(Scope& s) : scope(s) {}
+    explicit NodeMaker(std::shared_ptr<Scope> s) : scope(std::move(s)) {}
 };
 
 class NodeTypeChecker : public NodeVisitor
 {
 private:
-    SemanticScope& scope;
+    std::shared_ptr<SemanticScope> scope;
 
 public:
     void visit(const AssignmentNode& node) override;
@@ -91,7 +91,7 @@ public:
     void visit(const IfNode&) override {}
     void visit(const WhileNode&) override {}
 
-    explicit NodeTypeChecker(SemanticScope& s) : scope(s) {}
+    explicit NodeTypeChecker(std::shared_ptr<SemanticScope> s) : scope(std::move(s)) {}
 };
 
 class ExpressionVisitor 
@@ -109,7 +109,7 @@ public:
 class ExpressionEvaluator final : public ExpressionVisitor 
 {
 private:
-    const Scope& scope;
+    std::shared_ptr<Scope> scope;
     RuntimeValue last_evaluated_value = 0.0;
     RuntimeValue resolveOperator(   const RuntimeValue& v_left, 
                                     const RuntimeValue& v_right,
@@ -123,13 +123,13 @@ public:
     void visit(const UnaryExpression& expr) override;
     void visit(const FunctionCallExpression& expr) override;
 
-    explicit ExpressionEvaluator(const Scope& s) : scope(s) {}
+    explicit ExpressionEvaluator(std::shared_ptr<Scope> s) : scope(std::move(s)) {}
 };
 
 class ExpressionTypeEvaluator final : public ExpressionVisitor 
 {
 private:
-    const SemanticScope& scope;
+    std::shared_ptr<SemanticScope> scope;
     std::string last_evaluated_type;
 public:
     std::string evaluateType(const Expression& expr);
@@ -139,7 +139,7 @@ public:
     void visit(const UnaryExpression& expr) override;
     void visit(const FunctionCallExpression& expr) override;
 
-    explicit ExpressionTypeEvaluator(const SemanticScope& s) : scope(s) {}
+    explicit ExpressionTypeEvaluator(std::shared_ptr<SemanticScope> s) : scope(std::move(s)) {}
 };
 
 #endif

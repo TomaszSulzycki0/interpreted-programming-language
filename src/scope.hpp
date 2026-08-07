@@ -21,7 +21,11 @@ public:
         symbols[std::string(name)] = std::move(decl);
     }
 
+    // Looks up the declaration in current or parent scopes
     std::shared_ptr<Declaration> lookup(std::string_view name) const;
+
+    // Looks up the declaration in the current scope
+    std::shared_ptr<Declaration> lookupLocal(std::string_view name) const;
 
     explicit Scope(); 
     explicit Scope(std::shared_ptr<Scope> parent);
@@ -43,7 +47,11 @@ public:
         variable_types[std::string(name)] = std::string(tp);
     }
 
+    // Looks up the assosiated type in current or parent scopes
     std::string lookup(std::string_view name) const;
+
+    // Looks up the assosiated type in current scope
+    std::string lookupLocal(std::string_view name) const;
 
     explicit SemanticScope(); 
     explicit SemanticScope(std::shared_ptr<SemanticScope> parent);
