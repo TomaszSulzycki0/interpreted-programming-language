@@ -97,7 +97,7 @@ std::unique_ptr<Expression> RPNHandler::parseRPN(IParserContext& pctx)
 
     if ( expr_stack.size() != 1 )
     {
-        throw std::runtime_error("Error: Invalid expression");
+        throw std::runtime_error("Error: Unable to resolve expression");
     }
 
     return std::move( expr_stack.front() );
@@ -188,7 +188,7 @@ std::unique_ptr<Expression> RPNHandler::parseFunctionCallRPN(IParserContext& pct
         }
         else
         {
-            throw std::runtime_error("Error: Invalid expression");
+            throw std::runtime_error("Error: Invalid function argument expression");
         }
     }
 
@@ -198,12 +198,20 @@ std::unique_ptr<Expression> RPNHandler::parseFunctionCallRPN(IParserContext& pct
         makeBinExprRPN( operator_stack, expr_stack );   
     }
 
-    if ( expr_stack.size() != 1 )
+    // Should be left with either one expression composed of others
+    // or no expressions in case of no arguments passed to function call
+    if ( expr_stack.size() == 1 )
     {
-        throw std::runtime_error("Error: Invalid expression");
+        return std::move( expr_stack.front() );
     }
-
-    return std::move( expr_stack.front() );
+    else if ( expr_stack.size() == 0 )
+    {
+        return nullptr;
+    }
+    else
+    {
+        throw std::runtime_error("Error: Unable to resolve function argument expression");
+    }
 }
 
 std::unique_ptr<Expression> RPNHandler::parseRPNCondition(IParserContext& pctx)

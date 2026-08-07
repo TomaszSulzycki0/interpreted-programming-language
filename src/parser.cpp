@@ -340,11 +340,6 @@ std::unique_ptr<FunctionCallExpression> Parser::parseFunctionCallArguments( std:
     {
         std::unique_ptr<Expression> arg_expr = rpner.parseFunctionCallRPN( *this, end_of_args );
 
-        if( !arg_expr )
-        {
-            throw std::runtime_error("Error: Could not parse function argument");
-        }
-
         args.push_back( std::move( arg_expr ) );
     }
     
