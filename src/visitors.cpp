@@ -542,9 +542,29 @@ void ExpressionEvaluator::visit(const FunctionCallExpression& expr)
     }
 }
 
-void NodeTypeChecker::visit(const AssignmentNode& )
+void NodeTypeChecker::visit(const AssignmentNode& node)
 {
+    std::string var_type = scope->lookup( node.name );
 
+    if ( var_type.empty() )
+    {
+        throw std::runtime_error("Type error: Variable '" + node.name + "' is undefined.");
+    }
+
+    ExpressionTypeEvaluator type_evaluator { scope };
+
+    std::string expr_type = type_evaluator.evaluateType( *node.value_expr );
+
+    if ( expr_type.empty() )
+    {
+        throw std::runtime_error("Type error: Unable to evaluate expression type.");
+    }
+
+    if ( expr_type != var_type )
+    {
+        throw std::runtime_error("Type error: Type '" + var_type + "' of declaration '" + node.name + "' is incompatible with '" + expr_type + "'.");
+    }
+    
 }
 
 void NodeTypeChecker::visit(const DeclarationNode& node)
@@ -632,18 +652,12 @@ void ExpressionTypeEvaluator::visit(const BinaryExpression& expr)
     std::string left_type = this->evaluateType( *(expr.expr_left) );
     std::string right_type = this->evaluateType( *(expr.expr_right) );
 
-    if ( left_type == "string" && right_type == "string" && expr.expr_operator == "+" )
+    if ( left_type != right_type )
     {
-        last_evaluated_type = "string";
+        throw std::runtime_error("Type error: Implicit type conversion not allowed. Evaluated types: '" + left_type + "', '" + right_type + "'.");
     }
 
-    // const static std::unordered_map<std::string, int> numeric_type_hierarchy = 
-    // {
-    //     { "int", 0 },
-    //     { "float", 1 },
-    //     { "double", 2 }
-    // };
-
+    last_evaluated_type = left_type;
 }
 
 void ExpressionTypeEvaluator::visit(const UnaryExpression& expr)
