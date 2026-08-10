@@ -340,7 +340,10 @@ std::unique_ptr<FunctionCallExpression> Parser::parseFunctionCallArguments( std:
     {
         std::unique_ptr<Expression> arg_expr = rpner.parseFunctionCallRPN( *this, end_of_args );
 
-        args.push_back( std::move( arg_expr ) );
+        if ( arg_expr )
+        {
+            args.push_back( std::move( arg_expr ) );
+        }
     }
     
     return std::make_unique<FunctionCallExpression>( std::string( f_identifier ), std::move( args ) );
