@@ -88,8 +88,8 @@ public:
     void visit(const DeclarationNode& node) override;
     void visit(const FunctionDeclarationNode& node) override;
     void visit(const FunctionCallNode& node) override;
-    void visit(const IfNode&) override {}
-    void visit(const WhileNode&) override {}
+    void visit(const IfNode& node) override;
+    void visit(const WhileNode& node) override;
 
     explicit NodeTypeChecker(std::shared_ptr<SemanticScope> s) : scope(std::move(s)) {}
 };

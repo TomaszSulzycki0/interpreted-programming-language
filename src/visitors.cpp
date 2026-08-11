@@ -548,7 +548,7 @@ void NodeTypeChecker::visit(const AssignmentNode& node)
 
     if ( var_type.empty() )
     {
-        throw std::runtime_error("Type error: Variable '" + node.name + "' is undefined.");
+        throw std::runtime_error("Error: Variable '" + node.name + "' is undefined.");
     }
 
     ExpressionTypeEvaluator type_evaluator { scope };
@@ -578,6 +578,7 @@ void NodeTypeChecker::visit(const DeclarationNode& node)
 
     if( !node.initializer )
     {
+        scope->define( node.name, declaration_type );
         return;
     }
 
@@ -604,7 +605,19 @@ void NodeTypeChecker::visit(const DeclarationNode& node)
 void NodeTypeChecker::visit(const FunctionDeclarationNode& node)
 {
     // TODO: Save argument types, number of arguments
-    // TODO: Run type checker inside function body
+
+    std::shared_ptr<SemanticScope> fn_body_scope = std::make_shared<SemanticScope>( scope );
+    NodeTypeChecker fn_body_checker { fn_body_scope };
+
+    for ( const auto& arg_node : node.arg_nodes )
+    {
+        fn_body_scope->define( arg_node->name, arg_node->type );    
+    }
+
+    for ( const auto& bd_node : node.body_nodes )
+    {    
+        bd_node->accept( fn_body_checker );   
+    }
 
     scope->define( node.name, node.return_type );
 }
@@ -615,10 +628,37 @@ void NodeTypeChecker::visit(const FunctionCallNode& node)
 
     if ( fn_type.empty() )
     {
-        throw std::runtime_error("Type error: Function '" + node.name + "' is undefined.");
+        throw std::runtime_error("Error: Function '" + node.name + "' is undefined.");
     }
 
     // TODO: Warning about ignoring return value for non-void functions
+}
+
+
+void NodeTypeChecker::visit(const WhileNode& node)
+{
+    // TODO: Check implicit conversion of condition to bool
+
+    std::shared_ptr<SemanticScope> while_body_scope = std::make_shared<SemanticScope>( scope );
+    NodeTypeChecker while_body_checker { while_body_scope };
+
+    for ( const auto& bd_node : node.body_nodes )
+    {    
+        bd_node->accept( while_body_checker );   
+    }
+}
+
+void NodeTypeChecker::visit(const IfNode& node) 
+{
+    // TODO: Check implicit conversion of condition to bool
+
+    std::shared_ptr<SemanticScope> if_body_scope = std::make_shared<SemanticScope>( scope );
+    NodeTypeChecker if_body_checker { if_body_scope };
+
+    for ( const auto& bd_node : node.body_nodes )
+    {    
+        bd_node->accept( if_body_checker );   
+    }
 }
 
 std::string ExpressionTypeEvaluator::evaluateType(const Expression& expr)
@@ -638,7 +678,7 @@ void ExpressionTypeEvaluator::visit(const VariableExpression& expr)
 
     if ( var_type.empty() )
     {
-        throw std::runtime_error("Type error: Variable '" + expr.name + "' is undefined.");
+        throw std::runtime_error("Error: Variable '" + expr.name + "' is undefined.");
     }
 
     last_evaluated_type = var_type;
@@ -671,7 +711,7 @@ void ExpressionTypeEvaluator::visit(const FunctionCallExpression& expr)
 
     if ( fn_ret_type.empty() )
     {
-        throw std::runtime_error("Type error: Function '" + expr.name + "' is undefined.");
+        throw std::runtime_error("Error: Function '" + expr.name + "' is undefined.");
     }
 
     last_evaluated_type = fn_ret_type;
