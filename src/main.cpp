@@ -67,7 +67,7 @@ int main(int argc, char** argv)
             type_checker.run_check( program_ast );
         }
         
-        if ( type_checker.isASTWellTyped() )
+        if ( type_checker.isASTWellTyped() && parser.isASTExecutable() )
         {
             std::cout << "Executing.." << std::endl;
             builder.buildProgram( program_ast ); 

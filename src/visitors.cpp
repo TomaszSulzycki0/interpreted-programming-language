@@ -50,7 +50,7 @@ void NodeMaker::visit(const DeclarationNode& node)
     else 
     {
         if (node.type == "int") raw_value = 0;
-        else if (node.type == "ddouble" || node.type == "float") raw_value = 0.0;
+        else if (node.type == "double" || node.type == "float") raw_value = 0.0;
         else if (node.type == "string") raw_value = "";
         else if (node.type == "bool") raw_value = 0;
     }
@@ -609,14 +609,24 @@ void NodeTypeChecker::visit(const FunctionDeclarationNode& node)
     std::shared_ptr<SemanticScope> fn_body_scope = std::make_shared<SemanticScope>( scope );
     NodeTypeChecker fn_body_checker { fn_body_scope };
 
+    std::vector<std::string> fn_arg_data {};
+
     for ( const auto& arg_node : node.arg_nodes )
     {
         fn_body_scope->define( arg_node->name, arg_node->type );    
+        fn_arg_data.push_back( arg_node->type );
     }
+
+    scope->storeFnArgTypes( node.name, fn_arg_data );
 
     for ( const auto& bd_node : node.body_nodes )
     {    
         bd_node->accept( fn_body_checker );   
+    }
+
+    if ( node.return_type != "void" && !node.return_expr)
+    {
+        throw std::runtime_error("Error: Missing return statement inside non-void function.");
     }
 
     scope->define( node.name, node.return_type );
@@ -625,11 +635,16 @@ void NodeTypeChecker::visit(const FunctionDeclarationNode& node)
 void NodeTypeChecker::visit(const FunctionCallNode& node)
 {
     std::string fn_type = scope->lookup( node.name );
-
+    
     if ( fn_type.empty() )
     {
         throw std::runtime_error("Error: Function '" + node.name + "' is undefined.");
     }
+
+    ExpressionTypeEvaluator type_evaluator { scope };
+    
+    std::string expr_type = type_evaluator.evaluateType( *node.expr );
+
 
     // TODO: Warning about ignoring return value for non-void functions
 }
@@ -713,6 +728,27 @@ void ExpressionTypeEvaluator::visit(const FunctionCallExpression& expr)
     {
         throw std::runtime_error("Error: Function '" + expr.name + "' is undefined.");
     }
+
+    auto fn_metadata = scope->getFnArgTypes( expr.name );
+    
+    auto num_args = fn_metadata.size();
+    auto num_args_provided = expr.args.size(); 
+
+    if ( num_args != num_args_provided )
+    {
+        throw std::runtime_error("Error: Invalid number of arguments for function call provided. Provided: '" + std::to_string(num_args_provided) + "', expected: '" + std::to_string(num_args) + "'.");
+    }
+
+    for ( std::size_t i {}; i < num_args; i++ )
+    {
+        std::string arg_type = this->evaluateType( *(expr.args[i]) );
+
+        if ( fn_metadata[i] != arg_type )
+        {
+            throw std::runtime_error("Type error: The type of argument " + std::to_string(i + 1) + " (" + arg_type + ") is incompatible with '" + fn_metadata[i] + "'.");
+        }
+    }
+
 
     last_evaluated_type = fn_ret_type;
 }
