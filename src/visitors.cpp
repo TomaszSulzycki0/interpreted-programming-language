@@ -591,15 +591,30 @@ void NodeTypeChecker::visit(const DeclarationNode& node)
         throw std::runtime_error("Type error: Unable to evaluate expression type.");
     }
 
-    // Implicit casting here
-
     if ( expr_type != declaration_type )
     {
-        throw std::runtime_error("Type error: Declared type '" + declaration_type + "' of declaration '" + node.name + "' is incompatible with '" + expr_type + "'.");
+        // TODO: Converting all types to bool
+
+        if ( isNumeric(expr_type) && isNumeric(declaration_type) )
+        {
+            int expr_rank = getTypeConversionRank(expr_type);
+            int decl_rank = getTypeConversionRank(declaration_type);
+            
+            if ( decl_rank < expr_rank )
+            {
+                throw std::runtime_error("Type error: Implicit type demotion to '" + declaration_type + "' of declaration '" + node.name + "' from '" + expr_type + "' is not allowed.");
+            }
+        }
+        else
+        {
+            // TODO: Converting numerics to strings in string concatenation here
+
+            throw std::runtime_error("Type error: Declared type '" + declaration_type + "' of declaration '" + node.name + "' is incompatible with '" + expr_type + "'.");
+        }
+
     }
-
+        
     scope->define( node.name, declaration_type );
-
 }
 
 void NodeTypeChecker::visit(const FunctionDeclarationNode& node)

@@ -83,6 +83,25 @@ class NodeTypeChecker : public NodeVisitor
 private:
     std::shared_ptr<SemanticScope> scope;
 
+    bool isNumeric(const std::string& tp) const
+    {
+        if ( tp == "int" || tp == "float" || tp == "double" || tp == "bool" )
+        {
+            return true;
+        }
+        return false;
+    }
+
+    int getTypeConversionRank(const std::string& tp) const
+    {
+        if ( tp == "bool" )     return 0;
+        if ( tp == "int" )      return 1;
+        if ( tp == "float" )    return 2;
+        if ( tp == "double" )   return 3;
+
+        return -1;
+    }
+
 public:
     void visit(const AssignmentNode& node) override;
     void visit(const DeclarationNode& node) override;
