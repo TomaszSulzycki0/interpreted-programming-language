@@ -83,6 +83,26 @@ class NodeTypeChecker : public NodeVisitor
 private:
     std::shared_ptr<SemanticScope> scope;
 
+    void checkTypeUpCasting(const std::string& from, const std::string& to) const
+    {
+        if ( isNumeric(from) && isNumeric(to) )
+        {
+            int from_rank = getTypeConversionRank(from);
+            int to_rank = getTypeConversionRank(to);
+            
+            if ( to_rank < from_rank )
+            {
+                throw std::runtime_error("Type error: Implicit type demotion to '" + to + "' from '" + from + "' is not allowed.");
+            }
+        }
+        else
+        {
+            // TODO: Converting numerics to strings in string concatenation here
+
+            throw std::runtime_error("Type error: Declared type '" + to + "' is incompatible with '" + from + "'.");
+        }
+    }
+
     bool isNumeric(const std::string& tp) const
     {
         if ( tp == "int" || tp == "float" || tp == "double" || tp == "bool" )
