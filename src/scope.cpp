@@ -5,6 +5,16 @@
 Scope::Scope() = default;
 Scope::Scope(std::shared_ptr<Scope> parent) : parent_scope(std::move(parent)) {}
 
+void Scope::printScope() const
+{
+    std::cout << "--- Scope debug ---\n";
+    for ( const auto& decl : symbols )
+    {
+        std::cout << decl.first << "\n";
+    }
+    std::cout << "-------------------\n";
+}
+
 std::shared_ptr<Declaration> Scope::lookup(std::string_view name) const 
 {
     auto it = symbols.find( std::string(name) );
@@ -37,7 +47,11 @@ std::vector<std::string> SemanticScope::getFnArgTypes(std::string_view name) con
     auto it = fn_arg_data.find( std::string(name) );
     if ( it == fn_arg_data.end() )
     {
-        // Should not be possible in practice
+        if ( parent_scope != nullptr )
+        {
+            return parent_scope->getFnArgTypes(name);
+        }
+
         throw std::runtime_error("Unexpected error during function argument type lookup");
     }
 

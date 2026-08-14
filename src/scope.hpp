@@ -16,6 +16,8 @@ private:
 
 public:
 
+    void printScope() const;
+
     void define(std::string_view name, std::shared_ptr<Declaration> decl) 
     {
         symbols[std::string(name)] = std::move(decl);

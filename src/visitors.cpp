@@ -260,14 +260,13 @@ void NodeMaker::visit(const WhileNode& node)
 
     }, while_eval);
 
-    std::shared_ptr<Scope> while_scope { std::make_shared<Scope>( scope ) };
-
-    NodeMaker while_body_exec { while_scope };
-
     bool while_run = true;
 
     while( while_run )
     {
+        std::shared_ptr<Scope> while_scope { std::make_shared<Scope>( scope ) };
+
+        NodeMaker while_body_exec { while_scope };
 
         for( const auto& nd : node.body_nodes )
         {
@@ -502,8 +501,7 @@ void ExpressionEvaluator::visit(const FunctionCallExpression& expr)
         throw std::runtime_error("Error: Invalid number of arguments provided. Expected " + std::to_string( target_fn->getNumArgs() ) + "." );
     }
 
-    NodeMaker node_exec { target_fn->scope };
-    ExpressionEvaluator ret_val_eval { target_fn->scope };
+
 
     for( std::size_t i {}; i < target_fn->getNumArgs(); ++i )
     {
@@ -530,6 +528,10 @@ void ExpressionEvaluator::visit(const FunctionCallExpression& expr)
         }, arg_value);
     }
 
+    std::shared_ptr<Scope> fn_scope_cpy = std::make_shared<Scope>(*(target_fn->scope));
+
+    NodeMaker node_exec { fn_scope_cpy };
+
     for ( const auto& nd : target_fn->body_nodes )
     {
         nd->accept(node_exec);
@@ -538,6 +540,7 @@ void ExpressionEvaluator::visit(const FunctionCallExpression& expr)
     // if non void
     if ( target_fn->return_expr )
     {
+        ExpressionEvaluator ret_val_eval { fn_scope_cpy };
         last_evaluated_value = ret_val_eval.evaluate( *(target_fn->return_expr) );
     }
 }
@@ -603,8 +606,6 @@ void NodeTypeChecker::visit(const DeclarationNode& node)
 
 void NodeTypeChecker::visit(const FunctionDeclarationNode& node)
 {
-    // TODO: Save argument types, number of arguments
-
     std::shared_ptr<SemanticScope> fn_body_scope = std::make_shared<SemanticScope>( scope );
     NodeTypeChecker fn_body_checker { fn_body_scope };
 
@@ -623,7 +624,7 @@ void NodeTypeChecker::visit(const FunctionDeclarationNode& node)
         bd_node->accept( fn_body_checker );   
     }
 
-    if ( node.return_type != "void" && !node.return_expr)
+    if ( ( node.return_type != "void" ) && !node.return_expr)
     {
         throw std::runtime_error("Error: Missing return statement inside non-void function.");
     }
@@ -700,7 +701,6 @@ void ExpressionTypeEvaluator::visit(const VariableExpression& expr)
 void ExpressionTypeEvaluator::visit(const BinaryExpression& expr)
 {
     // TODO: Checking operand-operator compatibility
-    // TODO: Arithmetic upcasting
 
     std::string left_type = this->evaluateType( *(expr.expr_left) );
     std::string right_type = this->evaluateType( *(expr.expr_right) );
