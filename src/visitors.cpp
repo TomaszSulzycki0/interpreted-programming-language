@@ -193,7 +193,9 @@ void NodeMaker::visit(const IfNode& node)
 {
     ExpressionEvaluator if_condition_evaluator { scope };
 
-    RuntimeValue if_eval = if_condition_evaluator.evaluate( *node.condition_expr ); 
+    RuntimeValue if_eval = if_condition_evaluator.evaluate( *node.condition_expr );
+
+    bool should_execute = true;
 
     std::visit([&](auto&& unpacked) {
         using T = std::decay_t<decltype(unpacked)>;
@@ -202,14 +204,14 @@ void NodeMaker::visit(const IfNode& node)
         {
             if ( !unpacked )
             {
-                return;
+                should_execute = false;
             }
         }
         else if constexpr ( std::same_as<T, std::string> )
         {
             if ( unpacked.empty() )
             {
-                return;
+                should_execute = false;
             }
         }
         else
@@ -218,6 +220,11 @@ void NodeMaker::visit(const IfNode& node)
         }
 
     }, if_eval);
+
+    if ( !should_execute)
+    {
+        return;
+    }
 
     std::shared_ptr<Scope> if_scope { std::make_shared<Scope>( scope ) };
 
@@ -236,6 +243,8 @@ void NodeMaker::visit(const WhileNode& node)
 
     RuntimeValue while_eval = while_condition_evaluator.evaluate( *node.condition_expr ); 
 
+    bool should_execute = true;
+
     std::visit([&](auto&& unpacked) {
         using T = std::decay_t<decltype(unpacked)>;
 
@@ -243,14 +252,14 @@ void NodeMaker::visit(const WhileNode& node)
         {
             if ( !unpacked )
             {
-                return;
+                should_execute = false;
             }
         }
         else if constexpr ( std::same_as<T, std::string> )
         {
             if ( unpacked.empty() )
             {
-                return;
+                should_execute = false;
             }
         }
         else
@@ -260,9 +269,12 @@ void NodeMaker::visit(const WhileNode& node)
 
     }, while_eval);
 
-    bool while_run = true;
+    if ( !should_execute )
+    {
+        return;
+    }
 
-    while( while_run )
+    while( should_execute )
     {
         std::shared_ptr<Scope> while_scope { std::make_shared<Scope>( scope ) };
 
@@ -282,14 +294,14 @@ void NodeMaker::visit(const WhileNode& node)
         {
             if ( !unpacked )
             {
-                while_run = false;
+                should_execute = false;
             }
         }
         else if constexpr ( std::same_as<T, std::string> )
         {
             if ( unpacked.empty() )
             {
-                while_run = false;
+                should_execute = false;
             }
         }
         else
@@ -376,6 +388,7 @@ RuntimeValue ExpressionEvaluator::resolveOperator(const RuntimeValue& v_left, co
         { "*", [](auto& l, auto& r) { return evaluateBinaryOp(l, r, std::multiplies<>{}); } },
         { "/", [](auto& l, auto& r) { return evaluateBinaryOp(l, r, std::divides<>{}); } },
         { "==", [](auto& l, auto& r) { return evaluateBinaryOp(l, r, std::equal_to<>{}); } },
+        { "!=", [](auto& l, auto& r) { return evaluateBinaryOp(l, r, std::not_equal_to<>{}); } },
         { ">=", [](auto& l, auto& r) { return evaluateBinaryOp(l, r, std::greater_equal<>{}); } },
         { "<=", [](auto& l, auto& r) { return evaluateBinaryOp(l, r, std::less_equal<>{}); } },
         { ">", [](auto& l, auto& r) { return evaluateBinaryOp(l, r, std::greater<>{}); } },
