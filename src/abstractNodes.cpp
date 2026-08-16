@@ -30,3 +30,8 @@ void WhileNode::accept(NodeVisitor& visitor) const
 {
     visitor.visit(*this);
 }
+
+void ReturnNode::accept(NodeVisitor& visitor) const 
+{
+    visitor.visit(*this);
+}

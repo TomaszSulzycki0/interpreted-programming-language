@@ -164,8 +164,7 @@ void NodeMaker::visit(const FunctionDeclarationNode& node)
                                                             fn_arg_names,
                                                             node.return_type,
                                                             std::move( fn_scope ),
-                                                            raw_body,
-                                                            node.return_expr.get() );
+                                                            raw_body );
     
     if ( !concrete_decl )
     {
@@ -233,6 +232,13 @@ void NodeMaker::visit(const IfNode& node)
     for( const auto& nd : node.body_nodes )
     {
         nd->accept( if_body_exec );
+        if ( if_body_exec.reached_return_statement )
+        {
+            this->reached_return_statement = true;
+            this->return_expression = std::move( if_body_exec.return_expression );
+            if_body_exec.return_expression = nullptr;
+            break;
+        }
     }
 
 }
@@ -283,8 +289,19 @@ void NodeMaker::visit(const WhileNode& node)
         for( const auto& nd : node.body_nodes )
         {
             nd->accept( while_body_exec );
+            if ( while_body_exec.reached_return_statement )
+            {
+                this->reached_return_statement = true;
+                this->return_expression = std::move( while_body_exec.return_expression );
+                break;
+            }
         }
-    
+
+        if ( reached_return_statement )
+        {
+            break;
+        }
+
         while_eval = while_condition_evaluator.evaluate( *node.condition_expr );    
         
         std::visit([&](auto&& unpacked) {
@@ -313,6 +330,19 @@ void NodeMaker::visit(const WhileNode& node)
 
     }
 
+}
+
+void NodeMaker::visit(const ReturnNode& node)
+{
+    this->reached_return_statement = true;
+    if ( node.ret_expr )
+    {
+        this->return_expression = node.ret_expr->clone();
+    }
+    else
+    {
+        this->return_expression = nullptr;
+    }
 }
 
 void PrintVisitor::visit(const NumericDeclaration& num_decl) 
@@ -514,8 +544,6 @@ void ExpressionEvaluator::visit(const FunctionCallExpression& expr)
         throw std::runtime_error("Error: Invalid number of arguments provided. Expected " + std::to_string( target_fn->getNumArgs() ) + "." );
     }
 
-
-
     for( std::size_t i {}; i < target_fn->getNumArgs(); ++i )
     {
 
@@ -548,14 +576,24 @@ void ExpressionEvaluator::visit(const FunctionCallExpression& expr)
     for ( const auto& nd : target_fn->body_nodes )
     {
         nd->accept(node_exec);
+        if ( node_exec.reached_return_statement )
+        {
+            Expression* ret_expr = node_exec.getReturnExpression();
+            if ( ret_expr )
+            {
+                ExpressionEvaluator ret_val_eval { fn_scope_cpy };
+                last_evaluated_value = ret_val_eval.evaluate( *(ret_expr) );
+            }
+            break;
+        }
     }
 
     // if non void
-    if ( target_fn->return_expr )
-    {
-        ExpressionEvaluator ret_val_eval { fn_scope_cpy };
-        last_evaluated_value = ret_val_eval.evaluate( *(target_fn->return_expr) );
-    }
+    // if ( target_fn->return_expr )
+    // {
+    //     ExpressionEvaluator ret_val_eval { fn_scope_cpy };
+    //     last_evaluated_value = ret_val_eval.evaluate( *(target_fn->return_expr) );
+    // }
 }
 
 void NodeTypeChecker::visit(const AssignmentNode& node)
@@ -635,10 +673,10 @@ void NodeTypeChecker::visit(const FunctionDeclarationNode& node)
         bd_node->accept( fn_body_checker );   
     }
 
-    if ( ( node.return_type != "void" ) && !node.return_expr)
-    {
-        throw std::runtime_error("Error: Missing return statement inside non-void function.");
-    }
+    // if ( ( node.return_type != "void" ) && !node.return_expr)
+    // {
+    //     throw std::runtime_error("Error: Missing return statement inside non-void function.");
+    // }
 
     scope->define( node.name,  VariableData("fn", node.return_type) );
 }

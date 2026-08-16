@@ -51,8 +51,11 @@ std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram(const PARSING_MODE& m
                 advance();
                 consume( TOKEN_TYPE::TOKEN_COMMENT_END, std::string_view("Error: Expected comment end token.") );
             }
+            else if ( check( TOKEN_TYPE::TOKEN_RETURN ) )
+            {
+                ast.push_back( std::move( parseReturn() ) );
+            }
             else if (   ( check( TOKEN_TYPE::TOKEN_EOF ) ) ||
-                        ( check( TOKEN_TYPE::TOKEN_RETURN ) && mode == PARSING_MODE::FUNCTION_BODY ) ||
                         ( check( TOKEN_TYPE::TOKEN_BRACE_CLOSE ) && ( mode == PARSING_MODE::FUNCTION_BODY || mode == PARSING_MODE::IF || mode == PARSING_MODE::WHILE ) ) 
                     )
             {
@@ -213,22 +216,12 @@ std::unique_ptr<ASTNode> Parser::parseFunctionDeclaration()
 
     auto fn_body = parseProgram( PARSING_MODE::FUNCTION_BODY );
 
-    std::unique_ptr<Expression> fn_ret_expr = nullptr;
-
-    if ( check( TOKEN_TYPE::TOKEN_RETURN ) )
-    {
-        advance();
-        fn_ret_expr = rpner.parseRPN( *this );
-        consume( TOKEN_TYPE::TOKEN_SEMICOLON, std::string_view("Error: Expected semicolon.") );
-    }
-
     consume( TOKEN_TYPE::TOKEN_BRACE_CLOSE, std::string_view("Error: Expected closing bracket.") );
 
     return std::make_unique<FunctionDeclarationNode>(   std::string( fn_ret_type.value ),
                                                         std::string( fn_identifier.value ),
                                                         std::move( fn_args ),
-                                                        std::move( fn_body ),
-                                                        std::move( fn_ret_expr ) );
+                                                        std::move( fn_body ) );
 }
 
 std::unique_ptr<ASTNode> Parser::parseVoidFunctionCall()
@@ -274,6 +267,21 @@ std::unique_ptr<ASTNode> Parser::parseWhile()
     consume( TOKEN_TYPE::TOKEN_BRACE_CLOSE, std::string_view("Error: Expected closing bracket.") );
 
     return std::make_unique<WhileNode>( std::move( while_body ), std::move( while_condition ));
+}
+
+std::unique_ptr<ASTNode> Parser::parseReturn()
+{
+    consume( TOKEN_TYPE::TOKEN_RETURN, std::string_view("Error: Expected return statement.") );
+
+    std::unique_ptr<Expression> expr = nullptr;
+    
+    expr = rpner.parseRPN(*this);
+
+    // "return;" is allowed
+
+    consume( TOKEN_TYPE::TOKEN_SEMICOLON, std::string_view("Error: Expected semicolon.") );
+
+    return std::make_unique<ReturnNode>( std::move(expr) );
 }
 
 std::unique_ptr<Expression> Parser::parseAtomicExpression()

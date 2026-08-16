@@ -28,6 +28,7 @@ class FunctionDeclarationNode;
 class FunctionCallNode;
 class IfNode;
 class WhileNode;
+class ReturnNode;
 
 class Scope;
 class SemanticScope;
@@ -59,6 +60,7 @@ public:
     virtual void visit(const FunctionCallNode& node) = 0;
     virtual void visit(const IfNode& node) = 0;
     virtual void visit(const WhileNode& node) = 0;
+    virtual void visit(const ReturnNode& node) = 0;
 
     virtual ~NodeVisitor() = default;
 };
@@ -67,6 +69,7 @@ class NodeMaker : public NodeVisitor
 {
 private:
     std::shared_ptr<Scope> scope;
+    std::unique_ptr<Expression> return_expression = nullptr;
 public:
     void visit(const AssignmentNode& node) override;
     void visit(const DeclarationNode& node) override;
@@ -74,6 +77,11 @@ public:
     void visit(const FunctionCallNode& node) override;
     void visit(const IfNode& node) override;
     void visit(const WhileNode& node) override;
+    void visit(const ReturnNode& node) override;
+
+    bool reached_return_statement = false;
+
+    Expression* getReturnExpression() const { return return_expression.get(); }
 
     explicit NodeMaker(std::shared_ptr<Scope> s) : scope(std::move(s)) {}
 };
@@ -129,6 +137,7 @@ public:
     void visit(const FunctionCallNode& node) override;
     void visit(const IfNode& node) override;
     void visit(const WhileNode& node) override;
+    void visit(const ReturnNode&) override {};
 
     explicit NodeTypeChecker(std::shared_ptr<SemanticScope> s) : scope(std::move(s)) {}
 };

@@ -62,7 +62,6 @@ public:
     std::string name;
     std::vector<std::unique_ptr<DeclarationNode>> arg_nodes;
     std::vector<std::unique_ptr<ASTNode>> body_nodes;
-    std::unique_ptr<Expression> return_expr;
 
     void accept(NodeVisitor& visitor) const override;
 
@@ -70,13 +69,11 @@ public:
         std::string rt, 
         std::string n, 
         std::vector<std::unique_ptr<DeclarationNode>> _args,
-        std::vector<std::unique_ptr<ASTNode>> bdnds,
-        std::unique_ptr<Expression> ret_expr) :
+        std::vector<std::unique_ptr<ASTNode>> bdnds) :
             return_type(std::move(rt)), 
             name(std::move(n)), 
             arg_nodes(std::move(_args)),
-            body_nodes(std::move(bdnds)),
-            return_expr(std::move(ret_expr)) {}
+            body_nodes(std::move(bdnds) ) {}
 
 };
 
@@ -108,6 +105,16 @@ public:
         std::unique_ptr<Expression> c_expr) :
             body_nodes(std::move( bdnds ) ),
             condition_expr(std::move( c_expr ) ) {}
+};
+
+class ReturnNode : public ASTNode
+{
+public:
+    std::unique_ptr<Expression> ret_expr;
+
+    void accept(NodeVisitor& visitor) const override;
+
+    explicit ReturnNode( std::unique_ptr<Expression> r_expr ) : ret_expr(std::move(r_expr)) {}
 };
 
 

@@ -97,7 +97,8 @@ std::unique_ptr<Expression> RPNHandler::parseRPN(IParserContext& pctx)
 
     if ( expr_stack.size() != 1 )
     {
-        throw std::runtime_error("Error: Unable to resolve expression");
+        //throw std::runtime_error("Error: Unable to resolve expression");
+        return nullptr;
     }
 
     return std::move( expr_stack.front() );
