@@ -101,7 +101,8 @@ Token Tokenizer::useStateDefault()
     if ( isIdentifierStart(c) )
     {
         Token identifier = readIdentifier();
-        if ( peek() == '(' ) 
+        if ( peek() == '(' && !(identifier.type == TOKEN_TYPE::TOKEN_KEYWORD_IF || 
+                                identifier.type == TOKEN_TYPE::TOKEN_KEYWORD_WHILE ) )
         {
             identifier.type = TOKEN_TYPE::TOKEN_FUNCTION_IDENTIFIER;
         }
