@@ -36,18 +36,25 @@ public:
 
 // Scope class for running the type checker.
 // Stores the types / return types in case of functions
+
+struct VariableData
+{
+    std::string type;
+    std::string function_return_type = "";
+};
+
 class SemanticScope
 {
 private:
     std::shared_ptr<SemanticScope> parent_scope = nullptr;
-    std::unordered_map<std::string, std::string> variable_types;
+    std::unordered_map<std::string, VariableData> variable_types;
     std::unordered_map<std::string, std::vector<std::string>> fn_arg_data;
 
 public:
 
-    void define(std::string_view name, std::string_view tp) 
+    void define(std::string_view name, VariableData data) 
     {
-        variable_types[std::string(name)] = std::string(tp);
+        variable_types[std::string(name)] = data;
     }
 
     void storeFnArgTypes(std::string_view name, std::vector<std::string> tps)
@@ -58,10 +65,10 @@ public:
     std::vector<std::string> getFnArgTypes(std::string_view name) const;
 
     // Looks up the assosiated type in current or parent scopes
-    std::string lookup(std::string_view name) const;
+    VariableData lookup(std::string_view name) const;
 
     // Looks up the assosiated type in current scope
-    std::string lookupLocal(std::string_view name) const;
+    VariableData lookupLocal(std::string_view name) const;
 
     explicit SemanticScope(); 
     explicit SemanticScope(std::shared_ptr<SemanticScope> parent);

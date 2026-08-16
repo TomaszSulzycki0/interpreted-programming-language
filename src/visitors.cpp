@@ -560,7 +560,7 @@ void ExpressionEvaluator::visit(const FunctionCallExpression& expr)
 
 void NodeTypeChecker::visit(const AssignmentNode& node)
 {
-    std::string var_type = scope->lookup( node.name );
+    std::string var_type = scope->lookup( node.name ).type;
 
     if ( var_type.empty() )
     {
@@ -587,14 +587,14 @@ void NodeTypeChecker::visit(const DeclarationNode& node)
 {
     const auto& declaration_type = node.type;
 
-    if ( !( scope->lookupLocal( node.name ).empty() ) )
+    if ( !( scope->lookupLocal( node.name ).type.empty() ) )
     {
         throw std::runtime_error("Error: Variable '" + node.name + "' was already declared in this scope.");
     }
 
     if( !node.initializer )
     {
-        scope->define( node.name, declaration_type );
+        scope->define( node.name, VariableData(declaration_type) );
         return;
     }
 
@@ -609,12 +609,10 @@ void NodeTypeChecker::visit(const DeclarationNode& node)
 
     if ( expr_type != declaration_type )
     {
-        // TODO: Converting all types to bool
-
         checkTypeUpCasting( expr_type, declaration_type );
     }
         
-    scope->define( node.name, declaration_type );
+    scope->define( node.name, VariableData(declaration_type) );
 }
 
 void NodeTypeChecker::visit(const FunctionDeclarationNode& node)
@@ -626,7 +624,7 @@ void NodeTypeChecker::visit(const FunctionDeclarationNode& node)
 
     for ( const auto& arg_node : node.arg_nodes )
     {
-        fn_body_scope->define( arg_node->name, arg_node->type );    
+        fn_body_scope->define( arg_node->name,  VariableData(arg_node->type));    
         fn_arg_data.push_back( arg_node->type );
     }
 
@@ -642,12 +640,12 @@ void NodeTypeChecker::visit(const FunctionDeclarationNode& node)
         throw std::runtime_error("Error: Missing return statement inside non-void function.");
     }
 
-    scope->define( node.name, node.return_type );
+    scope->define( node.name,  VariableData("fn", node.return_type) );
 }
 
 void NodeTypeChecker::visit(const FunctionCallNode& node)
 {
-    std::string fn_type = scope->lookup( node.name );
+    std::string fn_type = scope->lookup( node.name ).function_return_type;
     
     if ( fn_type.empty() )
     {
@@ -701,7 +699,7 @@ void ExpressionTypeEvaluator::visit(const LiteralExpression& expr)
 
 void ExpressionTypeEvaluator::visit(const VariableExpression& expr)
 {
-    std::string var_type = scope->lookup( expr.name );
+    std::string var_type = scope->lookup( expr.name ).type;
 
     if ( var_type.empty() )
     {
@@ -733,8 +731,8 @@ void ExpressionTypeEvaluator::visit(const UnaryExpression& expr)
 
 void ExpressionTypeEvaluator::visit(const FunctionCallExpression& expr)
 {
-    std::string fn_ret_type = scope->lookup( expr.name );
-
+    std::string fn_ret_type = scope->lookup( expr.name ).function_return_type;
+    
     if ( fn_ret_type.empty() )
     {
         throw std::runtime_error("Error: Function '" + expr.name + "' is undefined.");

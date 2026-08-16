@@ -58,7 +58,7 @@ std::vector<std::string> SemanticScope::getFnArgTypes(std::string_view name) con
     return it->second;
 }
 
-std::string SemanticScope::lookup(std::string_view name) const 
+VariableData SemanticScope::lookup(std::string_view name) const 
 {
     auto it = variable_types.find( std::string(name) );
     if ( it == variable_types.end() ) 
@@ -67,17 +67,17 @@ std::string SemanticScope::lookup(std::string_view name) const
         {
             return parent_scope->lookup(name);
         }
-        return "";
+        return VariableData();
     }
     return it->second;
 }
 
-std::string SemanticScope::lookupLocal(std::string_view name) const 
+VariableData SemanticScope::lookupLocal(std::string_view name) const 
 {
     auto it = variable_types.find( std::string(name) );
     if ( it == variable_types.end() ) 
     {
-        return "";
+        return VariableData();
     }
     return it->second;
 }
