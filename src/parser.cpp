@@ -203,7 +203,7 @@ std::unique_ptr<ASTNode> Parser::parseFunctionDeclaration()
         
     }
 
-    consume( TOKEN_TYPE::TOKEN_PARENTHESIS_CLOSE, std::string_view("Error: Expected closing parenthesis.") );
+    consume( TOKEN_TYPE::TOKEN_PARENTHESIS_CLOSE, std::string_view("Error: Unexpected keyword after opening parenthesis.") );
     
     consume( TOKEN_TYPE::TOKEN_ARROW, std::string_view("Error: Expected return type identification arrow '->'.") );
 
