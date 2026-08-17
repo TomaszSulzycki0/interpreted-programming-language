@@ -39,8 +39,10 @@ private:
     std::string_view return_type;
     
 public:
-    std::shared_ptr<Scope> scope;
     std::vector<ASTNode*> body_nodes;
+    std::vector<DeclarationNode*> arg_nodes;
+    std::shared_ptr<Scope> declaration_scope;
+
 public:
     void accept(DeclarationVisitor& visitor) const override { visitor.visit(*this); }
 
@@ -52,14 +54,16 @@ public:
                                     std::size_t _num_args,
                                     std::vector<std::string> _arg_names,
                                     std::string_view _return_type,
-                                    std::shared_ptr<Scope> _scope,
-                                    std::vector<ASTNode*> _body_nodes
+                                    std::vector<ASTNode*> _body_nodes,
+                                    std::vector<DeclarationNode*> _args,
+                                    std::shared_ptr<Scope> _declaration_scope
                                 ) : Declaration(_name), 
                                     num_args(_num_args), 
                                     arg_names(_arg_names),
                                     return_type(_return_type),
-                                    scope( std::move( _scope ) ),
-                                    body_nodes( _body_nodes ) {}
+                                    body_nodes( _body_nodes ),
+                                    arg_nodes(_args),
+                                    declaration_scope(std::move(_declaration_scope)) {}
 };
 
 #endif

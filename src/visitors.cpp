@@ -137,17 +137,10 @@ void NodeMaker::visit(const FunctionDeclarationNode& node)
         throw std::runtime_error("Error: Function '" + std::string( node.name ) + "' redefinition.");
     }
 
-    // Function local scope
-    std::shared_ptr<Scope> fn_scope { std::make_shared<Scope>(scope) };
-    
-    NodeMaker fn_arg_maker { fn_scope };
-
     std::vector<std::string> fn_arg_names;
 
     for ( const auto& arg_decl : node.arg_nodes )
     {
-        // "Declare" the argument variable in the new scope
-        fn_arg_maker.visit(*arg_decl);
         fn_arg_names.push_back( arg_decl->name );
     }
 
@@ -159,12 +152,20 @@ void NodeMaker::visit(const FunctionDeclarationNode& node)
         raw_body.push_back(ptr.get());
     }
 
+    // Same as above for arguments
+    std::vector<DeclarationNode*> raw_args;
+    for (const auto& ptr : node.arg_nodes) 
+    {
+        raw_args.push_back(ptr.get());
+    }
+
     concrete_decl = std::make_shared<FunctionDeclaration>(  std::string( node.name ),
                                                             node.arg_nodes.size(),
                                                             fn_arg_names,
                                                             node.return_type,
-                                                            std::move( fn_scope ),
-                                                            raw_body );
+                                                            raw_body,
+                                                            raw_args,
+                                                            scope );
     
     if ( !concrete_decl )
     {
@@ -544,15 +545,22 @@ void ExpressionEvaluator::visit(const FunctionCallExpression& expr)
         throw std::runtime_error("Error: Invalid number of arguments provided. Expected " + std::to_string( target_fn->getNumArgs() ) + "." );
     }
 
+    std::shared_ptr<Scope> fn_scope = std::make_shared<Scope>( target_fn->declaration_scope );
+    
+    NodeMaker node_exec { fn_scope };
+
     for( std::size_t i {}; i < target_fn->getNumArgs(); ++i )
-    {
+    {        
+        // Make argument declarations
+        target_fn->arg_nodes[i]->initializer;
+        target_fn->arg_nodes[i]->accept( node_exec );
 
         // Evaluate argument in caller scope
         ExpressionEvaluator evaluator {scope};
         RuntimeValue arg_value = evaluator.evaluate( *( expr.args[i]->clone() ) );
         
         // Assign evaluated value to argument in function local scope
-        auto existing_var = target_fn->scope->lookup( target_fn->getArgNames()[i] );
+        auto existing_var = fn_scope->lookup( target_fn->getArgNames()[i] );
         if ( !existing_var )
         {
             throw std::runtime_error("Error: Variable '" + std::string( target_fn->getArgNames()[i] ) + "' is undefined.");
@@ -569,10 +577,6 @@ void ExpressionEvaluator::visit(const FunctionCallExpression& expr)
         }, arg_value);
     }
 
-    std::shared_ptr<Scope> fn_scope_cpy = std::make_shared<Scope>(*(target_fn->scope));
-
-    NodeMaker node_exec { fn_scope_cpy };
-
     for ( const auto& nd : target_fn->body_nodes )
     {
         nd->accept(node_exec);
@@ -581,19 +585,12 @@ void ExpressionEvaluator::visit(const FunctionCallExpression& expr)
             Expression* ret_expr = node_exec.getReturnExpression();
             if ( ret_expr )
             {
-                ExpressionEvaluator ret_val_eval { fn_scope_cpy };
+                ExpressionEvaluator ret_val_eval { fn_scope };
                 last_evaluated_value = ret_val_eval.evaluate( *(ret_expr) );
             }
             break;
         }
     }
-
-    // if non void
-    // if ( target_fn->return_expr )
-    // {
-    //     ExpressionEvaluator ret_val_eval { fn_scope_cpy };
-    //     last_evaluated_value = ret_val_eval.evaluate( *(target_fn->return_expr) );
-    // }
 }
 
 void NodeTypeChecker::visit(const AssignmentNode& node)
