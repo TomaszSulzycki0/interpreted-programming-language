@@ -664,6 +664,7 @@ void NodeTypeChecker::visit(const FunctionDeclarationNode& node)
     }
 
     scope->storeFnArgTypes( node.name, fn_arg_data );
+    scope->define( node.name,  VariableData("fn", node.return_type) );
 
     for ( const auto& bd_node : node.body_nodes )
     {    
@@ -675,7 +676,6 @@ void NodeTypeChecker::visit(const FunctionDeclarationNode& node)
     //     throw std::runtime_error("Error: Missing return statement inside non-void function.");
     // }
 
-    scope->define( node.name,  VariableData("fn", node.return_type) );
 }
 
 void NodeTypeChecker::visit(const FunctionCallNode& node)
@@ -691,8 +691,6 @@ void NodeTypeChecker::visit(const FunctionCallNode& node)
     
     std::string expr_type = type_evaluator.evaluateType( *node.expr );
 
-
-    // TODO: Warning about ignoring return value for non-void functions
 }
 
 void NodeTypeChecker::visit(const WhileNode& node)
