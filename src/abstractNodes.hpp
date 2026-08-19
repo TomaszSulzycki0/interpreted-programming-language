@@ -77,19 +77,34 @@ public:
 
 };
 
+class ElseNode : public ASTNode
+{
+public:
+    std::vector<std::unique_ptr<ASTNode>> body_nodes;
+
+    void accept(NodeVisitor& visitor) const override;
+
+    explicit ElseNode(
+        std::vector<std::unique_ptr<ASTNode>> bdnds) :
+            body_nodes(std::move( bdnds )) {}
+};
+
 class IfNode : public ASTNode
 {
 public:
     std::vector<std::unique_ptr<ASTNode>> body_nodes;
     std::unique_ptr<Expression> condition_expr;
+    std::unique_ptr<ElseNode> else_nd;
 
     void accept(NodeVisitor& visitor) const override;
 
     explicit IfNode(
         std::vector<std::unique_ptr<ASTNode>> bdnds,
-        std::unique_ptr<Expression> c_expr) :
+        std::unique_ptr<Expression> c_expr,
+        std::unique_ptr<ElseNode> _else_nd ) :
             body_nodes(std::move( bdnds ) ),
-            condition_expr(std::move( c_expr ) ) {}
+            condition_expr(std::move( c_expr ) ),
+            else_nd(std::move(_else_nd)) {}
 };
 
 class WhileNode : public ASTNode

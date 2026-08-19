@@ -223,6 +223,10 @@ void NodeMaker::visit(const IfNode& node)
 
     if ( !should_execute)
     {
+        if ( node.else_nd )
+        {
+            this->visit( *(node.else_nd) );
+        }
         return;
     }
 
@@ -242,6 +246,25 @@ void NodeMaker::visit(const IfNode& node)
         }
     }
 
+}
+
+void NodeMaker::visit(const ElseNode& node)
+{
+    std::shared_ptr<Scope> else_scope { std::make_shared<Scope>( scope ) };
+
+    NodeMaker else_body_exec { else_scope };
+
+    for( const auto& nd : node.body_nodes )
+    {
+        nd->accept( else_body_exec );
+        if ( else_body_exec.reached_return_statement )
+        {
+            this->reached_return_statement = true;
+            this->return_expression = std::move( else_body_exec.return_expression );
+            else_body_exec.return_expression = nullptr;
+            break;
+        }
+    }
 }
 
 void NodeMaker::visit(const WhileNode& node)
@@ -716,6 +739,22 @@ void NodeTypeChecker::visit(const IfNode& node)
     for ( const auto& bd_node : node.body_nodes )
     {    
         bd_node->accept( if_body_checker );   
+    }
+
+    if ( node.else_nd )
+    {
+        this->visit( *(node.else_nd) );
+    }
+}
+
+void NodeTypeChecker::visit(const ElseNode& node) 
+{
+    std::shared_ptr<SemanticScope> else_body_scope = std::make_shared<SemanticScope>( scope );
+    NodeTypeChecker else_body_checker { else_body_scope };
+
+    for ( const auto& bd_node : node.body_nodes )
+    {    
+        bd_node->accept( else_body_checker );   
     }
 }
 

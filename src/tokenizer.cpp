@@ -322,6 +322,7 @@ std::ostream& operator<<(std::ostream& os, TOKEN_TYPE type)
         case TOKEN_TYPE::TOKEN_KEYWORD_TYPE:            return os << "TYPE";
         case TOKEN_TYPE::TOKEN_KEYWORD_FUNCTION:        return os << "FUNCTION";
         case TOKEN_TYPE::TOKEN_KEYWORD_IF:              return os << "IF";
+        case TOKEN_TYPE::TOKEN_KEYWORD_ELSE:            return os << "ELSE";
         case TOKEN_TYPE::TOKEN_KEYWORD_WHILE:           return os << "WHILE";
         case TOKEN_TYPE::TOKEN_EQUALS:                  return os << "EQUALS";
         case TOKEN_TYPE::TOKEN_PLUS_EQUALS:             return os << "PLUS_EQUALS";

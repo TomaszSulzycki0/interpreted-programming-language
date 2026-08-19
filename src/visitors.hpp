@@ -27,6 +27,7 @@ class DeclarationNode;
 class FunctionDeclarationNode;
 class FunctionCallNode;
 class IfNode;
+class ElseNode;
 class WhileNode;
 class ReturnNode;
 
@@ -59,6 +60,7 @@ public:
     virtual void visit(const FunctionDeclarationNode& node) = 0;
     virtual void visit(const FunctionCallNode& node) = 0;
     virtual void visit(const IfNode& node) = 0;
+    virtual void visit(const ElseNode& node) = 0;
     virtual void visit(const WhileNode& node) = 0;
     virtual void visit(const ReturnNode& node) = 0;
 
@@ -76,6 +78,7 @@ public:
     void visit(const FunctionDeclarationNode& node) override;
     void visit(const FunctionCallNode& node) override;
     void visit(const IfNode& node) override;
+    void visit(const ElseNode& node) override;
     void visit(const WhileNode& node) override;
     void visit(const ReturnNode& node) override;
 
@@ -136,6 +139,7 @@ public:
     void visit(const FunctionDeclarationNode& node) override;
     void visit(const FunctionCallNode& node) override;
     void visit(const IfNode& node) override;
+    void visit(const ElseNode& node) override;
     void visit(const WhileNode& node) override;
     void visit(const ReturnNode&) override {};
 

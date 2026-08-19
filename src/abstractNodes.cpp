@@ -26,6 +26,11 @@ void IfNode::accept(NodeVisitor& visitor) const
     visitor.visit(*this);
 }
 
+void ElseNode::accept(NodeVisitor& visitor) const
+{
+    visitor.visit(*this);
+}
+
 void WhileNode::accept(NodeVisitor& visitor) const
 {
     visitor.visit(*this);
