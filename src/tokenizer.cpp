@@ -127,6 +127,8 @@ Token Tokenizer::useStateDefault()
         return Token{ TOKEN_TYPE::TOKEN_SEMICOLON, std::string_view(";"), current_line };
     case ',':
         return Token{ TOKEN_TYPE::TOKEN_COMMA, std::string_view(","), current_line };
+    case '%':
+        return Token{ TOKEN_TYPE::TOKEN_OPERATOR, std::string_view("%"), current_line };
     case '+':
         if ( peek() == '=') 
         {

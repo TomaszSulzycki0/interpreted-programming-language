@@ -421,16 +421,31 @@ RuntimeValue evaluateBinaryOp(const RuntimeValue& v_l, const RuntimeValue& v_r, 
         using TLeft = std::decay_t<decltype(unpacked_left)>;
         using TRight = std::decay_t<decltype(unpacked_right)>;
 
-        if constexpr ( std::is_arithmetic_v<TLeft> && std::is_arithmetic_v<TRight> ) {
+        if constexpr ( std::same_as<std::modulus<>, Op> ) 
+        {
+            if constexpr ( std::same_as<int, TLeft> && std::same_as<int, TRight> ) 
+            {
+                return RuntimeValue{ operation( unpacked_left, unpacked_right ) };
+            }
+            else 
+            {
+                throw std::runtime_error("Error: Unsupported operand types for this operation.");
+            }
+        }
+       
+        if constexpr ( std::is_arithmetic_v<TLeft> && std::is_arithmetic_v<TRight> && !std::same_as<std::modulus<>, Op> ) 
+        {
             return RuntimeValue{ operation( unpacked_left, unpacked_right ) };
         } 
-        else if constexpr ( std::same_as<std::string, TLeft> && std::same_as<std::string, TRight> && std::same_as<std::plus<>, Op> ) {
+        else if constexpr ( std::same_as<std::string, TLeft> && std::same_as<std::string, TRight> && std::same_as<std::plus<>, Op> ) 
+        {
             return RuntimeValue{ operation( unpacked_left, unpacked_right ) };
         }
         else 
         {
             throw std::runtime_error("Error: Unsupported operand types for this operation.");
         }
+
     }, v_l, v_r);
 }
 
@@ -440,6 +455,7 @@ RuntimeValue ExpressionEvaluator::resolveOperator(const RuntimeValue& v_left, co
         { "+", [](auto& l, auto& r) { return evaluateBinaryOp(l, r, std::plus<>{}); } },
         { "-", [](auto& l, auto& r) { return evaluateBinaryOp(l, r, std::minus<>{}); } },
         { "*", [](auto& l, auto& r) { return evaluateBinaryOp(l, r, std::multiplies<>{}); } },
+        { "%", [](auto& l, auto& r) { return evaluateBinaryOp(l, r, std::modulus<>{}); } },
         { "/", [](auto& l, auto& r) { return evaluateBinaryOp(l, r, std::divides<>{}); } },
         { "==", [](auto& l, auto& r) { return evaluateBinaryOp(l, r, std::equal_to<>{}); } },
         { "!=", [](auto& l, auto& r) { return evaluateBinaryOp(l, r, std::not_equal_to<>{}); } },
@@ -490,8 +506,40 @@ void ExpressionEvaluator::visit(const LiteralExpression& expr)
         last_evaluated_value = false;
     }
     else
-    {
-        last_evaluated_value = std::stod(expr.value);   
+    {        
+        int result_int = 0;
+
+        const char* start = expr.value.data();
+        const char* end = expr.value.data() + expr.value.size();
+
+        auto [ptr, ec] = std::from_chars(start, end, result_int);
+
+        if (ec == std::errc()) 
+        {
+            if (ptr == end) 
+            {
+                last_evaluated_value = result_int;
+            } 
+            else 
+            {
+                try
+                {
+                    last_evaluated_value = std::stod(expr.value);
+                }
+                catch(const std::exception& e)
+                {
+                    throw std::runtime_error("Error: Unable to parse numeric literal.");
+                }  
+            }
+        } 
+        else if (ec == std::errc::invalid_argument) 
+        {
+            throw std::runtime_error("Error: Unable to parse numeric literal.");
+        } 
+        else if (ec == std::errc::result_out_of_range) 
+        {
+            throw std::runtime_error("Error: Literal to large for int.");
+        }
     }
 }
 
