@@ -99,44 +99,13 @@ class NodeTypeChecker : public NodeVisitor
 private:
     std::shared_ptr<SemanticScope> scope;
 
-    void checkTypeUpCasting(const std::string& from, const std::string& to) const
-    {
-        if ( isNumeric(from) && isNumeric(to) )
-        {
-            int from_rank = getTypeConversionRank(from);
-            int to_rank = getTypeConversionRank(to);
-            
-            if ( to_rank < from_rank )
-            {
-                throw std::runtime_error("Type error: Implicit type demotion to '" + to + "' from '" + from + "' is not allowed.");
-            }
-        }
-        else
-        {
-            // TODO: Converting numerics to strings in string concatenation here
+    void checkTypeUpCasting(const std::string& from, const std::string& to) const;
 
-            throw std::runtime_error("Type error: Declared type '" + to + "' is incompatible with '" + from + "'.");
-        }
-    }
+    bool isNumeric(const std::string& tp) const;
 
-    bool isNumeric(const std::string& tp) const
-    {
-        if ( tp == "int" || tp == "float" || tp == "double" || tp == "bool" )
-        {
-            return true;
-        }
-        return false;
-    }
+    int getTypeConversionRank(const std::string& tp) const;
 
-    int getTypeConversionRank(const std::string& tp) const
-    {
-        if ( tp == "bool" )     return 0;
-        if ( tp == "int" )      return 1;
-        if ( tp == "float" )    return 2;
-        if ( tp == "double" )   return 3;
-
-        return -1;
-    }
+    bool isReturnSafe = false;
 
 public:
     void visit(const AssignmentNode& node) override;
@@ -146,7 +115,7 @@ public:
     void visit(const IfNode& node) override;
     void visit(const ElseNode& node) override;
     void visit(const WhileNode& node) override;
-    void visit(const ReturnNode&) override {};
+    void visit(const ReturnNode&) override;
 
     explicit NodeTypeChecker(std::shared_ptr<SemanticScope> s) : scope(std::move(s)) {}
 };

@@ -746,10 +746,10 @@ void NodeTypeChecker::visit(const FunctionDeclarationNode& node)
         bd_node->accept( fn_body_checker );   
     }
 
-    // if ( ( node.return_type != "void" ) && !node.return_expr)
-    // {
-    //     throw std::runtime_error("Error: Missing return statement inside non-void function.");
-    // }
+    if ( ( node.return_type != "void" ) && !( fn_body_checker.isReturnSafe ) )
+    {
+        throw std::runtime_error("Error: Missing return statement inside non-void function.");
+    }
 
 }
 
@@ -797,6 +797,15 @@ void NodeTypeChecker::visit(const IfNode& node)
     {
         this->visit( *(node.else_nd) );
     }
+
+    // We check if both the "if" and "else" blocks have return statements.
+    // Because the same NodeTypeChecker calls visit for ElseNode and IfNode
+    // inside the visit(ElseNode) we change "this->isReturnSafe"  
+    // so here we need to change it back to false in case the IfNode didnt have a return statement
+    if ( !( this->isReturnSafe && if_body_checker.isReturnSafe ) )
+    {
+        this->isReturnSafe = false;
+    }
 }
 
 void NodeTypeChecker::visit(const ElseNode& node) 
@@ -808,6 +817,52 @@ void NodeTypeChecker::visit(const ElseNode& node)
     {    
         bd_node->accept( else_body_checker );   
     }
+
+    this->isReturnSafe = else_body_checker.isReturnSafe;
+}
+
+void NodeTypeChecker::visit(const ReturnNode&) 
+{
+    this->isReturnSafe = true;
+}
+
+void NodeTypeChecker::checkTypeUpCasting(const std::string& from, const std::string& to) const
+{
+    if ( isNumeric(from) && isNumeric(to) )
+    {
+        int from_rank = getTypeConversionRank(from);
+        int to_rank = getTypeConversionRank(to);
+        
+        if ( to_rank < from_rank )
+        {
+            throw std::runtime_error("Type error: Implicit type demotion to '" + to + "' from '" + from + "' is not allowed.");
+        }
+    }
+    else
+    {
+        // TODO: Converting numerics to strings in string concatenation here
+
+        throw std::runtime_error("Type error: Declared type '" + to + "' is incompatible with '" + from + "'.");
+    }
+}
+
+bool NodeTypeChecker::isNumeric(const std::string& tp) const
+{
+    if ( tp == "int" || tp == "float" || tp == "double" || tp == "bool" )
+    {
+        return true;
+    }
+    return false;
+}
+
+int NodeTypeChecker::getTypeConversionRank(const std::string& tp) const
+{
+    if ( tp == "bool" )     return 0;
+    if ( tp == "int" )      return 1;
+    if ( tp == "float" )    return 2;
+    if ( tp == "double" )   return 3;
+
+    return -1;
 }
 
 std::string ExpressionTypeEvaluator::evaluateType(const Expression& expr)
