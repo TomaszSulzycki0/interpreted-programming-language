@@ -71,7 +71,10 @@ class NodeMaker : public NodeVisitor
 {
 private:
     std::shared_ptr<Scope> scope;
+
     std::unique_ptr<Expression> return_expression = nullptr;
+    std::shared_ptr<Scope> return_expression_scope = nullptr;
+
 public:
     void visit(const AssignmentNode& node) override;
     void visit(const DeclarationNode& node) override;
@@ -85,6 +88,8 @@ public:
     bool reached_return_statement = false;
 
     Expression* getReturnExpression() const { return return_expression.get(); }
+
+    std::shared_ptr<Scope> getReturnExpressionScope() const { return return_expression_scope; }
 
     explicit NodeMaker(std::shared_ptr<Scope> s) : scope(std::move(s)) {}
 };

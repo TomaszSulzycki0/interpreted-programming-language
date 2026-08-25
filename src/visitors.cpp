@@ -241,7 +241,7 @@ void NodeMaker::visit(const IfNode& node)
         {
             this->reached_return_statement = true;
             this->return_expression = std::move( if_body_exec.return_expression );
-            if_body_exec.return_expression = nullptr;
+            this->return_expression_scope = std::move( if_body_exec.return_expression_scope );
             break;
         }
     }
@@ -261,7 +261,7 @@ void NodeMaker::visit(const ElseNode& node)
         {
             this->reached_return_statement = true;
             this->return_expression = std::move( else_body_exec.return_expression );
-            else_body_exec.return_expression = nullptr;
+            this->return_expression_scope = std::move( else_body_exec.return_expression_scope );
             break;
         }
     }
@@ -317,6 +317,7 @@ void NodeMaker::visit(const WhileNode& node)
             {
                 this->reached_return_statement = true;
                 this->return_expression = std::move( while_body_exec.return_expression );
+                this->return_expression_scope = std::move( while_body_exec.return_expression_scope );
                 break;
             }
         }
@@ -362,6 +363,7 @@ void NodeMaker::visit(const ReturnNode& node)
     if ( node.ret_expr )
     {
         this->return_expression = node.ret_expr->clone();
+        this->return_expression_scope = this->scope;
     }
     else
     {
@@ -654,9 +656,11 @@ void ExpressionEvaluator::visit(const FunctionCallExpression& expr)
         if ( node_exec.reached_return_statement )
         {
             Expression* ret_expr = node_exec.getReturnExpression();
-            if ( ret_expr )
+            std::shared_ptr<Scope> ret_expr_scope = node_exec.getReturnExpressionScope();
+            
+            if ( ret_expr && ret_expr_scope )
             {
-                ExpressionEvaluator ret_val_eval { fn_scope };
+                ExpressionEvaluator ret_val_eval { ret_expr_scope };
                 last_evaluated_value = ret_val_eval.evaluate( *(ret_expr) );
             }
             break;
