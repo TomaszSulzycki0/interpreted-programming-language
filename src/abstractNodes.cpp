@@ -40,3 +40,8 @@ void ReturnNode::accept(NodeVisitor& visitor) const
 {
     visitor.visit(*this);
 }
+
+void EmbeddedPrintFunctionNode::accept(NodeVisitor& visitor) const 
+{
+    visitor.visit(*this);
+}

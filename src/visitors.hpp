@@ -30,6 +30,7 @@ class IfNode;
 class ElseNode;
 class WhileNode;
 class ReturnNode;
+class EmbeddedPrintFunctionNode;
 
 class Scope;
 class SemanticScope;
@@ -63,6 +64,7 @@ public:
     virtual void visit(const ElseNode& node) = 0;
     virtual void visit(const WhileNode& node) = 0;
     virtual void visit(const ReturnNode& node) = 0;
+    virtual void visit(const EmbeddedPrintFunctionNode& node) = 0;
 
     virtual ~NodeVisitor() = default;
 };
@@ -84,6 +86,7 @@ public:
     void visit(const ElseNode& node) override;
     void visit(const WhileNode& node) override;
     void visit(const ReturnNode& node) override;
+    void visit(const EmbeddedPrintFunctionNode& node) override;
 
     bool reached_return_statement = false;
 
@@ -116,6 +119,7 @@ public:
     void visit(const ElseNode& node) override;
     void visit(const WhileNode& node) override;
     void visit(const ReturnNode&) override;
+    void visit(const EmbeddedPrintFunctionNode&) override {};
 
     explicit NodeTypeChecker(std::shared_ptr<SemanticScope> s) : scope(std::move(s)) {}
 };

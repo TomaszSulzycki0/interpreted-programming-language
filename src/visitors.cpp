@@ -371,6 +371,25 @@ void NodeMaker::visit(const ReturnNode& node)
     }
 }
 
+void NodeMaker::visit(const EmbeddedPrintFunctionNode&)
+{
+    auto input = this->scope->lookupLocal("data");
+
+    if ( !input )
+    {
+        throw std::runtime_error("Error: Unexpected error while trying to pass input to print function.");
+    }
+
+    auto input_str = std::dynamic_pointer_cast<StringDeclaration>(input);
+
+    if ( !input_str ) 
+    {
+        throw std::runtime_error("Error: " + std::string( input->getName() ) + " is not a printable object.");
+    }
+
+    std::cout << input_str->getString();
+}
+
 void PrintVisitor::visit(const NumericDeclaration& num_decl) 
 {
     if ( num_decl.isFloatingPoint() ) 

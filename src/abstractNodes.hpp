@@ -132,5 +132,17 @@ public:
     explicit ReturnNode( std::unique_ptr<Expression> r_expr ) : ret_expr(std::move(r_expr)) {}
 };
 
+// Holds c++ code to be executed
+class EmbeddedFunctionNode : public ASTNode
+{
+public:
+    virtual void accept(NodeVisitor& visitor) const override = 0;
+};
+
+class EmbeddedPrintFunctionNode : public EmbeddedFunctionNode
+{
+public:
+    void accept(NodeVisitor& visitor) const override;
+};
 
 #endif
