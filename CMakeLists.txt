@@ -17,6 +17,7 @@ target_sources(ipl PRIVATE
 	src/tokenizer.cpp
 	src/abstractNodes.cpp
 	src/RPNHandler.cpp
+	src/typeChecker.cpp
 	)
 
 target_include_directories(ipl PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -34,6 +35,9 @@ else()
     )
 endif()
 
+target_compile_definitions(ipl PRIVATE
+    $<$<CONFIG:Debug>:DEBUG_ALL>
+)
 
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/testFiles/input.ipl"

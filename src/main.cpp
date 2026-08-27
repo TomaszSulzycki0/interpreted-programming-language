@@ -46,7 +46,6 @@ int main(int argc, char** argv)
 
     try
     {
-        std::cout << "Evaluating: " + input_filename << std::endl;
         Parser parser { readFileToString(input_filename) };
 
         std::shared_ptr<SemanticScope> main_semantic_scope { std::make_shared<SemanticScope>() };
@@ -57,23 +56,17 @@ int main(int argc, char** argv)
         
         defineBuiltInFunctions( main_scope, main_semantic_scope );
 
-        std::cout << "Lexing.." << std::endl;
         parser.tokenizeProgram();
         
-        std::cout << "Captured: " << parser.getNumTokens() << " tokens." << std::endl;
-
-        std::cout << "Parsing.." << std::endl;
         auto program_ast = parser.parseProgram( PARSING_MODE::DEFAULT );
 
         if ( parser.isASTExecutable() )
         {
-            std::cout << "Checking types.." << std::endl;
             type_checker.run_check( program_ast );
         }
         
         if ( type_checker.isASTWellTyped() && parser.isASTExecutable() )
         {
-            std::cout << "Executing.." << std::endl;
             builder.buildProgram( program_ast ); 
         }
     }

@@ -4,6 +4,26 @@
 #include"numericVariable.hpp"
 #include"stringVariable.hpp"
 #include"AbstractNodes.hpp"
+#include"debugMacros.hpp"
+
+std::ostream& operator<<(std::ostream& os, const RuntimeValue& value) 
+{
+    std::visit([&os](const auto& arg) 
+    {
+        using EvaluatedType = std::decay_t<decltype(arg)>;
+        if constexpr ( std::is_same_v<EvaluatedType, bool> ) 
+        {
+            os << (arg ? "true" : "false");
+        } 
+        else 
+        {
+            os << arg;
+        }
+
+    }, value);
+    
+    return os;
+}
 
 void NodeMaker::visit(const AssignmentNode& node)
 {
@@ -26,12 +46,12 @@ void NodeMaker::visit(const AssignmentNode& node)
         target_var->setValue(new_value);
     }, new_value);
 
-    // DUBUG
-    //
-    std::cout << "[ASSIGNMENT] " << existing_var->getName() << " ";
-    PrintVisitor print_visitor {};
-    existing_var->accept(print_visitor);
-    std::cout << std::endl;
+    #ifdef DEBUG_EXEC
+        std::cout << "[ASSIGNMENT] " << existing_var->getName() << " ";
+        PrintVisitor print_visitor {};
+        existing_var->accept(print_visitor);
+        std::cout << std::endl;
+    #endif
 }
 
 void NodeMaker::visit(const DeclarationNode& node)
@@ -120,12 +140,12 @@ void NodeMaker::visit(const DeclarationNode& node)
 
     scope->define(node.name, concrete_decl);
 
-    // DUBUG
-    //
-    std::cout << "[DECLARATION] " << concrete_decl->getName() << " ";
-    PrintVisitor print_visitor {};
-    concrete_decl->accept(print_visitor);
-    std::cout << std::endl;
+    #ifdef DEBUG_EXEC
+        std::cout << "[DECLARATION] " << concrete_decl->getName() << " ";
+        PrintVisitor print_visitor {};
+        concrete_decl->accept(print_visitor);
+        std::cout << std::endl;
+    #endif
 }
 
 void NodeMaker::visit(const FunctionDeclarationNode& node)
@@ -174,16 +194,20 @@ void NodeMaker::visit(const FunctionDeclarationNode& node)
     
     scope->define(node.name, concrete_decl);
 
-    // DEBUG
-    //
-    std::cout << "[FUNCTION] " << concrete_decl->getName();
-    PrintVisitor print_visitor {};
-    concrete_decl->accept(print_visitor);
-    std::cout << std::endl;
+    #ifdef DEBUG_EXEC
+        std::cout << "[FUNCTION] " << concrete_decl->getName();
+        PrintVisitor print_visitor {};
+        concrete_decl->accept(print_visitor);
+        std::cout << std::endl;
+    #endif
 }
 
 void NodeMaker::visit(const FunctionCallNode& node)
 {
+    #ifdef DEBUG_EXEC
+        std::cout << "[VOID FUNCTION CALL] " << node.name << std::endl;
+    #endif
+
     ExpressionEvaluator fn_eval { scope };
 
     fn_eval.visit( *(node.expr) );
@@ -230,6 +254,10 @@ void NodeMaker::visit(const IfNode& node)
         return;
     }
 
+    #ifdef DEBUG_EXEC
+        std::cout << "[ENTER IF STATEMENT]" << std::endl;
+    #endif
+
     std::shared_ptr<Scope> if_scope { std::make_shared<Scope>( scope ) };
 
     NodeMaker if_body_exec { if_scope };
@@ -246,10 +274,18 @@ void NodeMaker::visit(const IfNode& node)
         }
     }
 
+    #ifdef DEBUG_EXEC
+        std::cout << "[EXIT IF STATEMENT]" << std::endl;
+    #endif
+
 }
 
 void NodeMaker::visit(const ElseNode& node)
 {
+    #ifdef DEBUG_EXEC
+        std::cout << "[ENTER ELSE STATEMENT]" << std::endl;
+    #endif
+
     std::shared_ptr<Scope> else_scope { std::make_shared<Scope>( scope ) };
 
     NodeMaker else_body_exec { else_scope };
@@ -265,6 +301,10 @@ void NodeMaker::visit(const ElseNode& node)
             break;
         }
     }
+
+    #ifdef DEBUG_EXEC
+        std::cout << "[EXIT ELSE STATEMENT]" << std::endl;
+    #endif
 }
 
 void NodeMaker::visit(const WhileNode& node)
@@ -303,6 +343,10 @@ void NodeMaker::visit(const WhileNode& node)
     {
         return;
     }
+
+    #ifdef DEBUG_EXEC
+        std::cout << "[ENTER WHILE LOOP]" << std::endl;
+    #endif
 
     while( should_execute )
     {
@@ -355,10 +399,18 @@ void NodeMaker::visit(const WhileNode& node)
 
     }
 
+    #ifdef DEBUG_EXEC
+        std::cout << "[EXIT WHILE LOOP]" << std::endl;
+    #endif
+
 }
 
 void NodeMaker::visit(const ReturnNode& node)
 {
+    #ifdef DEBUG_EXEC
+        std::cout << "[CONTROL REACHED RETURN]" << std::endl;
+    #endif
+
     this->reached_return_statement = true;
     if ( node.ret_expr )
     {
@@ -373,6 +425,10 @@ void NodeMaker::visit(const ReturnNode& node)
 
 void NodeMaker::visit(const EmbeddedPrintFunctionNode&)
 {
+    #ifdef DEBUG_EXEC
+        std::cout << "[BUILT IN PRINT FUNCTION CALL]" << std::endl;
+    #endif
+
     auto input = this->scope->lookupLocal("data");
 
     if ( !input )
@@ -620,6 +676,10 @@ void ExpressionEvaluator::visit(const UnaryExpression& expr)
 
 void ExpressionEvaluator::visit(const FunctionCallExpression& expr)
 {
+    #ifdef DEBUG_EXEC
+        std::cout << "[NON-VOID FUNCTION CALL] "  << expr.name << std::endl;
+    #endif
+
     auto existing_fn = scope->lookup(expr.name);
     if ( !existing_fn )
     {
@@ -644,7 +704,6 @@ void ExpressionEvaluator::visit(const FunctionCallExpression& expr)
     for( std::size_t i {}; i < target_fn->getNumArgs(); ++i )
     {        
         // Make argument declarations
-        target_fn->arg_nodes[i]->initializer;
         target_fn->arg_nodes[i]->accept( node_exec );
 
         // Evaluate argument in caller scope
@@ -664,9 +723,11 @@ void ExpressionEvaluator::visit(const FunctionCallExpression& expr)
             throw std::runtime_error("Error: " + std::string( target_fn->getArgNames()[i] ) + " is not a mutable variable.");
         }
 
-        std::visit([&](auto&&) {
-            target_var->setValue(arg_value);
-        }, arg_value);
+        target_var->setValue(arg_value);
+
+        #ifdef DEBUG_EXEC
+        std::cout << "[ARGUMENT ASSIGNMENT] "  << target_var->getName() << " = " << arg_value << std::endl;
+        #endif    
     }
 
     for ( const auto& nd : target_fn->body_nodes )
@@ -854,7 +915,7 @@ void NodeTypeChecker::checkTypeUpCasting(const std::string& from, const std::str
         
         if ( to_rank < from_rank )
         {
-            throw std::runtime_error("Type error: Implicit type demotion to '" + to + "' from '" + from + "' is not allowed.");
+            throw std::runtime_error("Type error: Implicit type demotion from '" + from + "' to '" + to + "' is not allowed.");
         }
     }
     else

@@ -3,7 +3,7 @@
 #include"parser.hpp"
 #include"numericVariable.hpp"
 #include"expression.hpp"
-#include"AbstractNodes.hpp"
+#include"debugMacros.hpp"
 
 
 void Parser::tokenizeProgram()
@@ -11,7 +11,9 @@ void Parser::tokenizeProgram()
     tokens = tokenizer.emitTokens();
     tokens_size = tokens.size();
 
-    tokenizer.debugTokens(tokens);
+    #ifdef DEBUG_LEXER
+        tokenizer.debugTokens(tokens);
+    #endif
 }
 
 std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram(const PARSING_MODE& mode) 
