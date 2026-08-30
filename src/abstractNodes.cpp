@@ -45,3 +45,8 @@ void EmbeddedPrintFunctionNode::accept(NodeVisitor& visitor) const
 {
     visitor.visit(*this);
 }
+
+void EmbeddedCastFunctionNode::accept(NodeVisitor& visitor) const 
+{
+    visitor.visit(*this);
+}

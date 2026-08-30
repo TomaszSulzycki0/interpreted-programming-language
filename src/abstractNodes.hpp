@@ -21,6 +21,7 @@ public:
 class AssignmentNode : public ASTNode 
 {
 public:
+    std::string line;                        
     std::string name;                        
     std::unique_ptr<Expression> value_expr; 
 
@@ -32,6 +33,7 @@ public:
 class DeclarationNode : public ASTNode
 {
 public:
+    std::string line;                        
     std::string type;
     std::string name;
     std::unique_ptr<Expression> initializer;
@@ -44,6 +46,7 @@ public:
 class FunctionCallNode : public ASTNode
 {
 public:
+    std::string line;                        
     std::string name;
     std::unique_ptr<FunctionCallExpression> expr;
     void accept(NodeVisitor& visitor) const override;
@@ -58,6 +61,7 @@ public:
 class FunctionDeclarationNode : public ASTNode
 {
 public:
+    std::string line;                        
     std::string return_type;
     std::string name;
     std::vector<std::unique_ptr<DeclarationNode>> arg_nodes;
@@ -80,6 +84,7 @@ public:
 class ElseNode : public ASTNode
 {
 public:
+    std::string line;                        
     std::vector<std::unique_ptr<ASTNode>> body_nodes;
 
     void accept(NodeVisitor& visitor) const override;
@@ -143,6 +148,15 @@ class EmbeddedPrintFunctionNode : public EmbeddedFunctionNode
 {
 public:
     void accept(NodeVisitor& visitor) const override;
+};
+
+class EmbeddedCastFunctionNode : public EmbeddedFunctionNode
+{
+public:
+    std::string tp;
+    void accept(NodeVisitor& visitor) const override;
+
+    explicit EmbeddedCastFunctionNode(std::string _tp) : tp( std::move( _tp ) ) {}
 };
 
 #endif

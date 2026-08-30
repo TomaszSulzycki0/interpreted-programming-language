@@ -195,7 +195,7 @@ void NodeMaker::visit(const FunctionDeclarationNode& node)
     scope->define(node.name, concrete_decl);
 
     #ifdef DEBUG_EXEC
-        std::cout << "[FUNCTION] " << concrete_decl->getName();
+        std::cout << "[FUNCTION DECLARATION] " << concrete_decl->getName();
         PrintVisitor print_visitor {};
         concrete_decl->accept(print_visitor);
         std::cout << std::endl;
@@ -444,6 +444,100 @@ void NodeMaker::visit(const EmbeddedPrintFunctionNode&)
     }
 
     std::cout << input_str->getString();
+}
+
+void NodeMaker::visit(const EmbeddedCastFunctionNode& node)
+{
+    #ifdef DEBUG_EXEC
+        std::cout << "[BUILT IN CAST FUNCTION CALL]" << std::endl;
+    #endif
+
+    auto input = this->scope->lookupLocal("data");
+
+    if ( !input )
+    {
+        throw std::runtime_error("Error: Unexpected error while trying to pass input to print function.");
+    }
+
+    auto input_valued = std::dynamic_pointer_cast<ValueDeclaration>(input);
+
+    if ( !input_valued ) 
+    {
+        throw std::runtime_error("Error: " + std::string( input->getName() ) + " does not elicit a value.");
+    }
+
+    // A casting function's return node returns a VariableExpression holding the variable "ret"
+    // here we have to declare "ret" as the input cast to the appropriate type
+    std::shared_ptr<DeclarationNode> temp_returnable { nullptr };
+    std::unique_ptr<LiteralExpression> post_cast { nullptr };
+    if ( node.tp == "bool" )
+    {
+        auto value = std::visit( [&](auto&& unpacked) -> bool
+        {
+            using T = std::decay_t<decltype(unpacked)>;
+
+            if constexpr ( std::is_arithmetic_v<T> )
+            {
+                return static_cast<bool>(unpacked);
+            }
+            return false;
+        }, input_valued->getValue());
+
+        post_cast = std::make_unique<LiteralExpression>(std::to_string(value), "bool");
+    }
+    else if ( node.tp == "int" )
+    {
+        auto value = std::visit( [&](auto&& unpacked) -> int
+        {
+            using T = std::decay_t<decltype(unpacked)>;
+
+            if constexpr ( std::is_arithmetic_v<T> )
+            {
+                return static_cast<int>(unpacked);
+            }
+            return 0;
+        }, input_valued->getValue());
+
+        post_cast = std::make_unique<LiteralExpression>(std::to_string(value), "int");
+    }
+    else if ( node.tp == "float" )
+    {
+        auto value = std::visit( [&](auto&& unpacked) -> float
+        {
+            using T = std::decay_t<decltype(unpacked)>;
+
+            if constexpr ( std::is_arithmetic_v<T> )
+            {
+                return static_cast<float>(unpacked);
+            }
+            return 0;
+        }, input_valued->getValue());
+
+        post_cast = std::make_unique<LiteralExpression>(std::to_string(value), "float");
+    }
+    else if ( node.tp == "double" )
+    {
+        auto value = std::visit( [&](auto&& unpacked) -> double
+        {
+            using T = std::decay_t<decltype(unpacked)>;
+
+            if constexpr ( std::is_arithmetic_v<T> )
+            {
+                return static_cast<double>(unpacked);
+            }
+            return 0;
+        }, input_valued->getValue());
+
+
+        post_cast = std::make_unique<LiteralExpression>(std::to_string(value), "double");
+    }
+    else
+    {
+        throw std::runtime_error("Error: Unable to cast type: '" + node.tp + "'.");
+    }
+
+    temp_returnable = std::make_shared<DeclarationNode>( node.tp, "ret", std::move( post_cast ));
+    this->visit( *(temp_returnable) ); 
 }
 
 void PrintVisitor::visit(const NumericDeclaration& num_decl) 
@@ -906,7 +1000,7 @@ void NodeTypeChecker::visit(const ReturnNode&)
     this->isReturnSafe = true;
 }
 
-void NodeTypeChecker::checkTypeUpCasting(const std::string& from, const std::string& to) const
+void NodeTypeChecker::checkTypeUpCasting(const std::string& from, const std::string& to)
 {
     if ( isNumeric(from) && isNumeric(to) )
     {
@@ -926,7 +1020,7 @@ void NodeTypeChecker::checkTypeUpCasting(const std::string& from, const std::str
     }
 }
 
-bool NodeTypeChecker::isNumeric(const std::string& tp) const
+bool NodeTypeChecker::isNumeric(const std::string& tp)
 {
     if ( tp == "int" || tp == "float" || tp == "double" || tp == "bool" )
     {
@@ -935,7 +1029,7 @@ bool NodeTypeChecker::isNumeric(const std::string& tp) const
     return false;
 }
 
-int NodeTypeChecker::getTypeConversionRank(const std::string& tp) const
+int NodeTypeChecker::getTypeConversionRank(const std::string& tp)
 {
     if ( tp == "bool" )     return 0;
     if ( tp == "int" )      return 1;
@@ -1013,7 +1107,8 @@ void ExpressionTypeEvaluator::visit(const FunctionCallExpression& expr)
 
         if ( fn_metadata[i] != arg_type )
         {
-            throw std::runtime_error("Type error: The type of argument " + std::to_string(i + 1) + " (" + arg_type + ") is incompatible with '" + fn_metadata[i] + "'.");
+            NodeTypeChecker::checkTypeUpCasting( arg_type, fn_metadata[i] );
+            //throw std::runtime_error("Type error: The type of argument " + std::to_string(i + 1) + " '" + arg_type + "' is incompatible with '" + fn_metadata[i] + "'.");
         }
     }
 

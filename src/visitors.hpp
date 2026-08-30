@@ -31,6 +31,7 @@ class ElseNode;
 class WhileNode;
 class ReturnNode;
 class EmbeddedPrintFunctionNode;
+class EmbeddedCastFunctionNode;
 
 class Scope;
 class SemanticScope;
@@ -65,6 +66,7 @@ public:
     virtual void visit(const WhileNode& node) = 0;
     virtual void visit(const ReturnNode& node) = 0;
     virtual void visit(const EmbeddedPrintFunctionNode& node) = 0;
+    virtual void visit(const EmbeddedCastFunctionNode& node) = 0;
 
     virtual ~NodeVisitor() = default;
 };
@@ -87,6 +89,7 @@ public:
     void visit(const WhileNode& node) override;
     void visit(const ReturnNode& node) override;
     void visit(const EmbeddedPrintFunctionNode& node) override;
+    void visit(const EmbeddedCastFunctionNode& node) override;
 
     bool reached_return_statement = false;
 
@@ -102,11 +105,9 @@ class NodeTypeChecker : public NodeVisitor
 private:
     std::shared_ptr<SemanticScope> scope;
 
-    void checkTypeUpCasting(const std::string& from, const std::string& to) const;
 
-    bool isNumeric(const std::string& tp) const;
-
-    int getTypeConversionRank(const std::string& tp) const;
+    static bool isNumeric(const std::string& tp);
+    static int getTypeConversionRank(const std::string& tp);
 
     bool isReturnSafe = false;
 
@@ -120,6 +121,10 @@ public:
     void visit(const WhileNode& node) override;
     void visit(const ReturnNode&) override;
     void visit(const EmbeddedPrintFunctionNode&) override {};
+    void visit(const EmbeddedCastFunctionNode&) override {};
+    
+
+    static void checkTypeUpCasting(const std::string& from, const std::string& to);
 
     explicit NodeTypeChecker(std::shared_ptr<SemanticScope> s) : scope(std::move(s)) {}
 };

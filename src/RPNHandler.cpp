@@ -8,7 +8,7 @@ std::unique_ptr<Expression> RPNHandler::parseRPN(IParserContext& pctx)
     std::vector<Token> operator_stack {};
     std::vector<std::unique_ptr<Expression>> expr_stack {};
 
-    // Counter for validating that ever open parenthesis is closed
+    // Counter for validating that every open parenthesis is closed
     int unclosed_parenthesis = 0;
 
     // Flag used for identifying unary operators
@@ -109,7 +109,7 @@ std::unique_ptr<Expression> RPNHandler::parseFunctionCallRPN(IParserContext& pct
     std::vector<Token> operator_stack {};
     std::vector<std::unique_ptr<Expression>> expr_stack {};
 
-    // Counter for validating that ever open parenthesis is closed
+    // Counter for validating that every open parenthesis is closed
     std::size_t unclosed_parenthesis { 1 };
 
     // Flag used for identifying unary operators
