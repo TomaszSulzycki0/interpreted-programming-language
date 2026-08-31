@@ -115,9 +115,13 @@ void NodeMaker::visit(const DeclarationNode& node)
             {
                 concrete_decl = std::make_shared<StringDeclaration>(node.name, evaluated_arg);
             } 
-            else 
+            else if constexpr (std::is_arithmetic_v<EvaluatedType>)
             {
-                throw std::runtime_error("Error: Cannot initialize string variable '" + std::string( node.name ) + "' with a numeric value.");
+                concrete_decl = std::make_shared<StringDeclaration>(node.name, std::format("{}", evaluated_arg));
+            }
+            else
+            {
+                throw std::runtime_error("Error: Cannot initialize string variable '" + node.name + "'.");
             }
         }
         else if ( node.type == "bool" )
@@ -531,6 +535,22 @@ void NodeMaker::visit(const EmbeddedCastFunctionNode& node)
 
         post_cast = std::make_unique<LiteralExpression>(std::to_string(value), "double");
     }
+    else if ( node.tp == "string" )
+    {
+        auto value = std::visit( [&](auto&& unpacked) -> std::string
+        {
+            using T = std::decay_t<decltype(unpacked)>;
+
+            if constexpr ( std::is_arithmetic_v<T> )
+            {
+                return std::to_string(unpacked);
+            }
+            return "";
+        }, input_valued->getValue());
+
+
+        post_cast = std::make_unique<LiteralExpression>(value, "string");
+    }
     else
     {
         throw std::runtime_error("Error: Unable to cast type: '" + node.tp + "'.");
@@ -771,7 +791,7 @@ void ExpressionEvaluator::visit(const UnaryExpression& expr)
 void ExpressionEvaluator::visit(const FunctionCallExpression& expr)
 {
     #ifdef DEBUG_EXEC
-        std::cout << "[NON-VOID FUNCTION CALL] "  << expr.name << std::endl;
+        std::cout << "[EVALUATING FUNCTION CALL] "  << expr.name << std::endl;
     #endif
 
     auto existing_fn = scope->lookup(expr.name);

@@ -176,5 +176,19 @@ void defineBuiltInFunctions(std::shared_ptr<Scope>& scope, std::shared_ptr<Seman
 
     declarer.visit( *doubleCastNode );
     semantic_declarer.visit( *doubleCastNode );
+    
+    // string conversion from numerics
+
+    args.emplace_back(std::make_unique<DeclarationNode>("double", "data", nullptr));
+    body.emplace_back(std::make_unique<EmbeddedCastFunctionNode>("string"));
+    body.emplace_back(std::make_unique<ReturnNode>( std::make_unique<VariableExpression>("ret") ));
+    
+    static std::unique_ptr<FunctionDeclarationNode> stringCastNode = std::make_unique<FunctionDeclarationNode>
+    ( 
+        "string", "string", std::move(args), std::move(body)
+    );
+
+    declarer.visit( *stringCastNode );
+    semantic_declarer.visit( *stringCastNode );
 
 }
