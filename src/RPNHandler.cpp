@@ -97,7 +97,6 @@ std::unique_ptr<Expression> RPNHandler::parseRPN(IParserContext& pctx)
 
     if ( expr_stack.size() != 1 )
     {
-        //throw std::runtime_error("Error: Unable to resolve expression");
         return nullptr;
     }
 
@@ -347,23 +346,31 @@ void RPNHandler::handleClosingParenthesisRPN(std::vector<Token>& operator_stack,
         // RPN logic
 
         auto last_op = operator_stack.back();
-        operator_stack.pop_back();
         
         if ( last_op.type == TOKEN_TYPE::TOKEN_PARENTHESIS_OPEN )
         {
-            // ( ) - fine.
+            operator_stack.pop_back();
             break;
         }
+        else if ( last_op.type == TOKEN_TYPE::TOKEN_UNARY_OPERATOR )
+        {
+            makeBinExprRPN( operator_stack, expr_stack );
+            continue;
+        }
+
+        operator_stack.pop_back();
 
         auto expr_right = std::move( expr_stack.back() );
         expr_stack.pop_back();
 
         if ( expr_stack.empty() )
         {
-            // ( x ) - fine. Leave 'x' on the stack
+            // ( -x ) or ( !x ) etc. - fine. Leave 'x' on the stack
             expr_stack.push_back( std::move( expr_right) );
+
             break;
         }
+
         auto expr_left = std::move( expr_stack.back() );
         expr_stack.pop_back();
 
