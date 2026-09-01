@@ -9,6 +9,7 @@ A tree-walk interpreter for a custom, statically typed programming language, bui
 - Data types: int, bool, float, double, string.
 - Control flow: if-else statements, while statements, functions. 
 - Functions: scope isolation, recursion.
+- Built in functions: print, casting functions
 - Comments.
 
 ## Installation
@@ -53,7 +54,7 @@ cmake --build build
 ```bash
 fn RecCollatz(int x, int num_steps) -> int
 {    
-    if ( x <= 1)
+    if ( x == 1)
     {
         return num_steps;
     }
@@ -74,6 +75,7 @@ int i = 1;
 while( i < num_samples )
 {
     int result = RecCollatz(i, 0);
+    print( "Number of steps to reach 1 from " + string(i) + " : " + string(result) + "\n" );
     i += 1;
 }
 ```
