@@ -64,6 +64,7 @@ add_executable(unit_tests)
 
 target_sources(unit_tests PRIVATE
     tests/parser_test.cpp
+    tests/tokenizer_test.cpp
 )
 
 target_link_libraries(unit_tests PRIVATE 
