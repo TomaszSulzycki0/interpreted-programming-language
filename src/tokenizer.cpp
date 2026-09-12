@@ -9,9 +9,21 @@ std::vector<Token> Tokenizer::emitTokens()
 {
     std::vector<Token> tokens {};
 
-    while( pos < code_size )
+    if ( code_size == 0 )
     {
-        tokens.push_back( getNextToken() );  
+        tokens.push_back( { TOKEN_TYPE::TOKEN_EOF, "", current_line } );
+    }
+    else
+    {
+        while( pos < code_size )
+        {
+            tokens.push_back( getNextToken() );  
+        }
+
+        if ( tokens.size() > 0 && tokens.back().type != TOKEN_TYPE::TOKEN_EOF )
+        {
+            tokens.push_back( { TOKEN_TYPE::TOKEN_EOF, "", current_line } );
+        }
     }
 
     return tokens;
@@ -93,7 +105,7 @@ Token Tokenizer::useStateDefault()
 
     if ( pos >= code_size ) 
     {
-        return Token{ TOKEN_TYPE::TOKEN_EOF, std::string_view("EOF"), current_line };
+        return Token{ TOKEN_TYPE::TOKEN_EOF, "", current_line };
     }
 
     char c = peek(); 
