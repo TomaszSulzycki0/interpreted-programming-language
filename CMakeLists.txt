@@ -1,11 +1,9 @@
 cmake_minimum_required(VERSION 3.20)
 project(ipl)
 
-set(CMAKE_CXX_STANDARD 23)
-
 add_library(ipl_lib STATIC)
 
-target_compile_features(ipl_lib PRIVATE cxx_std_23)
+target_compile_features(ipl_lib PUBLIC cxx_std_23)
 
 target_sources(ipl_lib PRIVATE
     src/scope.cpp
