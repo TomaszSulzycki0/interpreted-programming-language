@@ -16,41 +16,42 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            cc: gcc
-            cxx: g++
             generator: "Unix Makefiles"
-          - os: windows-latest
             cc: gcc
             cxx: g++
+
+          - os: windows-latest
             generator: "MinGW Makefiles"
+            cc: gcc
+            cxx: g++
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    - name: Install Linux Dependencies
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential cmake
+      - name: Install Linux Dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential
 
-    - name: Setup MinGW (Windows)
-      if: matrix.os == 'windows-latest'
-      uses: egor-tisin/setup-mingw@v2
-      with:
-        platform: x64
+      - name: Setup MinGW
+        if: matrix.os == 'windows-latest'
+        uses: egor-tensin/setup-mingw@v3
+        with:
+          platform: x64
 
-    - name: Configure CMake
-      run: |
-        cmake -S . -B build -G "${{ matrix.generator }}" -DCMAKE_BUILD_TYPE=Debug
-      env:
-        CC: ${{ matrix.cc }}
-        CXX: ${{ matrix.cxx }}
+      - name: Configure CMake
+        run: |
+          cmake -S . -B build -G "${{ matrix.generator }}" -DCMAKE_BUILD_TYPE=Debug
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
 
-    - name: Build Project
-      run: cmake --build build --config Debug
+      - name: Build Project
+        run: cmake --build build --config Debug
 
-    - name: Run GoogleTest Suite
-      run: |
-        cd build
-        ctest --output-on-failure -C Debug
+      - name: Run GoogleTest Suite
+        run: |
+          cd build
+          ctest --output-on-failure -C Debug
