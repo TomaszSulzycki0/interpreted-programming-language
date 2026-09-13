@@ -63,7 +63,10 @@ include(GoogleTest)
 add_executable(unit_tests)
 
 target_sources(unit_tests PRIVATE
-    tests/parser_test.cpp
+    tests/parser_declaration_test.cpp
+    tests/parser_expression_test.cpp
+    tests/parser_error_test.cpp
+    tests/parser_control_flow_test.cpp
     tests/tokenizer_test.cpp
 )
 
