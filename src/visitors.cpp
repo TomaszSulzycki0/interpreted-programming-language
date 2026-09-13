@@ -3,7 +3,7 @@
 #include"scope.hpp"
 #include"numericVariable.hpp"
 #include"stringVariable.hpp"
-#include"AbstractNodes.hpp"
+#include"abstractNodes.hpp"
 #include"debugMacros.hpp"
 
 std::ostream& operator<<(std::ostream& os, const RuntimeValue& value) 
