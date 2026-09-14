@@ -1020,6 +1020,7 @@ void NodeTypeChecker::visit(const ElseNode& node)
 
 void NodeTypeChecker::visit(const ReturnNode&) 
 {
+    // TODO: Make sure the returned type matches explicit function return type
     this->isReturnSafe = true;
 }
 

@@ -280,6 +280,16 @@ std::unique_ptr<Expression> RPNHandler::parseRPNCondition(IParserContext& pctx)
             expr_stack.push_back( std::move( expr ) );
             expect_value = false;
         }
+        else if ( pctx.check( TOKEN_TYPE::TOKEN_FUNCTION_IDENTIFIER ) )
+        {
+            auto expr = pctx.parseNonVoidFunctionCall();
+            if ( !expr )
+            {
+                throw std::runtime_error("Error: Could not parse function call expression");
+            }
+            expr_stack.push_back( std::move( expr ) );
+            expect_value = false;
+        }
         else
         {
             throw std::runtime_error("Error: Invalid expression");
