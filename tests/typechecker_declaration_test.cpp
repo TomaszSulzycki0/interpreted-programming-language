@@ -44,6 +44,24 @@ TEST_F(TypecheckerDeclaratonTest, AllowsInitializationWithGoodFunctionCall)
     )"));
 }
 
+TEST_F(TypecheckerDeclaratonTest, AllowsInitializationWithImplicitTypeUpcasting)
+{
+    EXPECT_TRUE(typechecks(R"(
+        bool b = true;
+        int x = 10;
+        float y = 1.11;
+        double d = 2.22;
+        int x1 = b;
+
+        float y1 = b;
+        float y2 = x;
+
+        double d1 = b;
+        double d2 = x;
+        double d3 = y;
+    )"));
+}
+
 TEST_F(TypecheckerDeclaratonTest, ForbidsBadInitializationWithImplicitDownCasting)
 {
     EXPECT_FALSE(typechecks(R"(
