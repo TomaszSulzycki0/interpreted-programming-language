@@ -66,6 +66,8 @@ target_sources(unit_tests PRIVATE
     tests/parser_error_test.cpp
     tests/parser_control_flow_test.cpp
     tests/tokenizer_test.cpp
+    tests/typechecker_declaration_test.cpp
+    tests/typechecker_assignment_test.cpp
 )
 
 target_link_libraries(unit_tests PRIVATE 
