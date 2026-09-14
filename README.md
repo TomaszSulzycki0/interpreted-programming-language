@@ -1,7 +1,9 @@
 
+[![C++ CMake CI Suite](https://github.com/TomaszSulzycki0/interpreted-programming-language/actions/workflows/ci.yml/badge.svg)](https://github.com/TomaszSulzycki0/interpreted-programming-language/actions/workflows/ci.yml)
+
 # Interpreted programming language
 
-A tree-walk interpreter for a custom, statically typed programming language, built from scratch in C++ using CMake.
+A tree-walk interpreter for a custom statically typed programming language, built from scratch in C++ with CMake.
 
 
 ## Features
@@ -9,7 +11,7 @@ A tree-walk interpreter for a custom, statically typed programming language, bui
 - Data types: int, bool, float, double, string.
 - Control flow: if-else statements, while statements, functions. 
 - Functions: scope isolation, recursion.
-- Built in functions: print, casting functions
+- Built-in functions: print, casting functions
 - Comments.
 
 ## Installation
@@ -20,10 +22,10 @@ git clone https://github.com/TomaszSulzycki0/interpreted-programming-language.gi
 ```
 ### 2. Navigate to directory
 ```bash
-cd your-repo-name
+cd interpreted-programming-language
 ```
 
-### 3. Configure CMake build directory
+### 3. Configure the build
 ```bash
 cmake -B build -DCMAKE_BUILD_TYPE=Release
 ```
@@ -37,21 +39,27 @@ cmake --build build
 
 ### Running the interpreter
 
-#### 1. Description mode
+#### 1. Interpreter description
 
 ```bash
-./build/Release/ipl
+./build/ipl
 ```
 
 #### 2. Run a script
 
 ```bash
-./build/Release/ipl path/to/script.ipl
+./build/ipl path/to/script.ipl
+```
+
+#### 3. Run tests
+
+```bash
+ctest --test-dir build --output-on-failure
 ```
 
 ### Code example
 
-```bash
+```ipl
 fn RecCollatz(int x, int num_steps) -> int
 {    
     if ( x == 1)
