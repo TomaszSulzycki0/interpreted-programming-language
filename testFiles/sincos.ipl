@@ -1,0 +1,49 @@
+double pi = 3.1415926535;
+
+fn power(double base, int exp) -> double
+{
+    if ( exp == 0 )
+    {
+        return 1;
+    }
+
+    double result = base;
+    int i = 0;
+
+    while( i < exp - 1 )
+    {
+        result *= base;
+        i += 1;
+    }
+
+    return result;
+}
+
+fn sin(double x) -> double
+{
+    # Get argument to <-pi, pi> range
+
+    while ( x >= pi )
+    {
+        x -= pi;
+    }
+    while ( x <= -pi)
+    {
+        x += pi;
+    }
+
+    return x - power(x, 3) / double(6) + power(x, 5) / double(120) - power(x, 7) / double(5040);
+}
+
+fn cos(double x) -> double
+{
+    return double(1) - power(sin(x), 2);
+}
+
+float i = - float(pi);
+
+while ( i < float(pi) )
+{
+    print( "sin(" + string( double(i) ) + ") = " + string( sin( double(i) ) ) + " cos(" + string( double(i) ) + ") = " + string( cos( double(i) ) ) + "\n" );
+    i += 0.01;
+}

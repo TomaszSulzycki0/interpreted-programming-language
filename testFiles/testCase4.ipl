@@ -1,7 +1,0 @@
-fn foo(int x) -> int
-{
-    return x + 1;
-}
-
-int y = 0;
-int call = foo( foo( foo( foo( foo( y ) ) ) ) );

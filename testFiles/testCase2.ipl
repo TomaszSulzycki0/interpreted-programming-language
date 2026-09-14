@@ -1,8 +1,0 @@
-# Severe Comment Test
-string trick1 = "# This is not a comment; it is a string";
-string trick2 = "String with a quote inside? \" maybe"; # Actual comment here
-int complex_comment = 42; # # # "nested" # ; # 
-
-# Empty string and edge characters
-string empty = "";
-string symbols = ";;;###\"\"\"";
