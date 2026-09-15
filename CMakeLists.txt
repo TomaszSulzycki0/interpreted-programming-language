@@ -68,6 +68,7 @@ target_sources(unit_tests PRIVATE
     tests/tokenizer_test.cpp
     tests/typechecker_declaration_test.cpp
     tests/typechecker_assignment_test.cpp
+    tests/typechecker_scope_test.cpp
 )
 
 target_link_libraries(unit_tests PRIVATE 
