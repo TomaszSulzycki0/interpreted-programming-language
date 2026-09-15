@@ -924,6 +924,11 @@ void NodeTypeChecker::visit(const DeclarationNode& node)
 
 void NodeTypeChecker::visit(const FunctionDeclarationNode& node)
 {
+    if ( !( scope->lookup( node.name ).type.empty() ) )
+    {
+        throw std::runtime_error("Error: Function '" + node.name + "' was already declared in this scope.");
+    }
+
     std::shared_ptr<SemanticScope> fn_body_scope = std::make_shared<SemanticScope>( scope );
     NodeTypeChecker fn_body_checker { fn_body_scope };
 
