@@ -932,6 +932,8 @@ void NodeTypeChecker::visit(const FunctionDeclarationNode& node)
     std::shared_ptr<SemanticScope> fn_body_scope = std::make_shared<SemanticScope>( scope );
     NodeTypeChecker fn_body_checker { fn_body_scope };
 
+    fn_body_checker.fn_return_type = node.return_type;
+
     std::vector<std::string> fn_arg_data {};
 
     for ( const auto& arg_node : node.arg_nodes )
@@ -945,6 +947,11 @@ void NodeTypeChecker::visit(const FunctionDeclarationNode& node)
 
     for ( const auto& bd_node : node.body_nodes )
     {    
+        // We do not run the checker inside a built-in function
+        if ( dynamic_cast<EmbeddedFunctionNode*>( bd_node.get() ) )
+        {
+            return;
+        }
         bd_node->accept( fn_body_checker );   
     }
 
@@ -976,6 +983,7 @@ void NodeTypeChecker::visit(const WhileNode& node)
 
     std::shared_ptr<SemanticScope> while_body_scope = std::make_shared<SemanticScope>( scope );
     NodeTypeChecker while_body_checker { while_body_scope };
+    while_body_checker.fn_return_type = this->fn_return_type;
 
     for ( const auto& bd_node : node.body_nodes )
     {    
@@ -989,6 +997,7 @@ void NodeTypeChecker::visit(const IfNode& node)
 
     std::shared_ptr<SemanticScope> if_body_scope = std::make_shared<SemanticScope>( scope );
     NodeTypeChecker if_body_checker { if_body_scope };
+    if_body_checker.fn_return_type = this->fn_return_type;
 
     for ( const auto& bd_node : node.body_nodes )
     {    
@@ -1014,6 +1023,7 @@ void NodeTypeChecker::visit(const ElseNode& node)
 {
     std::shared_ptr<SemanticScope> else_body_scope = std::make_shared<SemanticScope>( scope );
     NodeTypeChecker else_body_checker { else_body_scope };
+    else_body_checker.fn_return_type = this->fn_return_type;
 
     for ( const auto& bd_node : node.body_nodes )
     {    
@@ -1023,10 +1033,16 @@ void NodeTypeChecker::visit(const ElseNode& node)
     this->isReturnSafe = else_body_checker.isReturnSafe;
 }
 
-void NodeTypeChecker::visit(const ReturnNode&) 
+void NodeTypeChecker::visit(const ReturnNode& node) 
 {
-    // TODO: Make sure the returned type matches explicit function return type
     this->isReturnSafe = true;
+
+    ExpressionTypeEvaluator type_evaluator { scope };
+
+    if( this->fn_return_type != type_evaluator.evaluateType( *(node.ret_expr) ) )
+    {
+        throw std::runtime_error("Type error: Return statement expression type does not match defined function return type.");
+    }
 }
 
 void NodeTypeChecker::checkTypeUpCasting(const std::string& from, const std::string& to)

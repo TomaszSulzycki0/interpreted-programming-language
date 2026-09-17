@@ -119,11 +119,12 @@ public:
     void visit(const IfNode& node) override;
     void visit(const ElseNode& node) override;
     void visit(const WhileNode& node) override;
-    void visit(const ReturnNode&) override;
+    void visit(const ReturnNode& node) override;
     void visit(const EmbeddedPrintFunctionNode&) override {};
     void visit(const EmbeddedCastFunctionNode&) override {};
-    
 
+    std::string fn_return_type = "";
+    
     static void checkTypeUpCasting(const std::string& from, const std::string& to);
 
     explicit NodeTypeChecker(std::shared_ptr<SemanticScope> s) : scope(std::move(s)) {}
