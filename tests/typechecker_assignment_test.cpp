@@ -33,8 +33,8 @@ TEST_F(TypecheckerAssignmentTest, AllowsAssignmentWithGoodFunctionCall)
     EXPECT_TRUE(typechecks(R"(
         fn rBool() -> bool { return true; } 
         fn rInt() -> int { return 1; } 
-        fn rFloat() -> float { return 1.0; } 
-        fn rDouble() -> double { return 1.0; } 
+        fn rFloat() -> float { float x = 1.0; return x;} 
+        fn rDouble() -> double { double y = 1.0; return y; } 
         fn rString() -> string { return "true"; } 
 
         bool b; 

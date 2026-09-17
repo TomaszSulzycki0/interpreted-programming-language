@@ -33,8 +33,8 @@ TEST_F(TypecheckerDeclaratonTest, AllowsInitializationWithGoodFunctionCall)
     EXPECT_TRUE(typechecks(R"(
         fn rBool() -> bool { return true; } 
         fn rInt() -> int { return 1; } 
-        fn rFloat() -> float { return 1.0; } 
-        fn rDouble() -> double { return 1.0; } 
+        fn rFloat() -> float { float x = 1.0; return x; } 
+        fn rDouble() -> double { double y = 1.0; return y; } 
         fn rString() -> string { return "true"; } 
         bool b = rBool(); 
         int x = rInt(); 
@@ -73,5 +73,26 @@ TEST_F(TypecheckerDeclaratonTest, ForbidsBadInitializationWithUncastableValue)
 {
     EXPECT_FALSE(typechecks(R"(
         int i = "foo";    
+    )"));
+}
+
+TEST_F(TypecheckerDeclaratonTest, ForbidsIncompatibleReturnExpressionType)
+{
+    EXPECT_FALSE(typechecks(R"(
+        fn foo() -> int 
+        { 
+            if( 1 )
+            {
+                if ( 0 )
+                {
+                    return 1011.1;
+                }
+                return "foo"; 
+            }
+            else
+            {
+                return 1.0;
+            }
+        }
     )"));
 }
