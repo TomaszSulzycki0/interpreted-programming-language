@@ -105,10 +105,6 @@ class NodeTypeChecker : public NodeVisitor
 private:
     std::shared_ptr<SemanticScope> scope;
 
-
-    static bool isNumeric(const std::string& tp);
-    static int getTypeConversionRank(const std::string& tp);
-
     bool isReturnSafe = false;
 
 public:
@@ -126,6 +122,9 @@ public:
     std::string fn_return_type = "";
     
     static void checkTypeUpCasting(const std::string& from, const std::string& to);
+    static int getTypeConversionRank(const std::string& tp);
+    static std::string getInverseTypeConversionRank(int rank);
+    static bool isNumeric(const std::string& tp);
 
     explicit NodeTypeChecker(std::shared_ptr<SemanticScope> s) : scope(std::move(s)) {}
 };

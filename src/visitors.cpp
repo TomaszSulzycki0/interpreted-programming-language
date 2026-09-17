@@ -979,8 +979,6 @@ void NodeTypeChecker::visit(const FunctionCallNode& node)
 
 void NodeTypeChecker::visit(const WhileNode& node)
 {
-    // TODO: Check implicit conversion of condition to bool
-
     std::shared_ptr<SemanticScope> while_body_scope = std::make_shared<SemanticScope>( scope );
     NodeTypeChecker while_body_checker { while_body_scope };
     while_body_checker.fn_return_type = this->fn_return_type;
@@ -993,8 +991,6 @@ void NodeTypeChecker::visit(const WhileNode& node)
 
 void NodeTypeChecker::visit(const IfNode& node) 
 {
-    // TODO: Check implicit conversion of condition to bool
-
     std::shared_ptr<SemanticScope> if_body_scope = std::make_shared<SemanticScope>( scope );
     NodeTypeChecker if_body_checker { if_body_scope };
     if_body_checker.fn_return_type = this->fn_return_type;
@@ -1059,8 +1055,6 @@ void NodeTypeChecker::checkTypeUpCasting(const std::string& from, const std::str
     }
     else
     {
-        // TODO: Converting numerics to strings in string concatenation here
-
         throw std::runtime_error("Type error: Declared type '" + to + "' is incompatible with '" + from + "'.");
     }
 }
@@ -1082,6 +1076,16 @@ int NodeTypeChecker::getTypeConversionRank(const std::string& tp)
     if ( tp == "double" )   return 3;
 
     return -1;
+}
+
+std::string NodeTypeChecker::getInverseTypeConversionRank(int rank)
+{
+    if ( rank == 0 )  return "bool";
+    if ( rank == 1 )  return "int";
+    if ( rank == 2 )  return "float";
+    if ( rank == 3 )  return "double";
+
+    return "";
 }
 
 std::string ExpressionTypeEvaluator::evaluateType(const Expression& expr)
@@ -1109,16 +1113,27 @@ void ExpressionTypeEvaluator::visit(const VariableExpression& expr)
 
 void ExpressionTypeEvaluator::visit(const BinaryExpression& expr)
 {
-    // TODO: Checking operand-operator compatibility
+    // TODO: Checking operand-operator compatibility ( "foo" * "faz")
 
     std::string left_type = this->evaluateType( *(expr.expr_left) );
     std::string right_type = this->evaluateType( *(expr.expr_right) );
 
-    if ( left_type != right_type )
+    // If both expresssions are numeric we will allow implicit casting
+    if ( NodeTypeChecker::isNumeric(left_type), NodeTypeChecker::isNumeric(right_type) )
+    {   
+        int highest_rank = std::max( NodeTypeChecker::getTypeConversionRank(left_type),
+                                     NodeTypeChecker::getTypeConversionRank(right_type) );
+        std::string highest_rank_type = NodeTypeChecker::getInverseTypeConversionRank(highest_rank);
+
+        last_evaluated_type = highest_rank_type;
+    }
+    else if ( left_type != right_type )
     {
+        // String and numeric case
         throw std::runtime_error("Type error: Implicit type conversion not allowed. Evaluated types: '" + left_type + "', '" + right_type + "'.");
     }
-
+    
+    // String and string case
     last_evaluated_type = left_type;
 }
 
