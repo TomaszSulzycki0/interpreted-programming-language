@@ -6,6 +6,7 @@
 #include<memory>
 
 class ExpressionVisitor;
+enum class ImplementedType;
 
 class Expression 
 {
@@ -42,8 +43,8 @@ class LiteralExpression final : public Expression
 {
 public:
     const std::string value;
-    const std::string tp;
-    explicit LiteralExpression(std::string v, std::string _tp) : value(std::move(v)), tp(std::move(_tp)) {}
+    const ImplementedType tp;
+    explicit LiteralExpression(std::string v, ImplementedType _tp) : value(std::move(v)), tp(_tp) {}
     LiteralExpression(const LiteralExpression& other) : value(other.value), tp(other.tp) {}
 
     void accept(ExpressionVisitor& visitor) const override;

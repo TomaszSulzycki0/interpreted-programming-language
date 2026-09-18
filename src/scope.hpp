@@ -5,6 +5,8 @@
 #include<memory>
 #include<unordered_map>
 
+#include"implementedType.hpp"
+
 class Declaration;
 
 // Scope class for declarations
@@ -39,8 +41,8 @@ public:
 
 struct VariableData
 {
-    std::string type;
-    std::string function_return_type = "";
+    ImplementedType type = ImplementedType::NULL_TYPE;
+    ImplementedType function_return_type = ImplementedType::NULL_TYPE;
 };
 
 class SemanticScope
@@ -48,7 +50,7 @@ class SemanticScope
 private:
     std::shared_ptr<SemanticScope> parent_scope = nullptr;
     std::unordered_map<std::string, VariableData> variable_types;
-    std::unordered_map<std::string, std::vector<std::string>> fn_arg_data;
+    std::unordered_map<std::string, std::vector<ImplementedType>> fn_arg_data;
 
 public:
 
@@ -57,12 +59,12 @@ public:
         variable_types[std::string(name)] = data;
     }
 
-    void storeFnArgTypes(std::string_view name, std::vector<std::string> tps)
+    void storeFnArgTypes(std::string_view name, std::vector<ImplementedType> tps)
     {
         fn_arg_data[std::string(name)] = tps;
     }
 
-    std::vector<std::string> getFnArgTypes(std::string_view name) const;
+    std::vector<ImplementedType> getFnArgTypes(std::string_view name) const;
 
     // Looks up the assosiated type in current or parent scopes
     VariableData lookup(std::string_view name) const;

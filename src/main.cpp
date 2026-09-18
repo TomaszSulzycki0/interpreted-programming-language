@@ -11,6 +11,7 @@
 #include"visitors.hpp"
 #include"builder.hpp"
 #include"typeChecker.hpp"
+#include"implementedType.hpp"
 
 constexpr int num_args_for_default_usage = 2;
 constexpr int num_args_for_description = 1;
@@ -110,12 +111,12 @@ void defineBuiltInFunctions(std::shared_ptr<Scope>& scope, std::shared_ptr<Seman
     
     // print
 
-    args.emplace_back(std::make_unique<DeclarationNode>("string", "data", nullptr));
+    args.emplace_back(std::make_unique<DeclarationNode>(ImplementedType::_string, "data", nullptr));
     body.emplace_back(std::make_unique<EmbeddedPrintFunctionNode>());
     
     static std::unique_ptr<FunctionDeclarationNode> printNode = std::make_unique<FunctionDeclarationNode>
     ( 
-        "void", "print", std::move(args), std::move(body)
+        ImplementedType::_void, "print", std::move(args), std::move(body)
     );
     
     declarer.visit( *printNode );
@@ -123,13 +124,13 @@ void defineBuiltInFunctions(std::shared_ptr<Scope>& scope, std::shared_ptr<Seman
 
     // bool cast
 
-    args.emplace_back(std::make_unique<DeclarationNode>("double", "data", nullptr));
-    body.emplace_back(std::make_unique<EmbeddedCastFunctionNode>("bool"));
+    args.emplace_back(std::make_unique<DeclarationNode>(ImplementedType::_double, "data", nullptr));
+    body.emplace_back(std::make_unique<EmbeddedCastFunctionNode>(ImplementedType::_bool));
     body.emplace_back(std::make_unique<ReturnNode>( std::make_unique<VariableExpression>("ret") ));
     
     static std::unique_ptr<FunctionDeclarationNode> boolCastNode = std::make_unique<FunctionDeclarationNode>
     ( 
-        "bool", "bool", std::move(args), std::move(body)
+        ImplementedType::_bool, "bool", std::move(args), std::move(body)
     );
 
     declarer.visit( *boolCastNode );
@@ -137,13 +138,13 @@ void defineBuiltInFunctions(std::shared_ptr<Scope>& scope, std::shared_ptr<Seman
 
     // int cast
 
-    args.emplace_back(std::make_unique<DeclarationNode>("double", "data", nullptr));
-    body.emplace_back(std::make_unique<EmbeddedCastFunctionNode>("int"));
+    args.emplace_back(std::make_unique<DeclarationNode>(ImplementedType::_double, "data", nullptr));
+    body.emplace_back(std::make_unique<EmbeddedCastFunctionNode>(ImplementedType::_int));
     body.emplace_back(std::make_unique<ReturnNode>( std::make_unique<VariableExpression>("ret") ));
     
     static std::unique_ptr<FunctionDeclarationNode> intCastNode = std::make_unique<FunctionDeclarationNode>
     ( 
-        "int", "int", std::move(args), std::move(body)
+        ImplementedType::_int, "int", std::move(args), std::move(body)
     );
     
     declarer.visit( *intCastNode );
@@ -151,13 +152,13 @@ void defineBuiltInFunctions(std::shared_ptr<Scope>& scope, std::shared_ptr<Seman
 
     // float cast
 
-    args.emplace_back(std::make_unique<DeclarationNode>("double", "data", nullptr));
-    body.emplace_back(std::make_unique<EmbeddedCastFunctionNode>("float"));
+    args.emplace_back(std::make_unique<DeclarationNode>(ImplementedType::_double, "data", nullptr));
+    body.emplace_back(std::make_unique<EmbeddedCastFunctionNode>(ImplementedType::_float));
     body.emplace_back(std::make_unique<ReturnNode>( std::make_unique<VariableExpression>("ret") ));
     
     static std::unique_ptr<FunctionDeclarationNode> floatCastNode = std::make_unique<FunctionDeclarationNode>
     ( 
-        "float", "float", std::move(args), std::move(body)
+        ImplementedType::_float, "float", std::move(args), std::move(body)
     );
 
     declarer.visit( *floatCastNode );
@@ -165,13 +166,13 @@ void defineBuiltInFunctions(std::shared_ptr<Scope>& scope, std::shared_ptr<Seman
 
     // double cast
 
-    args.emplace_back(std::make_unique<DeclarationNode>("double", "data", nullptr));
-    body.emplace_back(std::make_unique<EmbeddedCastFunctionNode>("double"));
+    args.emplace_back(std::make_unique<DeclarationNode>(ImplementedType::_double, "data", nullptr));
+    body.emplace_back(std::make_unique<EmbeddedCastFunctionNode>(ImplementedType::_double));
     body.emplace_back(std::make_unique<ReturnNode>( std::make_unique<VariableExpression>("ret") ));
     
     static std::unique_ptr<FunctionDeclarationNode> doubleCastNode = std::make_unique<FunctionDeclarationNode>
     ( 
-        "double", "double", std::move(args), std::move(body)
+        ImplementedType::_double, "double", std::move(args), std::move(body)
     );
 
     declarer.visit( *doubleCastNode );
@@ -179,13 +180,13 @@ void defineBuiltInFunctions(std::shared_ptr<Scope>& scope, std::shared_ptr<Seman
     
     // string conversion from numerics
 
-    args.emplace_back(std::make_unique<DeclarationNode>("double", "data", nullptr));
-    body.emplace_back(std::make_unique<EmbeddedCastFunctionNode>("string"));
+    args.emplace_back(std::make_unique<DeclarationNode>(ImplementedType::_double, "data", nullptr));
+    body.emplace_back(std::make_unique<EmbeddedCastFunctionNode>(ImplementedType::_string));
     body.emplace_back(std::make_unique<ReturnNode>( std::make_unique<VariableExpression>("ret") ));
     
     static std::unique_ptr<FunctionDeclarationNode> stringCastNode = std::make_unique<FunctionDeclarationNode>
     ( 
-        "string", "string", std::move(args), std::move(body)
+        ImplementedType::_string, "string", std::move(args), std::move(body)
     );
 
     declarer.visit( *stringCastNode );

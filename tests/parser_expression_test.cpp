@@ -3,6 +3,7 @@
 #include "parser.hpp"
 #include "abstractNodes.hpp"
 #include "expression.hpp"
+#include "implementedType.hpp"
 
 
 TEST(ParserExpressionTest, ParsesSimpleAssignment)
@@ -25,7 +26,7 @@ TEST(ParserExpressionTest, ParsesSimpleAssignment)
 
     ASSERT_NE(literal, nullptr);
     EXPECT_EQ(literal->value, "42");
-    EXPECT_EQ(literal->tp, "int");
+    EXPECT_EQ(literal->tp, ImplementedType::_int);
 }
 
 TEST(ParserExpressionTest, ParsesVariableAssignment)

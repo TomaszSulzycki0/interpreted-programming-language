@@ -10,6 +10,7 @@
 class NodeVisitor;
 class Expression;
 class DeclarationNode;
+enum class ImplementedType;
 
 class ASTNode
 {
@@ -34,13 +35,13 @@ class DeclarationNode : public ASTNode
 {
 public:
     std::string line;                        
-    std::string type;
+    ImplementedType type;
     std::string name;
     std::unique_ptr<Expression> initializer;
 
     void accept(NodeVisitor& visitor) const override;
-    explicit DeclarationNode(std::string t, std::string n, std::unique_ptr<Expression> init)
-        : type(std::move(t)), name(std::move(n)), initializer(std::move(init)) {}
+    explicit DeclarationNode(ImplementedType t, std::string n, std::unique_ptr<Expression> init)
+        : type(t), name(std::move(n)), initializer(std::move(init)) {}
 };
 
 class FunctionCallNode : public ASTNode
@@ -62,7 +63,7 @@ class FunctionDeclarationNode : public ASTNode
 {
 public:
     std::string line;                        
-    std::string return_type;
+    ImplementedType return_type;
     std::string name;
     std::vector<std::unique_ptr<DeclarationNode>> arg_nodes;
     std::vector<std::unique_ptr<ASTNode>> body_nodes;
@@ -70,11 +71,11 @@ public:
     void accept(NodeVisitor& visitor) const override;
 
     explicit FunctionDeclarationNode(
-        std::string rt, 
+        ImplementedType rt, 
         std::string n, 
         std::vector<std::unique_ptr<DeclarationNode>> _args,
         std::vector<std::unique_ptr<ASTNode>> bdnds) :
-            return_type(std::move(rt)), 
+            return_type(rt), 
             name(std::move(n)), 
             arg_nodes(std::move(_args)),
             body_nodes(std::move(bdnds) ) {}
@@ -153,10 +154,10 @@ public:
 class EmbeddedCastFunctionNode : public EmbeddedFunctionNode
 {
 public:
-    std::string tp;
+    ImplementedType tp;
     void accept(NodeVisitor& visitor) const override;
 
-    explicit EmbeddedCastFunctionNode(std::string _tp) : tp( std::move( _tp ) ) {}
+    explicit EmbeddedCastFunctionNode(ImplementedType _tp) : tp( _tp ) {}
 };
 
 #endif

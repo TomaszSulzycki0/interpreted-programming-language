@@ -3,6 +3,7 @@
 #include "parser.hpp"
 #include "abstractNodes.hpp"
 #include "expression.hpp"
+#include "implementedType.hpp"
 
 
 TEST(ParserDeclarationTest, ParsesUninitializedDeclaration)
@@ -19,7 +20,7 @@ TEST(ParserDeclarationTest, ParsesUninitializedDeclaration)
     const auto* node = dynamic_cast<const DeclarationNode*>(ast[0].get());
     ASSERT_NE(node, nullptr);
 
-    EXPECT_EQ(node->type, "int");
+    EXPECT_EQ(node->type, ImplementedType::_int);
     EXPECT_EQ(node->name, "x");
     EXPECT_EQ(node->initializer, nullptr);
 }
@@ -38,14 +39,14 @@ TEST(ParserDeclarationTest, ParsesInitializedDeclaration)
     const auto* node = dynamic_cast<const DeclarationNode*>(ast[0].get());
     ASSERT_NE(node, nullptr);
 
-    EXPECT_EQ(node->type, "int");
+    EXPECT_EQ(node->type, ImplementedType::_int);
     EXPECT_EQ(node->name, "x");
 
     const auto* literal = dynamic_cast<const LiteralExpression*>(node->initializer.get());
 
     ASSERT_NE(literal, nullptr);
     EXPECT_EQ(literal->value, "42");
-    EXPECT_EQ(literal->tp, "int");
+    EXPECT_EQ(literal->tp, ImplementedType::_int);
 }
 
 TEST(ParserDeclarationTest, ParsesFloatDeclaration)
@@ -61,14 +62,14 @@ TEST(ParserDeclarationTest, ParsesFloatDeclaration)
     const auto* node = dynamic_cast<const DeclarationNode*>(ast[0].get());
     ASSERT_NE(node, nullptr);
 
-    EXPECT_EQ(node->type, "float");
+    EXPECT_EQ(node->type, ImplementedType::_float);
     EXPECT_EQ(node->name, "x");
 
     const auto* literal = dynamic_cast<const LiteralExpression*>(node->initializer.get());
 
     ASSERT_NE(literal, nullptr);
     EXPECT_EQ(literal->value, "3.14");
-    EXPECT_EQ(literal->tp, "float");
+    EXPECT_EQ(literal->tp, ImplementedType::_float);
 }
 
 TEST(ParserDeclarationTest, ParsesBooleanDeclaration)
@@ -84,14 +85,14 @@ TEST(ParserDeclarationTest, ParsesBooleanDeclaration)
     const auto* node = dynamic_cast<const DeclarationNode*>(ast[0].get());
     ASSERT_NE(node, nullptr);
 
-    EXPECT_EQ(node->type, "bool");
+    EXPECT_EQ(node->type, ImplementedType::_bool);
     EXPECT_EQ(node->name, "enabled");
 
     const auto* literal = dynamic_cast<const LiteralExpression*>(node->initializer.get());
 
     ASSERT_NE(literal, nullptr);
     EXPECT_EQ(literal->value, "true");
-    EXPECT_EQ(literal->tp, "bool");
+    EXPECT_EQ(literal->tp, ImplementedType::_bool);
 }
 
 TEST(ParserDeclarationTest, ParsesStringDeclaration)
@@ -107,14 +108,14 @@ TEST(ParserDeclarationTest, ParsesStringDeclaration)
     const auto* node = dynamic_cast<const DeclarationNode*>(ast[0].get());
     ASSERT_NE(node, nullptr);
 
-    EXPECT_EQ(node->type, "string");
+    EXPECT_EQ(node->type, ImplementedType::_string);
     EXPECT_EQ(node->name, "message");
 
     const auto* literal = dynamic_cast<const LiteralExpression*>(node->initializer.get());
 
     ASSERT_NE(literal, nullptr);
     EXPECT_EQ(literal->value, "\"hello\"");
-    EXPECT_EQ(literal->tp, "string");
+    EXPECT_EQ(literal->tp, ImplementedType::_string);
 }
 
 TEST(ParserDeclarationTest, ParsesEmptyStringDeclaration)
@@ -135,7 +136,7 @@ TEST(ParserDeclarationTest, ParsesEmptyStringDeclaration)
 
     ASSERT_NE(literal, nullptr);
     EXPECT_EQ(literal->value, "");
-    EXPECT_EQ(literal->tp, "string");
+    EXPECT_EQ(literal->tp, ImplementedType::_string);
 }
 
 TEST(ParserDeclarationTest, ParsesMultipleDeclarations)
@@ -165,15 +166,15 @@ TEST(ParserDeclarationTest, ParsesMultipleDeclarations)
     ASSERT_NE(third, nullptr);
     ASSERT_NE(fourth, nullptr);
 
-    EXPECT_EQ(first->type, "int");
+    EXPECT_EQ(first->type, ImplementedType::_int);
     EXPECT_EQ(first->name, "x");
 
-    EXPECT_EQ(second->type, "float");
+    EXPECT_EQ(second->type, ImplementedType::_float);
     EXPECT_EQ(second->name, "y");
 
-    EXPECT_EQ(third->type, "bool");
+    EXPECT_EQ(third->type, ImplementedType::_bool);
     EXPECT_EQ(third->name, "enabled");
 
-    EXPECT_EQ(fourth->type, "string");
+    EXPECT_EQ(fourth->type, ImplementedType::_string);
     EXPECT_EQ(fourth->name, "name");
 }

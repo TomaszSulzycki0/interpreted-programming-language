@@ -7,6 +7,8 @@
 #include<variant>
 #include<functional>
 
+#include"implementedType.hpp"
+
 using RuntimeValue = std::variant<int, float, double, bool, std::string>;
 
 class Declaration;
@@ -119,12 +121,12 @@ public:
     void visit(const EmbeddedPrintFunctionNode&) override {};
     void visit(const EmbeddedCastFunctionNode&) override {};
 
-    std::string fn_return_type = "";
+    ImplementedType fn_return_type = ImplementedType::NULL_TYPE;
     
-    static void checkTypeUpCasting(const std::string& from, const std::string& to);
-    static int getTypeConversionRank(const std::string& tp);
-    static std::string getInverseTypeConversionRank(int rank);
-    static bool isNumeric(const std::string& tp);
+    static void checkTypeUpCasting(ImplementedType from, ImplementedType to);
+    static int getTypeConversionRank(ImplementedType tp);
+    static ImplementedType getInverseTypeConversionRank(int rank);
+    static bool isNumeric(ImplementedType tp);
 
     explicit NodeTypeChecker(std::shared_ptr<SemanticScope> s) : scope(std::move(s)) {}
 };
@@ -165,9 +167,9 @@ class ExpressionTypeEvaluator final : public ExpressionVisitor
 {
 private:
     std::shared_ptr<SemanticScope> scope;
-    std::string last_evaluated_type;
+    ImplementedType last_evaluated_type;
 public:
-    std::string evaluateType(const Expression& expr);
+    ImplementedType evaluateType(const Expression& expr);
     void visit(const LiteralExpression& expr) override;
     void visit(const VariableExpression& expr) override;
     void visit(const BinaryExpression& expr) override;

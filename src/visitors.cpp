@@ -8,6 +8,7 @@
 #include"stringVariable.hpp"
 #include"abstractNodes.hpp"
 #include"debugMacros.hpp"
+#include"implementedType.hpp"
 
 std::ostream& operator<<(std::ostream& os, const RuntimeValue& value) 
 {
@@ -72,10 +73,10 @@ void NodeMaker::visit(const DeclarationNode& node)
     }
     else 
     {
-        if (node.type == "int") raw_value = 0;
-        else if (node.type == "double" || node.type == "float") raw_value = 0.0;
-        else if (node.type == "string") raw_value = "";
-        else if (node.type == "bool") raw_value = 0;
+        if (node.type == ImplementedType::_int) raw_value = 0;
+        else if (node.type == ImplementedType::_double || node.type == ImplementedType::_float) raw_value = 0.0;
+        else if (node.type == ImplementedType::_string) raw_value = "";
+        else if (node.type == ImplementedType::_bool) raw_value = 0;
     }
 
     std::shared_ptr<Declaration> concrete_decl = nullptr;
@@ -83,7 +84,7 @@ void NodeMaker::visit(const DeclarationNode& node)
     std::visit([&](auto&& evaluated_arg) {
         using EvaluatedType = std::decay_t<decltype(evaluated_arg)>;
 
-        if ( node.type == "int" ) 
+        if ( node.type == ImplementedType::_int ) 
         {
             if constexpr ( std::is_arithmetic_v<EvaluatedType> ) {
                 concrete_decl = std::make_shared<Numeric<int>>(node.name, static_cast<int>(evaluated_arg));
@@ -91,7 +92,7 @@ void NodeMaker::visit(const DeclarationNode& node)
                 throw std::runtime_error("Error: Cannot initialize int variable '" + std::string( node.name ) + "' with a non-numeric value.");
             }
         } 
-        else if ( node.type == "double" ) 
+        else if ( node.type == ImplementedType::_double ) 
         {
             if constexpr ( std::is_arithmetic_v<EvaluatedType> ) {
                 concrete_decl = std::make_shared<Numeric<double>>(node.name, static_cast<double>(evaluated_arg));
@@ -101,7 +102,7 @@ void NodeMaker::visit(const DeclarationNode& node)
                 throw std::runtime_error("Error: Cannot initialize double variable '" + std::string( node.name ) + "' with a non-numeric value.");
             }
         } 
-        else if ( node.type == "float" ) 
+        else if ( node.type == ImplementedType::_float ) 
         {
             if constexpr ( std::is_arithmetic_v<EvaluatedType> )  
             {
@@ -112,7 +113,7 @@ void NodeMaker::visit(const DeclarationNode& node)
                 throw std::runtime_error("Error: Cannot initialize float variable '" + std::string( node.name ) + "' with a non-numeric value.");
             }
         }
-        else if ( node.type == "string" )
+        else if ( node.type == ImplementedType::_string )
         {
             if constexpr (std::is_same_v<EvaluatedType, std::string>) 
             {
@@ -127,7 +128,7 @@ void NodeMaker::visit(const DeclarationNode& node)
                 throw std::runtime_error("Error: Cannot initialize string variable '" + node.name + "'.");
             }
         }
-        else if ( node.type == "bool" )
+        else if ( node.type == ImplementedType::_bool )
         {
             if constexpr (std::is_arithmetic_v<EvaluatedType>) 
             {
@@ -142,7 +143,7 @@ void NodeMaker::visit(const DeclarationNode& node)
 
     if ( !concrete_decl )
     {
-        throw std::runtime_error("Error: Could not declare variable of type: " + std::string( node.type ));
+        throw std::runtime_error("Error: Could not declare variable of type: " + node.type );
     }
 
     scope->define(node.name, concrete_decl);
@@ -477,7 +478,7 @@ void NodeMaker::visit(const EmbeddedCastFunctionNode& node)
     // here we have to declare "ret" as the input cast to the appropriate type
     std::shared_ptr<DeclarationNode> temp_returnable { nullptr };
     std::unique_ptr<LiteralExpression> post_cast { nullptr };
-    if ( node.tp == "bool" )
+    if ( node.tp == ImplementedType::_bool )
     {
         auto value = std::visit( [&](auto&& unpacked) -> bool
         {
@@ -490,9 +491,9 @@ void NodeMaker::visit(const EmbeddedCastFunctionNode& node)
             return false;
         }, input_valued->getValue());
 
-        post_cast = std::make_unique<LiteralExpression>(std::to_string(value), "bool");
+        post_cast = std::make_unique<LiteralExpression>(std::to_string(value), ImplementedType::_bool);
     }
-    else if ( node.tp == "int" )
+    else if ( node.tp == ImplementedType::_int )
     {
         auto value = std::visit( [&](auto&& unpacked) -> int
         {
@@ -505,9 +506,9 @@ void NodeMaker::visit(const EmbeddedCastFunctionNode& node)
             return 0;
         }, input_valued->getValue());
 
-        post_cast = std::make_unique<LiteralExpression>(std::to_string(value), "int");
+        post_cast = std::make_unique<LiteralExpression>(std::to_string(value), ImplementedType::_int);
     }
-    else if ( node.tp == "float" )
+    else if ( node.tp == ImplementedType::_float )
     {
         auto value = std::visit( [&](auto&& unpacked) -> float
         {
@@ -520,9 +521,9 @@ void NodeMaker::visit(const EmbeddedCastFunctionNode& node)
             return 0;
         }, input_valued->getValue());
 
-        post_cast = std::make_unique<LiteralExpression>(std::to_string(value), "float");
+        post_cast = std::make_unique<LiteralExpression>(std::to_string(value), ImplementedType::_float);
     }
-    else if ( node.tp == "double" )
+    else if ( node.tp == ImplementedType::_double )
     {
         auto value = std::visit( [&](auto&& unpacked) -> double
         {
@@ -536,9 +537,9 @@ void NodeMaker::visit(const EmbeddedCastFunctionNode& node)
         }, input_valued->getValue());
 
 
-        post_cast = std::make_unique<LiteralExpression>(std::to_string(value), "double");
+        post_cast = std::make_unique<LiteralExpression>(std::to_string(value), ImplementedType::_double);
     }
-    else if ( node.tp == "string" )
+    else if ( node.tp == ImplementedType::_string )
     {
         auto value = std::visit( [&](auto&& unpacked) -> std::string
         {
@@ -552,7 +553,7 @@ void NodeMaker::visit(const EmbeddedCastFunctionNode& node)
         }, input_valued->getValue());
 
 
-        post_cast = std::make_unique<LiteralExpression>(value, "string");
+        post_cast = std::make_unique<LiteralExpression>(value, ImplementedType::_string);
     }
     else
     {
@@ -867,18 +868,18 @@ void ExpressionEvaluator::visit(const FunctionCallExpression& expr)
 
 void NodeTypeChecker::visit(const AssignmentNode& node)
 {
-    std::string var_type = scope->lookup( node.name ).type;
+    ImplementedType var_type = scope->lookup( node.name ).type;
 
-    if ( var_type.empty() )
+    if ( var_type == ImplementedType::NULL_TYPE )
     {
         throw std::runtime_error("Error: Variable '" + node.name + "' is undefined.");
     }
 
     ExpressionTypeEvaluator type_evaluator { scope };
 
-    std::string expr_type = type_evaluator.evaluateType( *node.value_expr );
+    ImplementedType expr_type = type_evaluator.evaluateType( *node.value_expr );
 
-    if ( expr_type.empty() )
+    if ( expr_type == ImplementedType::NULL_TYPE )
     {
         throw std::runtime_error("Type error: Unable to evaluate expression type.");
     }
@@ -894,7 +895,7 @@ void NodeTypeChecker::visit(const DeclarationNode& node)
 {
     const auto& declaration_type = node.type;
 
-    if ( !( scope->lookupLocal( node.name ).type.empty() ) )
+    if ( scope->lookupLocal( node.name ).type != ImplementedType::NULL_TYPE )
     {
         throw std::runtime_error("Error: Variable '" + node.name + "' was already declared in this scope.");
     }
@@ -907,9 +908,9 @@ void NodeTypeChecker::visit(const DeclarationNode& node)
 
     ExpressionTypeEvaluator type_evaluator { scope };
 
-    std::string expr_type = type_evaluator.evaluateType( *node.initializer );
+    ImplementedType expr_type = type_evaluator.evaluateType( *node.initializer );
 
-    if ( expr_type.empty() )
+    if ( expr_type == ImplementedType::NULL_TYPE )
     {
         throw std::runtime_error("Type error: Unable to evaluate expression type.");
     }
@@ -924,7 +925,7 @@ void NodeTypeChecker::visit(const DeclarationNode& node)
 
 void NodeTypeChecker::visit(const FunctionDeclarationNode& node)
 {
-    if ( !( scope->lookup( node.name ).type.empty() ) )
+    if ( scope->lookup( node.name ).type != ImplementedType::NULL_TYPE )
     {
         throw std::runtime_error("Error: Function '" + node.name + "' was already declared in this scope.");
     }
@@ -934,7 +935,7 @@ void NodeTypeChecker::visit(const FunctionDeclarationNode& node)
 
     fn_body_checker.fn_return_type = node.return_type;
 
-    std::vector<std::string> fn_arg_data {};
+    std::vector<ImplementedType> fn_arg_data {};
 
     for ( const auto& arg_node : node.arg_nodes )
     {
@@ -943,7 +944,7 @@ void NodeTypeChecker::visit(const FunctionDeclarationNode& node)
     }
 
     scope->storeFnArgTypes( node.name, fn_arg_data );
-    scope->define( node.name,  VariableData("fn", node.return_type) );
+    scope->define( node.name,  VariableData(ImplementedType::_fn, node.return_type) );
 
     for ( const auto& bd_node : node.body_nodes )
     {    
@@ -955,7 +956,7 @@ void NodeTypeChecker::visit(const FunctionDeclarationNode& node)
         bd_node->accept( fn_body_checker );   
     }
 
-    if ( ( node.return_type != "void" ) && !( fn_body_checker.isReturnSafe ) )
+    if ( ( node.return_type != ImplementedType::_void ) && !( fn_body_checker.isReturnSafe ) )
     {
         throw std::runtime_error("Error: Missing return statement inside non-void function.");
     }
@@ -964,16 +965,16 @@ void NodeTypeChecker::visit(const FunctionDeclarationNode& node)
 
 void NodeTypeChecker::visit(const FunctionCallNode& node)
 {
-    std::string fn_type = scope->lookup( node.name ).function_return_type;
+    ImplementedType fn_return_type = scope->lookup( node.name ).function_return_type;
     
-    if ( fn_type.empty() )
+    if ( fn_return_type == ImplementedType::NULL_TYPE )
     {
         throw std::runtime_error("Error: Function '" + node.name + "' is undefined.");
     }
 
     ExpressionTypeEvaluator type_evaluator { scope };
     
-    std::string expr_type = type_evaluator.evaluateType( *node.expr );
+    [[maybe_unused]] ImplementedType expr_type = type_evaluator.evaluateType( *node.expr );
 
 }
 
@@ -1041,7 +1042,7 @@ void NodeTypeChecker::visit(const ReturnNode& node)
     }
 }
 
-void NodeTypeChecker::checkTypeUpCasting(const std::string& from, const std::string& to)
+void NodeTypeChecker::checkTypeUpCasting(ImplementedType from, ImplementedType to)
 {
     if ( isNumeric(from) && isNumeric(to) )
     {
@@ -1059,36 +1060,43 @@ void NodeTypeChecker::checkTypeUpCasting(const std::string& from, const std::str
     }
 }
 
-bool NodeTypeChecker::isNumeric(const std::string& tp)
+bool NodeTypeChecker::isNumeric(ImplementedType tp)
 {
-    if ( tp == "int" || tp == "float" || tp == "double" || tp == "bool" )
+    if (tp == ImplementedType::_int || 
+        tp == ImplementedType::_float || 
+        tp == ImplementedType::_double || 
+        tp == ImplementedType::_bool )
     {
         return true;
     }
     return false;
 }
 
-int NodeTypeChecker::getTypeConversionRank(const std::string& tp)
+int NodeTypeChecker::getTypeConversionRank(ImplementedType tp)
 {
-    if ( tp == "bool" )     return 0;
-    if ( tp == "int" )      return 1;
-    if ( tp == "float" )    return 2;
-    if ( tp == "double" )   return 3;
-
-    return -1;
+    switch (tp) 
+    {
+        case ImplementedType::_bool:        return 0;
+        case ImplementedType::_int:         return 1;
+        case ImplementedType::_float:       return 2;
+        case ImplementedType::_double:      return 3;
+        default:                            return -1;
+    }
 }
 
-std::string NodeTypeChecker::getInverseTypeConversionRank(int rank)
+ImplementedType NodeTypeChecker::getInverseTypeConversionRank(int rank)
 {
-    if ( rank == 0 )  return "bool";
-    if ( rank == 1 )  return "int";
-    if ( rank == 2 )  return "float";
-    if ( rank == 3 )  return "double";
-
-    return "";
+    switch (rank) 
+    {
+        case 0:     return ImplementedType::_bool;
+        case 1:     return ImplementedType::_int;
+        case 2:     return ImplementedType::_float;
+        case 3:     return ImplementedType::_double;
+        default:    return ImplementedType::NULL_TYPE;
+    }
 }
 
-std::string ExpressionTypeEvaluator::evaluateType(const Expression& expr)
+ImplementedType ExpressionTypeEvaluator::evaluateType(const Expression& expr)
 {
     expr.accept(*this);
     return last_evaluated_type;
@@ -1101,9 +1109,9 @@ void ExpressionTypeEvaluator::visit(const LiteralExpression& expr)
 
 void ExpressionTypeEvaluator::visit(const VariableExpression& expr)
 {
-    std::string var_type = scope->lookup( expr.name ).type;
+    ImplementedType var_type = scope->lookup( expr.name ).type;
 
-    if ( var_type.empty() )
+    if ( var_type == ImplementedType::NULL_TYPE )
     {
         throw std::runtime_error("Error: Variable '" + expr.name + "' is undefined.");
     }
@@ -1115,15 +1123,15 @@ void ExpressionTypeEvaluator::visit(const BinaryExpression& expr)
 {
     // TODO: Checking operand-operator compatibility ( "foo" * "faz")
 
-    std::string left_type = this->evaluateType( *(expr.expr_left) );
-    std::string right_type = this->evaluateType( *(expr.expr_right) );
+    ImplementedType left_type = this->evaluateType( *(expr.expr_left) );
+    ImplementedType right_type = this->evaluateType( *(expr.expr_right) );
 
     // If both expresssions are numeric we will allow implicit casting
     if ( NodeTypeChecker::isNumeric(left_type), NodeTypeChecker::isNumeric(right_type) )
     {   
         int highest_rank = std::max( NodeTypeChecker::getTypeConversionRank(left_type),
                                      NodeTypeChecker::getTypeConversionRank(right_type) );
-        std::string highest_rank_type = NodeTypeChecker::getInverseTypeConversionRank(highest_rank);
+        ImplementedType highest_rank_type = NodeTypeChecker::getInverseTypeConversionRank(highest_rank);
 
         last_evaluated_type = highest_rank_type;
     }
@@ -1144,9 +1152,9 @@ void ExpressionTypeEvaluator::visit(const UnaryExpression& expr)
 
 void ExpressionTypeEvaluator::visit(const FunctionCallExpression& expr)
 {
-    std::string fn_ret_type = scope->lookup( expr.name ).function_return_type;
+    ImplementedType fn_ret_type = scope->lookup( expr.name ).function_return_type;
     
-    if ( fn_ret_type.empty() )
+    if ( fn_ret_type == ImplementedType::NULL_TYPE )
     {
         throw std::runtime_error("Error: Function '" + expr.name + "' is undefined.");
     }
@@ -1163,7 +1171,7 @@ void ExpressionTypeEvaluator::visit(const FunctionCallExpression& expr)
 
     for ( std::size_t i {}; i < num_args; i++ )
     {
-        std::string arg_type = this->evaluateType( *(expr.args[i]) );
+        ImplementedType arg_type = this->evaluateType( *(expr.args[i]) );
 
         if ( fn_metadata[i] != arg_type )
         {

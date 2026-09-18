@@ -8,6 +8,7 @@
 #include"parser.hpp"
 
 class Scope;
+enum class ImplementedType;
 
 class Declaration
 {
@@ -36,7 +37,7 @@ class FunctionDeclaration : public Declaration
 private:
     std::size_t num_args;
     std::vector<std::string> arg_names;
-    std::string_view return_type;
+    ImplementedType return_type;
     
 public:
     std::vector<ASTNode*> body_nodes;
@@ -48,12 +49,12 @@ public:
 
     std::vector<std::string> getArgNames() const { return arg_names; }
     std::size_t getNumArgs() const { return num_args; }
-    std::string_view getReturnType() const { return return_type; }
+    ImplementedType getReturnType() const { return return_type; }
 
     explicit FunctionDeclaration(   std::string_view _name, 
                                     std::size_t _num_args,
                                     std::vector<std::string> _arg_names,
-                                    std::string_view _return_type,
+                                    ImplementedType _return_type,
                                     std::vector<ASTNode*> _body_nodes,
                                     std::vector<DeclarationNode*> _args,
                                     std::shared_ptr<Scope> _declaration_scope
