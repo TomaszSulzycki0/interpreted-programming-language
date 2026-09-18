@@ -1121,28 +1121,40 @@ void ExpressionTypeEvaluator::visit(const VariableExpression& expr)
 
 void ExpressionTypeEvaluator::visit(const BinaryExpression& expr)
 {
-    // TODO: Checking operand-operator compatibility ( "foo" * "faz")
 
     ImplementedType left_type = this->evaluateType( *(expr.expr_left) );
     ImplementedType right_type = this->evaluateType( *(expr.expr_right) );
 
     // If both expresssions are numeric we will allow implicit casting
-    if ( NodeTypeChecker::isNumeric(left_type), NodeTypeChecker::isNumeric(right_type) )
+    if ( NodeTypeChecker::isNumeric(left_type) && NodeTypeChecker::isNumeric(right_type) )
     {   
+        if ( expr.expr_operator == "and" || expr.expr_operator == "or" )
+        {
+            throw std::runtime_error("Type error: Operator '" + expr.expr_operator + "' is not compatible with numeric expressions.");
+        }
+
         int highest_rank = std::max( NodeTypeChecker::getTypeConversionRank(left_type),
                                      NodeTypeChecker::getTypeConversionRank(right_type) );
         ImplementedType highest_rank_type = NodeTypeChecker::getInverseTypeConversionRank(highest_rank);
 
         last_evaluated_type = highest_rank_type;
     }
-    else if ( left_type != right_type )
+    else if ( left_type == ImplementedType::_string && right_type == ImplementedType::_string )
+    {
+        if ( expr.expr_operator != "+" )
+        {
+            // Only allowed operator for two strings is '+'
+            throw std::runtime_error("Type error: Operator '" + expr.expr_operator + "' is not compatible with string expressions.");
+        }
+        
+        last_evaluated_type = left_type;
+    }
+    else
     {
         // String and numeric case
         throw std::runtime_error("Type error: Implicit type conversion not allowed. Evaluated types: '" + left_type + "', '" + right_type + "'.");
     }
     
-    // String and string case
-    last_evaluated_type = left_type;
 }
 
 void ExpressionTypeEvaluator::visit(const UnaryExpression& expr)
