@@ -9,7 +9,7 @@ target_sources(ipl_lib PRIVATE
     src/scope.cpp
     src/parser.cpp
     src/builder.cpp
-    src/visitors.cpp
+    src/visitorsBase.cpp
     src/expression.cpp
     src/tokenizer.cpp
     src/abstractNodes.cpp
