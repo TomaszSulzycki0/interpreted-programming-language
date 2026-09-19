@@ -1,6 +1,3 @@
-#include<format>
-#include<charconv>
-
 #include"visitorsBase.hpp"
 #include"builder.hpp"
 #include"typeChecker.hpp"
@@ -11,25 +8,6 @@
 #include"abstractNodes.hpp"
 #include"debugMacros.hpp"
 #include"implementedType.hpp"
-
-std::ostream& operator<<(std::ostream& os, const RuntimeValue& value) 
-{
-    std::visit([&os](const auto& arg) 
-    {
-        using EvaluatedType = std::decay_t<decltype(arg)>;
-        if constexpr ( std::is_same_v<EvaluatedType, bool> ) 
-        {
-            os << (arg ? "true" : "false");
-        } 
-        else 
-        {
-            os << arg;
-        }
-
-    }, value);
-    
-    return os;
-}
 
 void PrintVisitor::visit(const NumericDeclaration& num_decl) 
 {
