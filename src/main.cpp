@@ -8,7 +8,7 @@
 #include"scope.hpp"
 #include"numericVariable.hpp"
 #include"parser.hpp"
-#include"visitors.hpp"
+#include"visitorsBase.hpp"
 #include"builder.hpp"
 #include"typeChecker.hpp"
 #include"implementedType.hpp"

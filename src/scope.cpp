@@ -1,5 +1,5 @@
 #include"scope.hpp"
-#include"visitors.hpp"
+#include"visitorsBase.hpp"
 #include"declarationBase.hpp"
 #include"implementedType.hpp"
 
