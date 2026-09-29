@@ -10,6 +10,9 @@
 class ASTNode;
 class SemanticScope;
 
+// Type safety checker module
+// Checks for matching types in declarations, assignments, function call return values, function arguments 
+// variable / function redeclarations, undefined references etc.
 class TypeChecker
 {
 private: 
@@ -20,12 +23,17 @@ private:
     bool is_well_typed = true;
 
 public:
+
+    // Checks type safety of the AST and sets the flag returned by isASTWellTyped() accordingly
     void run_check(const std::vector<std::unique_ptr<ASTNode>>& nodes);
+
+    // Returns the result of run_check() 
     bool isASTWellTyped() const { return is_well_typed; }
 
     explicit TypeChecker(std::shared_ptr<SemanticScope> s) : scope(std::move(s)) {}
 };
 
+// Visitor that checks type safety of individual AST nodes
 class NodeTypeChecker : public NodeVisitor
 {
 private:
@@ -55,13 +63,17 @@ public:
     explicit NodeTypeChecker(std::shared_ptr<SemanticScope> s) : scope(std::move(s)) {}
 };
 
+// Visitor that evaluates the type of expressions
 class ExpressionTypeEvaluator final : public ExpressionVisitor 
 {
 private:
     std::shared_ptr<SemanticScope> scope;
     ImplementedType last_evaluated_type;
 public:
+
+    // Evaluate the type of an expression in the current scope
     ImplementedType evaluateType(const Expression& expr);
+    
     void visit(const LiteralExpression& expr) override;
     void visit(const VariableExpression& expr) override;
     void visit(const BinaryExpression& expr) override;

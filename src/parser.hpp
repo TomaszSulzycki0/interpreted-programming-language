@@ -10,6 +10,7 @@
 
 class ASTNode;
 
+// Parsing state used mostly to chandle closing braces 
 enum class PARSING_MODE
 {
     DEFAULT,
@@ -18,6 +19,7 @@ enum class PARSING_MODE
     FUNCTION_BODY
 };
 
+// Interface for allowing RPNHandler to use Parser's methods
 class IParserContext 
 {
 public:
@@ -33,6 +35,9 @@ public:
 
 };
 
+// Parsing module
+// Responsible for deploying the lexer, validating the token stream, 
+// parsing complex expressions, outputting the complete AST
 class Parser : public IParserContext
 {
 private:
@@ -43,6 +48,8 @@ private:
     std::vector<Token> tokens {};
     std::size_t tokens_size {};
     std::size_t pos {};
+    
+    // Methods used for parsing.
     
     std::unique_ptr<ASTNode> parseAssignment();
     std::unique_ptr<ASTNode> parseIf();

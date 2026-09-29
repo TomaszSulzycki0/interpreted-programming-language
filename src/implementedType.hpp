@@ -3,6 +3,7 @@
 
 #include<string>
 
+// Holds one of the types thats currently implemented in IPL
 enum class ImplementedType
 {
     _bool, _int, _float, _double, _string, _void, _fn, NULL_TYPE

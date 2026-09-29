@@ -8,6 +8,7 @@
 template<typename T>
 concept Arithmetic = std::integral<T> || std::floating_point<T>;
 
+// Base class for numeric declarations
 class NumericDeclaration : public ValueDeclaration
 {
 public:
@@ -21,6 +22,7 @@ public:
     void accept(DeclarationVisitor& visitor) const override { visitor.visit(*this); }
 };
 
+// Concrete numeric declaration class template
 template<Arithmetic T> 
 class Numeric final : public NumericDeclaration
 {

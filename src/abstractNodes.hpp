@@ -12,6 +12,7 @@ class Expression;
 class DeclarationNode;
 enum class ImplementedType;
 
+// Base class for all abstract nodes
 class ASTNode
 {
 public:

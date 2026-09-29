@@ -36,15 +36,14 @@ public:
 
 };
 
-// Scope class for running the type checker.
 // Stores the types / return types in case of functions
-
 struct VariableData
 {
     ImplementedType type = ImplementedType::NULL_TYPE;
     ImplementedType function_return_type = ImplementedType::NULL_TYPE;
 };
 
+// Scope class for running the type checker.
 class SemanticScope
 {
 private:

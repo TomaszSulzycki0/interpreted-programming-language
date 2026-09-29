@@ -11,7 +11,6 @@
 #include<iomanip>
 #include<deque>
 
-
 enum class TOKENIZER_STATE
 {
     DEFAULT,      
@@ -52,7 +51,6 @@ enum class TOKEN_TYPE
     TOKEN_COMMENT_END,
     TOKEN_RETURN,
     TOKEN_ERROR,
-    TOKEN_NULL,
     TOKEN_EOF
 };
 
@@ -65,9 +63,15 @@ struct Token
     std::size_t line {};
 };
 
+// Lexer module
+// Turns a stream of characters into a stream of tokens
+// Only validates that the input stream of characters produces valid tokens
+// with disregard for semantic correctness
 class Tokenizer
 {
 private:
+
+    // special sequences of characters that cannot be used as variable / function identifiers 
     const static inline std::unordered_map<std::string_view, TOKEN_TYPE> keywords 
     {
         { std::string_view("int"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
@@ -95,6 +99,8 @@ private:
     std::string_view code;
     const std::size_t code_size;
 
+    // Helper methods for tokenizing the character stream
+
     TOKENIZER_STATE currentState() const { return state_stack.back(); }
     void pushState(TOKENIZER_STATE state) { state_stack.push_back(state); }
     void popState() { if ( state_stack.size() > 1 ) state_stack.pop_back(); }
@@ -102,7 +108,6 @@ private:
     char peek() const { return pos < code_size ? code[pos] : '\0'; }
     char peekNext() const { return pos + 1 < code_size ? code[pos + 1] : '\0'; }
     char decodeEscapeSeq(char c) const;
-    
     bool isIdentifierStart(char c) const;
     bool isIdentifierBody(char c) const;
     bool isDigit(char c) const;
@@ -120,7 +125,11 @@ private:
 
 public:
     explicit Tokenizer(const std::string& _code);
+
+    // Use the lexer
+    // Outputs the steam of tokens
     std::vector<Token> emitTokens();
+    
     void debugTokens(const std::vector<Token>& tokens);
 };
 

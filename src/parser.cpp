@@ -6,6 +6,8 @@
 #include"debugMacros.hpp"
 #include"implementedType.hpp"
 
+// Runs the lexer.
+// Make sure to call before parseProgram()
 void Parser::tokenizeProgram()
 {
     tokens = tokenizer.emitTokens();
@@ -16,6 +18,8 @@ void Parser::tokenizeProgram()
     #endif
 }
 
+// Produces the AST.
+// Call with PARSING_MODE::DEFAULT when calling for the first time
 std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram(const PARSING_MODE& mode) 
 {
     std::vector<std::unique_ptr<ASTNode>> ast;

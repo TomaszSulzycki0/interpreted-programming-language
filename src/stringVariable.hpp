@@ -3,6 +3,7 @@
 
 #include"declarationBase.hpp"
 
+// Concrete declaraion of string type
 class StringDeclaration final : public ValueDeclaration
 {
 private:

@@ -8,6 +8,7 @@
 class ExpressionVisitor;
 enum class ImplementedType;
 
+// Base class for all expressions
 class Expression 
 {
 public:

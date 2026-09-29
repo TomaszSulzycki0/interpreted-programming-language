@@ -9,15 +9,20 @@ class Scope;
 class Expression;
 class ASTNode;
 
+// Code executor module
+// Runs the code from the AST
 class Builder 
 {
 private:
     std::shared_ptr<Scope> scope;
 public:
     explicit Builder(std::shared_ptr<Scope> s) : scope(std::move(s)) {}
+
+    // Execute the AST
     void buildProgram(const std::vector<std::unique_ptr<ASTNode>>& ast); 
 };
 
+// Visitor that visits abstract nodes and executes them in the provided scope 
 class NodeMaker : public NodeVisitor
 {
 private:
@@ -47,6 +52,7 @@ public:
     explicit NodeMaker(std::shared_ptr<Scope> s) : scope(std::move(s)) {}
 };
 
+// Responsible for evaluating the value of expressions in the provided scope
 class ExpressionEvaluator final : public ExpressionVisitor 
 {
 private:

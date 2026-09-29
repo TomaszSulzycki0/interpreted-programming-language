@@ -20,6 +20,7 @@ void programDesc();
 bool hasCorrectExtension(const std::string& filename, const std::string& expected_ext);
 std::string readFileToString(const std::string& filename); 
 
+// Declares built-in functions in the global scope
 void defineBuiltInFunctions(std::shared_ptr<Scope>& scope, std::shared_ptr<SemanticScope>& s_scope);
 
 int main(int argc, char** argv)

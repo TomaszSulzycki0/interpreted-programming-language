@@ -11,6 +11,7 @@
 class IParserContext;
 struct Token;
 
+// Helper class for the Parser used for parsing complex expressions
 class RPNHandler
 {
 private:
@@ -40,8 +41,14 @@ private:
     void makeBinExprRPN(std::vector<Token>& operator_stack, 
                     std::vector<std::unique_ptr<Expression>>& expr_stack);
 public:
+
+    // Default method for parsing expressions
     std::unique_ptr<Expression> parseRPN(IParserContext& pctx);
+
+    // Method for parsing conditions in if / while statements
     std::unique_ptr<Expression> parseRPNCondition(IParserContext& pctx);
+
+    // Method for parsing function call arguments
     std::unique_ptr<Expression> parseFunctionCallRPN(IParserContext& pctx, bool& is_fn_call_end);
 };
 
