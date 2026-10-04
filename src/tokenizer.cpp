@@ -33,9 +33,10 @@ Token Tokenizer::getNextToken()
 {
     switch ( currentState() ) 
     {
-        case TOKENIZER_STATE::DEFAULT:  return useStateDefault();
-        case TOKENIZER_STATE::STRING:   return useStateString();
-        case TOKENIZER_STATE::COMMENT:  return useStateComment();
+        case TOKENIZER_STATE::DEFAULT:              return useStateDefault();
+        case TOKENIZER_STATE::STRING:               return useStateString();
+        case TOKENIZER_STATE::COMMENT:              return useStateComment();
+        case TOKENIZER_STATE::LEXING_OBJECT_NAME:   return useStateLexingObjectName();
     }
     
     std::unreachable();
@@ -45,7 +46,7 @@ Token Tokenizer::readIdentifier()
 {
     const std::size_t start_pos = pos;
 
-    advance(); // Already read identifier start before function call
+    advance(); // Already checked identifier start before function call
 
     while ( pos < code_size && isIdentifierBody( peek() ) ) 
     {
@@ -99,6 +100,29 @@ Token Tokenizer::readNumber()
     return Token{ TOKEN_TYPE::TOKEN_LITERAL_INTEGRAL, lexeme, current_line };    
 }
 
+Token Tokenizer::useStateLexingObjectName()
+{
+    popState();
+
+    skipWhitespace();
+
+    if ( pos >= code_size ) 
+    {
+        return Token{ TOKEN_TYPE::TOKEN_EOF, "", current_line };
+    }
+
+    if ( !isIdentifierStart( peek() ) )
+    {
+        return Token{ TOKEN_TYPE::TOKEN_ERROR, std::string_view("Invalid character for object identifier"), current_line };
+    }
+
+    Token object_identifier = readIdentifier();
+
+    keywords.emplace(object_identifier.value, TOKEN_TYPE::TOKEN_KEYWORD_USER_DEFINED_TYPE);
+
+    return object_identifier;
+}
+
 Token Tokenizer::useStateDefault()
 {
     skipWhitespace();
@@ -113,11 +137,20 @@ Token Tokenizer::useStateDefault()
     if ( isIdentifierStart(c) )
     {
         Token identifier = readIdentifier();
+
+        if ( identifier.type == TOKEN_TYPE::TOKEN_KEYWORD_OBJECT )
+        {
+            pushState( TOKENIZER_STATE::LEXING_OBJECT_NAME );
+            
+            return identifier;
+        }
+
         if ( peek() == '(' && !(identifier.type == TOKEN_TYPE::TOKEN_KEYWORD_IF || 
                                 identifier.type == TOKEN_TYPE::TOKEN_KEYWORD_WHILE ) )
         {
             identifier.type = TOKEN_TYPE::TOKEN_FUNCTION_IDENTIFIER;
         }
+
         return identifier; 
     } 
     else if ( isDigit(c) )
@@ -338,6 +371,8 @@ std::ostream& operator<<(std::ostream& os, TOKEN_TYPE type)
         case TOKEN_TYPE::TOKEN_KEYWORD_IF:              return os << "IF";
         case TOKEN_TYPE::TOKEN_KEYWORD_ELSE:            return os << "ELSE";
         case TOKEN_TYPE::TOKEN_KEYWORD_WHILE:           return os << "WHILE";
+        case TOKEN_TYPE::TOKEN_KEYWORD_OBJECT:          return os << "OBJECT";
+        case TOKEN_TYPE::TOKEN_KEYWORD_USER_DEFINED_TYPE:return os << "USER_DEFINED_TYPE";
         case TOKEN_TYPE::TOKEN_EQUALS:                  return os << "EQUALS";
         case TOKEN_TYPE::TOKEN_PLUS_EQUALS:             return os << "PLUS_EQUALS";
         case TOKEN_TYPE::TOKEN_MINUS_EQUALS:            return os << "MINUS_EQUALS";

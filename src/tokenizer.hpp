@@ -15,7 +15,8 @@ enum class TOKENIZER_STATE
 {
     DEFAULT,      
     STRING,       
-    COMMENT      
+    COMMENT,
+    LEXING_OBJECT_NAME  
 };
 
 enum class TOKEN_TYPE
@@ -23,6 +24,8 @@ enum class TOKEN_TYPE
     TOKEN_IDENTIFIER,
     TOKEN_FUNCTION_IDENTIFIER,
     TOKEN_KEYWORD_TYPE,
+    TOKEN_KEYWORD_USER_DEFINED_TYPE,    
+    TOKEN_KEYWORD_OBJECT,    
     TOKEN_KEYWORD_BOOL,
     TOKEN_KEYWORD_FUNCTION,
     TOKEN_KEYWORD_IF,
@@ -72,7 +75,7 @@ class Tokenizer
 private:
 
     // special sequences of characters that cannot be used as variable / function identifiers 
-    const static inline std::unordered_map<std::string_view, TOKEN_TYPE> keywords 
+    static inline std::unordered_map<std::string_view, TOKEN_TYPE> keywords 
     {
         { std::string_view("int"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
         { std::string_view("float"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
@@ -88,6 +91,7 @@ private:
         { std::string_view("while"), TOKEN_TYPE::TOKEN_KEYWORD_WHILE },
         { std::string_view("and"), TOKEN_TYPE::TOKEN_OPERATOR },
         { std::string_view("or"), TOKEN_TYPE::TOKEN_OPERATOR },
+        { std::string_view("object"), TOKEN_TYPE::TOKEN_KEYWORD_OBJECT },
         { std::string_view("return"), TOKEN_TYPE::TOKEN_RETURN }
     };
 
@@ -121,6 +125,7 @@ private:
     Token useStateDefault();
     Token useStateString();
     Token useStateComment();
+    Token useStateLexingObjectName();
 
 
 public:
