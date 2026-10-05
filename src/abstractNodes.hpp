@@ -12,6 +12,8 @@ class Expression;
 class DeclarationNode;
 enum class ImplementedType;
 
+// TODO: Pass to node constructors the line where it was written for better error messages  
+
 // Base class for all abstract nodes
 class ASTNode
 {
@@ -137,6 +139,22 @@ public:
     void accept(NodeVisitor& visitor) const override;
 
     explicit ReturnNode( std::unique_ptr<Expression> r_expr ) : ret_expr(std::move(r_expr)) {}
+};
+
+class ObjectSignatureNode : public ASTNode
+{
+public:
+    std::string line;                        
+    std::string name;
+    std::vector<std::unique_ptr<ASTNode>> member_variables;
+
+    void accept(NodeVisitor& visitor) const override;
+
+    explicit ObjectSignatureNode( 
+        std::string n,
+        std::vector<std::unique_ptr<ASTNode>> mv ) : 
+        name(std::move(n)),
+        member_variables(std::move(mv)) {}
 };
 
 // Holds c++ code to be executed

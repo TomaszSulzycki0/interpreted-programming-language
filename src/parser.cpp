@@ -48,6 +48,10 @@ std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram(const PARSING_MODE& m
             {
                 ast.push_back( std::move( parseFunctionDeclaration() ) );
             }
+            else if ( check( TOKEN_TYPE::TOKEN_KEYWORD_OBJECT ) )
+            {
+                ast.push_back( std::move( parseObjectSignature() ) );
+            }
             else if ( check( TOKEN_TYPE::TOKEN_FUNCTION_IDENTIFIER ) )
             {
                 ast.push_back( std::move( parseVoidFunctionCall() ) );
@@ -389,4 +393,22 @@ std::unique_ptr<FunctionCallExpression> Parser::parseNonVoidFunctionCall()
     consume( TOKEN_TYPE::TOKEN_PARENTHESIS_OPEN, std::string_view("Error: Expected opening parenthesis.") );
     
     return parseFunctionCallArguments( fn_identifier.value );
+}
+
+std::unique_ptr<ASTNode> Parser::parseObjectSignature()
+{
+    consume(TOKEN_TYPE::TOKEN_KEYWORD_OBJECT, std::string_view("Error: Expected object keyword.") );
+    
+    Token identifier = consume(TOKEN_TYPE::TOKEN_IDENTIFIER, std::string_view("Error: Expected valid object identifier.") );
+
+    consume(TOKEN_TYPE::TOKEN_BRACE_OPEN, std::string_view("Error: Expected opening bracket.") );
+    
+    std::vector<std::unique_ptr<ASTNode>> member_var {};
+
+    while ( !check(TOKEN_TYPE::TOKEN_BRACE_CLOSE) && !isDone() )
+    {
+       member_var.push_back( parseDeclaration() );
+    }
+
+    return std::make_unique<ObjectSignatureNode>( std::string(identifier.value), std::move(member_var) );
 }

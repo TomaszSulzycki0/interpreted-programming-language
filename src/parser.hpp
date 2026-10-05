@@ -58,6 +58,7 @@ private:
     std::unique_ptr<ASTNode> parseFunctionDeclaration();
     std::unique_ptr<ASTNode> parseVoidFunctionCall();
     std::unique_ptr<ASTNode> parseReturn();
+    std::unique_ptr<ASTNode> parseObjectSignature();
 
     std::unique_ptr<Expression> parseAtomicExpression(); 
     std::unique_ptr<FunctionCallExpression> parseNonVoidFunctionCall();
