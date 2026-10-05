@@ -236,6 +236,8 @@ Token Tokenizer::useStateDefault()
         return Token{ TOKEN_TYPE::TOKEN_BRACE_OPEN, std::string_view("{"), current_line };
     case '}':
         return Token{ TOKEN_TYPE::TOKEN_BRACE_CLOSE, std::string_view("}"), current_line };
+    case '.':
+        return Token{ TOKEN_TYPE::TOKEN_DOT, std::string_view("."), current_line };
     case '!':
         if ( peek() == '=')
         {
@@ -374,6 +376,7 @@ std::ostream& operator<<(std::ostream& os, TOKEN_TYPE type)
         case TOKEN_TYPE::TOKEN_KEYWORD_OBJECT:          return os << "OBJECT";
         case TOKEN_TYPE::TOKEN_KEYWORD_USER_DEFINED_TYPE:return os << "USER_DEFINED_TYPE";
         case TOKEN_TYPE::TOKEN_EQUALS:                  return os << "EQUALS";
+        case TOKEN_TYPE::TOKEN_DOT:                     return os << "DOT";
         case TOKEN_TYPE::TOKEN_PLUS_EQUALS:             return os << "PLUS_EQUALS";
         case TOKEN_TYPE::TOKEN_MINUS_EQUALS:            return os << "MINUS_EQUALS";
         case TOKEN_TYPE::TOKEN_MUL_EQUALS:              return os << "MUL_EQUALS";
