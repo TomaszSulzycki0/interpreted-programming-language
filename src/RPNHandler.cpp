@@ -103,6 +103,113 @@ std::unique_ptr<Expression> RPNHandler::parseRPN(IParserContext& pctx)
     return std::move( expr_stack.front() );
 }
 
+std::unique_ptr<Expression> RPNHandler::parseObjectRPN(IParserContext& pctx, bool& is_arg_end)
+{
+    std::vector<Token> operator_stack {};
+    std::vector<std::unique_ptr<Expression>> expr_stack {};
+
+    // Counter for validating that every open parenthesis is closed
+    int unclosed_parenthesis = 0;
+
+    // Flag used for identifying unary operators
+    // Set to true if next token is expected to be a value, false otherwise
+    // ...) - x -> minus is not unary
+    // ...( - x -> minus is unary
+    bool expect_value = true;
+
+    while ( !pctx.isDone() )
+    {
+        if ( pctx.check( TOKEN_TYPE::TOKEN_OPERATOR ) && expect_value )
+        {
+            // There should be a procedure for handling the operator stack here
+            // For now assume that unary operators have the highest possible precedence
+            Token op = pctx.advance();
+            op.type = TOKEN_TYPE::TOKEN_UNARY_OPERATOR;
+
+            operator_stack.push_back( op );
+        }
+        else if ( pctx.check( TOKEN_TYPE::TOKEN_OPERATOR ) )
+        {
+            handleOpRPN( pctx, operator_stack, expr_stack );
+            expect_value = true;
+        }
+        else if ( pctx.check( TOKEN_TYPE::TOKEN_PARENTHESIS_OPEN ) )
+        {
+            operator_stack.push_back( pctx.advance() );
+            expect_value = true;
+            ++unclosed_parenthesis;
+        }
+        else if ( pctx.check( TOKEN_TYPE::TOKEN_PARENTHESIS_CLOSE ) )
+        {
+            if ( unclosed_parenthesis < 1 )
+            {
+                throw std::runtime_error("Error: Unexpected closing parenthesis without opening counterpart.");
+            }
+
+            // Eat parenthesis
+            pctx.advance();
+
+            handleClosingParenthesisRPN( operator_stack, expr_stack );
+
+            --unclosed_parenthesis;
+            expect_value = false;
+        }
+        else if ( pctx.isAtomicExpr( pctx.peek() ) )
+        {
+            auto expr = pctx.parseAtomicExpression();
+            if ( !expr )
+            {
+                throw std::runtime_error("Error: Could not parse atomic expression");
+            }
+            expr_stack.push_back( std::move( expr ) );
+            expect_value = false;
+        }
+        else if ( pctx.check( TOKEN_TYPE::TOKEN_FUNCTION_IDENTIFIER ) )
+        {
+            auto expr = pctx.parseNonVoidFunctionCall();
+            if ( !expr )
+            {
+                throw std::runtime_error("Error: Could not parse function call expression");
+            }
+            expr_stack.push_back( std::move( expr ) );
+            expect_value = false;
+        }
+        else if ( pctx.check( TOKEN_TYPE::TOKEN_COMMA ) )
+        {
+            pctx.advance();
+            break;
+        }
+        else if ( pctx.check( TOKEN_TYPE::TOKEN_BRACE_CLOSE ) )
+        {
+            is_arg_end = true;
+            pctx.advance();
+            break;
+        }
+        else
+        {
+            throw std::runtime_error("Error: Invalid expression");
+        }
+    }
+
+    if ( unclosed_parenthesis != 0 )
+    {
+        throw std::runtime_error("Error: Unclosed parenthesis.");
+    }
+
+    // Collapse the entire stack into a single Expression
+    while ( !operator_stack.empty() )
+    {
+        makeBinExprRPN( operator_stack, expr_stack );   
+    }
+
+    if ( expr_stack.size() != 1 )
+    {
+        return nullptr;
+    }
+
+    return std::move( expr_stack.front() );
+}
+
 std::unique_ptr<Expression> RPNHandler::parseFunctionCallRPN(IParserContext& pctx, bool& is_fn_call_end)
 {
     std::vector<Token> operator_stack {};

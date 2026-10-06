@@ -32,6 +32,10 @@ std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram(const PARSING_MODE& m
             {
                 ast.push_back( std::move( parseDeclaration() ) );
             }
+            else if ( check( TOKEN_TYPE::TOKEN_KEYWORD_USER_DEFINED_TYPE) )
+            {
+                ast.push_back( std::move( parseObjectDeclaration() ) );
+            }
             else if ( check( TOKEN_TYPE::TOKEN_KEYWORD_IF) )
             {
                 ast.push_back( std::move( parseIf() ) );
@@ -185,6 +189,40 @@ std::unique_ptr<ASTNode> Parser::parseDeclaration()
     return std::make_unique<DeclarationNode>(   to_type( std::string( declared_type.value ) ), 
                                                 std::string( declared_name.value ), 
                                                 std::move( expr ) );
+}
+
+std::unique_ptr<ASTNode> Parser::parseObjectDeclaration()
+{
+    Token declared_type = consume( TOKEN_TYPE::TOKEN_KEYWORD_USER_DEFINED_TYPE, std::string_view("Error: Expected object declaration type.") );
+
+    Token declared_name = consume( TOKEN_TYPE::TOKEN_IDENTIFIER, std::string_view("Error: Invalid declaration syntax.") );
+
+    std::vector<std::unique_ptr<Expression>> expressions {};
+    
+    if ( check( TOKEN_TYPE::TOKEN_EQUALS ) )
+    {
+        advance();
+        
+        consume( TOKEN_TYPE::TOKEN_BRACE_OPEN, std::string_view("Error: Expected opening bracket.") );
+        
+        bool is_arg_end = false;
+
+        while( !is_arg_end )
+        {
+            std::unique_ptr<Expression> expr = nullptr;
+            expr = rpner.parseObjectRPN(*this, is_arg_end);
+            if ( !expr )
+            {
+                throw std::runtime_error("Error: Could not parse declaration expression");
+            }
+
+            expressions.push_back(std::move(expr));
+        }
+    }
+
+    consume( TOKEN_TYPE::TOKEN_SEMICOLON, std::string_view("Error: Expected semicolon.") );
+
+    return std::make_unique<ObjectDeclarationNode>( std::string(declared_type.value), std::string(declared_name.value), std::move(expressions));
 }
 
 std::unique_ptr<ASTNode> Parser::parseFunctionDeclaration()
@@ -403,12 +441,14 @@ std::unique_ptr<ASTNode> Parser::parseObjectSignature()
 
     consume(TOKEN_TYPE::TOKEN_BRACE_OPEN, std::string_view("Error: Expected opening bracket.") );
     
-    std::vector<std::unique_ptr<ASTNode>> member_var {};
+    std::vector<std::unique_ptr<ASTNode>> member_vars {};
 
     while ( !check(TOKEN_TYPE::TOKEN_BRACE_CLOSE) && !isDone() )
     {
-       member_var.push_back( parseDeclaration() );
+       member_vars.push_back( parseDeclaration() );
     }
 
-    return std::make_unique<ObjectSignatureNode>( std::string(identifier.value), std::move(member_var) );
+    consume(TOKEN_TYPE::TOKEN_BRACE_CLOSE, std::string_view("Error: Expected closing bracket.") );
+
+    return std::make_unique<ObjectSignatureNode>( std::string(identifier.value), std::move(member_vars) );
 }

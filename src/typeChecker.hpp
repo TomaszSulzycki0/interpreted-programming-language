@@ -50,6 +50,8 @@ public:
     void visit(const ElseNode& node) override;
     void visit(const WhileNode& node) override;
     void visit(const ReturnNode& node) override;
+    void visit(const ObjectSignatureNode& ) override {};
+    void visit(const ObjectDeclarationNode& ) override {};
     void visit(const EmbeddedPrintFunctionNode&) override {};
     void visit(const EmbeddedCastFunctionNode&) override {};
 

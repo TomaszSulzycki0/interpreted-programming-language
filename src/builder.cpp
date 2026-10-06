@@ -445,6 +445,16 @@ void NodeMaker::visit(const ReturnNode& node)
     }
 }
 
+void NodeMaker::visit(const ObjectSignatureNode& ) 
+{
+    
+}
+
+void NodeMaker::visit(const ObjectDeclarationNode& ) 
+{
+    
+}
+
 void NodeMaker::visit(const EmbeddedPrintFunctionNode&)
 {
     #ifdef DEBUG_EXEC

@@ -41,6 +41,16 @@ void ReturnNode::accept(NodeVisitor& visitor) const
     visitor.visit(*this);
 }
 
+void ObjectSignatureNode::accept(NodeVisitor& visitor) const 
+{
+    visitor.visit(*this);
+}
+
+void ObjectDeclarationNode::accept(NodeVisitor& visitor) const 
+{
+    visitor.visit(*this);
+}
+
 void EmbeddedPrintFunctionNode::accept(NodeVisitor& visitor) const 
 {
     visitor.visit(*this);

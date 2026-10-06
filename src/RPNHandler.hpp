@@ -44,6 +44,9 @@ public:
 
     // Default method for parsing expressions
     std::unique_ptr<Expression> parseRPN(IParserContext& pctx);
+    
+    // Method for parsing object declarations
+    std::unique_ptr<Expression> parseObjectRPN(IParserContext& pctx, bool& is_arg_end);
 
     // Method for parsing conditions in if / while statements
     std::unique_ptr<Expression> parseRPNCondition(IParserContext& pctx);

@@ -30,6 +30,8 @@ class IfNode;
 class ElseNode;
 class WhileNode;
 class ReturnNode;
+class ObjectSignatureNode;
+class ObjectDeclarationNode;
 class EmbeddedPrintFunctionNode;
 class EmbeddedCastFunctionNode;
 
@@ -65,6 +67,8 @@ public:
     virtual void visit(const ElseNode& node) = 0;
     virtual void visit(const WhileNode& node) = 0;
     virtual void visit(const ReturnNode& node) = 0;
+    virtual void visit(const ObjectSignatureNode& node) = 0;
+    virtual void visit(const ObjectDeclarationNode& node) = 0;
     virtual void visit(const EmbeddedPrintFunctionNode& node) = 0;
     virtual void visit(const EmbeddedCastFunctionNode& node) = 0;
 

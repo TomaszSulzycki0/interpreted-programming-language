@@ -47,6 +47,19 @@ public:
         : type(t), name(std::move(n)), initializer(std::move(init)) {}
 };
 
+class ObjectDeclarationNode : public ASTNode
+{
+public:
+    std::string line;                        
+    std::string type_name;
+    std::string name;
+    std::vector<std::unique_ptr<Expression>> initializers;
+
+    void accept(NodeVisitor& visitor) const override;
+    explicit ObjectDeclarationNode(std::string tn, std::string n, std::vector<std::unique_ptr<Expression>> init)
+        : type_name(tn), name(std::move(n)), initializers(std::move(init)) {}
+};
+
 class FunctionCallNode : public ASTNode
 {
 public:
