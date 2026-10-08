@@ -9,12 +9,21 @@
 
 class Declaration;
 
+// Stores data for user defined types
+struct ObjectSignatureData
+{
+    std::size_t num_members {};
+    std::vector<ImplementedType> member_types {};
+    std::vector<std::string_view> member_names {};
+};
+
 // Scope class for declarations
 class Scope
 {
 private:
     std::shared_ptr<Scope> parent_scope = nullptr;
     std::unordered_map<std::string, std::shared_ptr<Declaration>> symbols;
+    std::unordered_map<std::string, ObjectSignatureData> obj_data;
 
 public:
 
@@ -24,6 +33,13 @@ public:
     {
         symbols[std::string(name)] = std::move(decl);
     }
+    
+    void defineObjectSignature(std::string_view name, ObjectSignatureData data) 
+    {
+        obj_data[std::string(name)] = data;
+    }
+
+    ObjectSignatureData getObjectSignatureData(std::string_view name) const;
 
     // Looks up the declaration in current or parent scopes
     std::shared_ptr<Declaration> lookup(std::string_view name) const;
@@ -50,6 +66,7 @@ private:
     std::shared_ptr<SemanticScope> parent_scope = nullptr;
     std::unordered_map<std::string, VariableData> variable_types;
     std::unordered_map<std::string, std::vector<ImplementedType>> fn_arg_data;
+    std::unordered_map<std::string, ObjectSignatureData> obj_data;
 
 public:
 
@@ -62,6 +79,13 @@ public:
     {
         fn_arg_data[std::string(name)] = tps;
     }
+
+    void defineObjectSignature(std::string_view name, ObjectSignatureData data) 
+    {
+        obj_data[std::string(name)] = data;
+    }
+
+    ObjectSignatureData getObjectSignatureData(std::string_view name) const;
 
     std::vector<ImplementedType> getFnArgTypes(std::string_view name) const;
 

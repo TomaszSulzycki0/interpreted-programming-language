@@ -81,6 +81,7 @@ public:
     void visit(const BinaryExpression& expr) override;
     void visit(const UnaryExpression& expr) override;
     void visit(const FunctionCallExpression& expr) override;
+    void visit(const AccessMemberExpression& ) override {};
 
     explicit ExpressionTypeEvaluator(std::shared_ptr<SemanticScope> s) : scope(std::move(s)) {}
 };

@@ -42,6 +42,11 @@ void Builder::buildProgram(const std::vector<std::unique_ptr<ASTNode>>& ast)
     }
 }
 
+NodeMaker::NodeMaker(std::shared_ptr<Scope> s) : scope(std::move(s)) 
+{
+    return_expression = nullptr;
+    return_expression_scope = nullptr;
+}
 
 void NodeMaker::visit(const AssignmentNode& node)
 {
@@ -445,14 +450,69 @@ void NodeMaker::visit(const ReturnNode& node)
     }
 }
 
-void NodeMaker::visit(const ObjectSignatureNode& ) 
+void NodeMaker::visit(const ObjectSignatureNode& node) 
 {
+    const auto num_members = node.member_variables.size();
     
+    std::vector<ImplementedType> mem_types { num_members };
+    std::vector<std::string_view> mem_names { num_members };
+   
+    for ( const auto& mem : node.member_variables )
+    {
+        const auto* primitive_decl = dynamic_cast<const DeclarationNode*>( mem.get() );
+        if ( primitive_decl )
+        {
+            mem_types.push_back(primitive_decl->type);
+            mem_names.push_back(std::string(primitive_decl->name));
+            continue;
+        }
+
+        const auto* obj_decl = dynamic_cast<const ObjectDeclarationNode*>( mem.get() );
+        if ( obj_decl )
+        {
+            mem_types.push_back(ImplementedType::NULL_TYPE);
+            mem_names.push_back(std::string(obj_decl->name));
+        }
+    }
+    ObjectSignatureData data { num_members, std::move( mem_types), std::move( mem_names) };
+
+    scope->defineObjectSignature( node.name, std::move(data) );
 }
 
-void NodeMaker::visit(const ObjectDeclarationNode& ) 
+void NodeMaker::visit(const ObjectDeclarationNode& node) 
 {
-    
+    const auto& obj_data = scope->getObjectSignatureData( node.name );
+
+    if( obj_data.num_members == 0 )
+    {
+        throw std::runtime_error("Error: Undefined object typename.");
+    }
+
+    std::vector<std::unique_ptr<DeclarationNode>> member_nodes {};
+
+    for ( std::size_t i {}; i < obj_data.num_members; ++i )
+    {
+        const auto& tp = obj_data.member_types[i];
+        const auto& name = obj_data.member_names[i];
+        std::unique_ptr<Expression> expr = node.initializers[i]->clone();
+
+        member_nodes.push_back( std::make_unique<DeclarationNode>( tp, std::string(name), std::move(expr) ) );
+    }
+
+    std::shared_ptr<Scope> obj_member_scope { std::make_shared<Scope>( scope ) };
+
+    NodeMaker obj_member_declarer { obj_member_scope };
+
+    for ( std::size_t i {}; i < obj_data.num_members; ++i )
+    {
+        obj_member_declarer.visit( *(member_nodes[i]) );
+    }
+
+    obj_member_scope->printScope();
+
+    std::shared_ptr<ObjectDeclaration> decl = nullptr;
+
+    decl = std::make_shared<ObjectDeclaration>( std::string(node.name), std::move(obj_member_scope) );
 }
 
 void NodeMaker::visit(const EmbeddedPrintFunctionNode&)
@@ -726,7 +786,8 @@ void ExpressionEvaluator::visit(const LiteralExpression& expr)
 
 void ExpressionEvaluator::visit(const VariableExpression& expr) 
 {
-    const std::string var_name = expr.name;
+    // Change for proper var lookup
+    const std::string var_name = expr.var->member_identifier;
 
     auto decl = scope->lookup(var_name);
     if ( !decl )
@@ -850,4 +911,9 @@ void ExpressionEvaluator::visit(const FunctionCallExpression& expr)
             break;
         }
     }
+}
+
+void ExpressionEvaluator::visit(const AccessMemberExpression& )
+{
+
 }

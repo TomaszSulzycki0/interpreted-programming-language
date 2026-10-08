@@ -47,3 +47,8 @@ void PrintVisitor::visit(const FunctionDeclaration& fn_decl)
 
     std::cout << ")";
 }
+
+void PrintVisitor::visit(const ObjectDeclaration& ) 
+{
+    
+}

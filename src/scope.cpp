@@ -16,6 +16,21 @@ void Scope::printScope() const
     std::cout << "-------------------\n";
 }
 
+ObjectSignatureData Scope::getObjectSignatureData(std::string_view name) const
+{
+    auto it = obj_data.find( std::string(name) );
+    if ( it == obj_data.end() ) 
+    {
+        if ( parent_scope != nullptr )
+        {
+            return parent_scope->getObjectSignatureData(name);
+        }
+        return ObjectSignatureData();
+    }
+    return it->second;
+
+}
+
 std::shared_ptr<Declaration> Scope::lookup(std::string_view name) const 
 {
     auto it = symbols.find( std::string(name) );
@@ -81,4 +96,19 @@ VariableData SemanticScope::lookupLocal(std::string_view name) const
         return VariableData();
     }
     return it->second;
+}
+
+ObjectSignatureData SemanticScope::getObjectSignatureData(std::string_view name) const
+{
+    auto it = obj_data.find( std::string(name) );
+    if ( it == obj_data.end() ) 
+    {
+        if ( parent_scope != nullptr )
+        {
+            return parent_scope->getObjectSignatureData(name);
+        }
+        return ObjectSignatureData();
+    }
+    return it->second;
+
 }

@@ -28,8 +28,8 @@ class NodeMaker : public NodeVisitor
 private:
     std::shared_ptr<Scope> scope;
 
-    std::unique_ptr<Expression> return_expression = nullptr;
-    std::shared_ptr<Scope> return_expression_scope = nullptr;
+    std::unique_ptr<Expression> return_expression;
+    std::shared_ptr<Scope> return_expression_scope;
 
 public:
     void visit(const AssignmentNode& node) override;
@@ -51,7 +51,7 @@ public:
 
     std::shared_ptr<Scope> getReturnExpressionScope() const { return return_expression_scope; }
 
-    explicit NodeMaker(std::shared_ptr<Scope> s) : scope(std::move(s)) {}
+    explicit NodeMaker(std::shared_ptr<Scope> s);
 };
 
 // Responsible for evaluating the value of expressions in the provided scope
@@ -71,6 +71,7 @@ public:
     void visit(const BinaryExpression& expr) override;
     void visit(const UnaryExpression& expr) override;
     void visit(const FunctionCallExpression& expr) override;
+    void visit(const AccessMemberExpression& expr) override;
 
     explicit ExpressionEvaluator(std::shared_ptr<Scope> s) : scope(std::move(s)) {}
 };

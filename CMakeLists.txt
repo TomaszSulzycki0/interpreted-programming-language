@@ -16,6 +16,7 @@ target_sources(ipl_lib PRIVATE
     src/RPNHandler.cpp
     src/typeChecker.cpp
     src/implementedType.cpp
+    src/globalDeclarer.cpp
 )
 
 target_include_directories(ipl_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)

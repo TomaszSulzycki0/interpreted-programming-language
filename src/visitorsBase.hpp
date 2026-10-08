@@ -13,6 +13,7 @@ class Declaration;
 class NumericDeclaration;
 class StringDeclaration;
 class FunctionDeclaration;
+class ObjectDeclaration;
 
 class Expression;
 class BinaryExpression;
@@ -20,6 +21,7 @@ class LiteralExpression;
 class VariableExpression;
 class UnaryExpression;
 class FunctionCallExpression;
+class AccessMemberExpression;
 
 class ASTNode;
 class AssignmentNode;
@@ -44,6 +46,7 @@ public:
     virtual void visit(const NumericDeclaration& num_decl) = 0;
     virtual void visit(const StringDeclaration& str_decl) = 0;
     virtual void visit(const FunctionDeclaration& fn_decl) = 0;
+    virtual void visit(const ObjectDeclaration& obj_decl) = 0;
 
     virtual ~DeclarationVisitor() = default;
 };
@@ -54,6 +57,7 @@ public:
     void visit(const NumericDeclaration& num_decl) override;
     void visit(const StringDeclaration& str_decl) override;
     void visit(const FunctionDeclaration& fn_decl) override;
+    void visit(const ObjectDeclaration& obj_decl) override;
 };
 
 class NodeVisitor
@@ -83,6 +87,7 @@ public:
     virtual void visit(const BinaryExpression& expr) = 0;
     virtual void visit(const UnaryExpression& expr) = 0;
     virtual void visit(const FunctionCallExpression& expr) = 0;
+    virtual void visit(const AccessMemberExpression& expr) = 0;
 
     virtual ~ExpressionVisitor() = default;
 };

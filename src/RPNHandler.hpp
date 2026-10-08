@@ -1,14 +1,13 @@
 #ifndef RPNHANDLER_HPP
 #define RPNHANDLER_HPP
 
-#include"expression.hpp"
-
 #include<string>
 #include<vector>
 #include<memory>
 #include<unordered_map>
 
 class IParserContext;
+class Expression;
 struct Token;
 
 // Helper class for the Parser used for parsing complex expressions

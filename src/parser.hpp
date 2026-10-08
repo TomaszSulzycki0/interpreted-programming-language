@@ -3,12 +3,13 @@
 
 #include<memory>
 
-#include"expression.hpp"
+#include"RPNHandler.hpp"
 #include"tokenizer.hpp"
 #include"abstractNodes.hpp"
-#include"RPNHandler.hpp"
 
 class ASTNode;
+class RPNHandler;
+class FunctionCallExpression;
 
 // Parsing state used mostly to chandle closing braces 
 enum class PARSING_MODE
@@ -17,6 +18,31 @@ enum class PARSING_MODE
     IF,
     WHILE,  
     FUNCTION_BODY
+};
+
+// Structure used for complex member access
+struct VariableAccess
+{
+    // In case of variable assignments without member access eg. x = 1 member_identifier is x and parent is null
+    // In case of member access eg. x.foo = 1 foo's member_identifier is foo and parent is x  
+    std::string member_identifier;
+    std::unique_ptr<VariableAccess> parent = nullptr;
+
+    VariableAccess(std::string member) : member_identifier(std::move(member)) {}
+    
+    VariableAccess(std::string member, std::unique_ptr<VariableAccess> _parent) : member_identifier(std::move(member)), parent(std::move(_parent)) {}
+
+    VariableAccess(const VariableAccess& other) : member_identifier(other.member_identifier)
+    {
+        if (other.parent)
+        {
+            parent = std::make_unique<VariableAccess>(*other.parent);
+        }
+        else
+        {
+            parent = nullptr;
+        }
+    }
 };
 
 // Interface for allowing RPNHandler to use Parser's methods

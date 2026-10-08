@@ -1,6 +1,8 @@
 #include"typeChecker.hpp"
 #include"abstractNodes.hpp"
 #include"scope.hpp"
+#include"expression.hpp"
+#include"parser.hpp"
 
 void TypeChecker::run_check(const std::vector<std::unique_ptr<ASTNode>>& nodes)
 {
@@ -264,11 +266,31 @@ void ExpressionTypeEvaluator::visit(const LiteralExpression& expr)
 
 void ExpressionTypeEvaluator::visit(const VariableExpression& expr)
 {
-    ImplementedType var_type = scope->lookup( expr.name ).type;
+
+    ImplementedType var_type;
+
+    // Is member access
+    if ( expr.var->parent )
+    {
+        auto data = scope->getObjectSignatureData(expr.var->parent->member_identifier);
+        
+        for( std::size_t i {}; i < data.num_members; ++i )
+        {
+            if ( data.member_names[i] == expr.var->member_identifier)
+            {
+                var_type = data.member_types[i];
+            }
+        }
+    }
+    else
+    {
+        var_type = scope->lookup( expr.var->member_identifier ).type;
+    }
+
 
     if ( var_type == ImplementedType::NULL_TYPE )
     {
-        throw std::runtime_error("Error: Variable '" + expr.name + "' is undefined.");
+        throw std::runtime_error("Error: Variable '" + expr.var->member_identifier + "' is undefined.");
     }
 
     last_evaluated_type = var_type;

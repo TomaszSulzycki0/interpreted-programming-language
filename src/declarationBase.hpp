@@ -34,6 +34,18 @@ public:
     virtual std::string getType() const = 0;
 };
 
+class ObjectDeclaration : public Declaration
+{
+public:
+    void accept(DeclarationVisitor& visitor) const override { visitor.visit(*this); }
+    std::shared_ptr<Scope> member_scope;
+
+    explicit ObjectDeclaration(std::string_view _name,
+        std::shared_ptr<Scope> _member_scope) :
+        Declaration(_name), member_scope(std::move(_member_scope)) {}
+
+};
+
 // Function declaration class 
 // The function's body is implemented as a vector of raw pointers to AST nodes 
 // so that when you call the function the nodes are executed
