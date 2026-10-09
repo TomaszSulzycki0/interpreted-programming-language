@@ -16,14 +16,14 @@ void Scope::printScope() const
     std::cout << "-------------------\n";
 }
 
-ObjectSignatureData Scope::getObjectSignatureData(std::string_view name) const
+ObjectSignatureData Scope::getObjectSignatureData(std::string_view type_name) const
 {
-    auto it = obj_data.find( std::string(name) );
+    auto it = obj_data.find( std::string(type_name) );
     if ( it == obj_data.end() ) 
     {
         if ( parent_scope != nullptr )
         {
-            return parent_scope->getObjectSignatureData(name);
+            return parent_scope->getObjectSignatureData(type_name);
         }
         return ObjectSignatureData();
     }
@@ -98,16 +98,31 @@ VariableData SemanticScope::lookupLocal(std::string_view name) const
     return it->second;
 }
 
-ObjectSignatureData SemanticScope::getObjectSignatureData(std::string_view name) const
+ObjectSignatureData SemanticScope::getObjectSignatureData(std::string_view type_name) const
 {
-    auto it = obj_data.find( std::string(name) );
+    auto it = obj_data.find( std::string(type_name) );
     if ( it == obj_data.end() ) 
     {
         if ( parent_scope != nullptr )
         {
-            return parent_scope->getObjectSignatureData(name);
+            return parent_scope->getObjectSignatureData(type_name);
         }
         return ObjectSignatureData();
+    }
+    return it->second;
+
+}
+
+std::string SemanticScope::getObjectInstanceType(std::string_view name) const
+{
+    auto it = obj_instance_types.find( std::string(name) );
+    if ( it == obj_instance_types.end() ) 
+    {
+        if ( parent_scope != nullptr )
+        {
+            return parent_scope->getObjectInstanceType(name);
+        }
+        return "";
     }
     return it->second;
 

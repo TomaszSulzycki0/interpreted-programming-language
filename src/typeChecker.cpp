@@ -210,6 +210,44 @@ void NodeTypeChecker::visit(const ReturnNode& node)
     }
 }
 
+void NodeTypeChecker::visit(const ObjectSignatureNode& node) 
+{
+    const auto num_members = node.member_variables.size();
+    
+    std::vector<ImplementedType> mem_types;
+    mem_types.reserve(num_members);
+
+    std::vector<std::string> mem_names;
+    mem_names.reserve(num_members);
+   
+    for ( const auto& mem : node.member_variables )
+    {
+        const auto* primitive_decl = dynamic_cast<const DeclarationNode*>( mem.get() );
+        if ( primitive_decl )
+        {
+            mem_types.push_back(primitive_decl->type);
+            mem_names.push_back(std::string(primitive_decl->name));
+            continue;
+        }
+
+        const auto* obj_decl = dynamic_cast<const ObjectDeclarationNode*>( mem.get() );
+        if ( obj_decl )
+        {
+            mem_types.push_back(ImplementedType::NULL_TYPE);
+            mem_names.push_back(std::string(obj_decl->name));
+        }
+    }
+    ObjectSignatureData data { num_members, std::move( mem_types ), std::move( mem_names ) };
+
+    scope->defineObjectSignature( node.name, std::move(data) );
+    auto x = scope->getObjectSignatureData(node.name);
+}
+
+void NodeTypeChecker::visit(const ObjectDeclarationNode& node)
+{
+    scope->defineObjectInstanceType(node.name, node.type_name);
+}
+
 void NodeTypeChecker::checkTypeUpCasting(ImplementedType from, ImplementedType to)
 {
     if ( isNumeric(from) && isNumeric(to) )
@@ -371,4 +409,29 @@ void ExpressionTypeEvaluator::visit(const FunctionCallExpression& expr)
 
 
     last_evaluated_type = fn_ret_type;
+}
+
+void ExpressionTypeEvaluator::visit(const AccessMemberExpression& expr) 
+{
+    const auto* obj = dynamic_cast<VariableExpression*>(expr.left_side_expr.get());
+
+    if ( !obj )
+    {
+        throw std::runtime_error("Error: Invalid use of member accessor.");
+    }
+
+    const auto obj_tp = scope->getObjectInstanceType(obj->var->member_identifier);
+
+    const auto obj_signature_data = scope->getObjectSignatureData(obj_tp);
+
+    for ( std::size_t i {}; i < obj_signature_data.num_members; ++i )
+    {
+        if ( obj_signature_data.member_names[i] == expr.member )
+        {
+            last_evaluated_type = obj_signature_data.member_types[i];
+            return;
+        }
+    }
+
+    throw std::runtime_error("Error: Object does not name member.");
 }

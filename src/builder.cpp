@@ -455,7 +455,7 @@ void NodeMaker::visit(const ObjectSignatureNode& node)
     const auto num_members = node.member_variables.size();
     
     std::vector<ImplementedType> mem_types { num_members };
-    std::vector<std::string_view> mem_names { num_members };
+    std::vector<std::string> mem_names { num_members };
    
     for ( const auto& mem : node.member_variables )
     {

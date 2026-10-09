@@ -50,8 +50,8 @@ public:
     void visit(const ElseNode& node) override;
     void visit(const WhileNode& node) override;
     void visit(const ReturnNode& node) override;
-    void visit(const ObjectSignatureNode& ) override {};
-    void visit(const ObjectDeclarationNode& ) override {};
+    void visit(const ObjectSignatureNode& node) override;
+    void visit(const ObjectDeclarationNode& node) override;
     void visit(const EmbeddedPrintFunctionNode&) override {};
     void visit(const EmbeddedCastFunctionNode&) override {};
 
@@ -81,7 +81,7 @@ public:
     void visit(const BinaryExpression& expr) override;
     void visit(const UnaryExpression& expr) override;
     void visit(const FunctionCallExpression& expr) override;
-    void visit(const AccessMemberExpression& ) override {};
+    void visit(const AccessMemberExpression& expr) override;
 
     explicit ExpressionTypeEvaluator(std::shared_ptr<SemanticScope> s) : scope(std::move(s)) {}
 };

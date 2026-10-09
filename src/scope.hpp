@@ -14,7 +14,7 @@ struct ObjectSignatureData
 {
     std::size_t num_members {};
     std::vector<ImplementedType> member_types {};
-    std::vector<std::string_view> member_names {};
+    std::vector<std::string> member_names {};
 };
 
 // Scope class for declarations
@@ -34,12 +34,12 @@ public:
         symbols[std::string(name)] = std::move(decl);
     }
     
-    void defineObjectSignature(std::string_view name, ObjectSignatureData data) 
+    void defineObjectSignature(std::string_view type_name, ObjectSignatureData data) 
     {
-        obj_data[std::string(name)] = data;
+        obj_data[std::string(type_name)] = data;
     }
 
-    ObjectSignatureData getObjectSignatureData(std::string_view name) const;
+    ObjectSignatureData getObjectSignatureData(std::string_view type_name) const;
 
     // Looks up the declaration in current or parent scopes
     std::shared_ptr<Declaration> lookup(std::string_view name) const;
@@ -67,6 +67,7 @@ private:
     std::unordered_map<std::string, VariableData> variable_types;
     std::unordered_map<std::string, std::vector<ImplementedType>> fn_arg_data;
     std::unordered_map<std::string, ObjectSignatureData> obj_data;
+    std::unordered_map<std::string, std::string> obj_instance_types;
 
 public:
 
@@ -80,12 +81,19 @@ public:
         fn_arg_data[std::string(name)] = tps;
     }
 
-    void defineObjectSignature(std::string_view name, ObjectSignatureData data) 
+    void defineObjectSignature(std::string_view type_name, ObjectSignatureData data) 
     {
-        obj_data[std::string(name)] = data;
+        obj_data[std::string(type_name)] = data;
     }
 
-    ObjectSignatureData getObjectSignatureData(std::string_view name) const;
+    void defineObjectInstanceType(std::string_view name, std::string_view type) 
+    {
+        obj_instance_types[std::string(name)] = std::string(type);
+    }
+
+    ObjectSignatureData getObjectSignatureData(std::string_view type_name) const;
+
+    std::string getObjectInstanceType(std::string_view name) const;
 
     std::vector<ImplementedType> getFnArgTypes(std::string_view name) const;
 
