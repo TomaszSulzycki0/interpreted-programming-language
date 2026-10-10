@@ -151,7 +151,7 @@ std::unique_ptr<ASTNode> Parser::parseAssignment()
         expr = rpner.parseRPN(*this);
 
         // Change expression to include the left side of the assignment 
-        auto left_side = std::make_unique<VariableExpression>( std::move(assignee) );
+        auto left_side = std::make_unique<VariableExpression>(std::make_unique<VariableAccess>(*assignee));
         expr = std::make_unique<BinaryExpression>( 
                 std::string( 1, assignment_operator.value.front() ),
                 std::move( left_side ), 
@@ -172,7 +172,7 @@ std::unique_ptr<ASTNode> Parser::parseAssignment()
     
     consume( TOKEN_TYPE::TOKEN_SEMICOLON, std::string_view("Error: Expected semicolon.") );
 
-    return std::make_unique<AssignmentNode>( std::string(assignee_name.value), std::move(expr) );
+    return std::make_unique<AssignmentNode>( std::move(assignee), std::move(expr) );
 }
 
 std::unique_ptr<ASTNode> Parser::parseDeclaration()

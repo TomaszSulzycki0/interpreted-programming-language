@@ -9,6 +9,7 @@ class NodeVisitor;
 class Expression;
 class DeclarationNode;
 class FunctionCallExpression;
+struct VariableAccess;
 enum class ImplementedType;
 
 // TODO: Pass to node constructors the line where it was written for better error messages  
@@ -25,11 +26,11 @@ class AssignmentNode : public ASTNode
 {
 public:
     std::string line;                        
-    std::string name;                        
+    std::unique_ptr<VariableAccess> member;                        
     std::unique_ptr<Expression> value_expr; 
 
     void accept(NodeVisitor& visitor) const override;
-    explicit AssignmentNode(std::string n, std::unique_ptr<Expression> val);
+    explicit AssignmentNode(std::unique_ptr<VariableAccess> var, std::unique_ptr<Expression> val);
 };
 
 class DeclarationNode : public ASTNode

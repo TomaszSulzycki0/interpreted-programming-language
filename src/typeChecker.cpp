@@ -36,11 +36,33 @@ ImplementedType NodeTypeChecker::getInverseTypeConversionRank(int rank)
 
 void NodeTypeChecker::visit(const AssignmentNode& node)
 {
-    ImplementedType var_type = scope->lookup( node.name ).type;
+    ImplementedType var_type {};
+    // This is the case when we assign to an object member eg. foo.x = ...
+    if ( node.member)
+    {
+        if ( node.member->parent )
+        {
+            const auto parent_tp = scope->getObjectInstanceType(node.member->parent->member_identifier);
+
+            const auto parent_data = scope->getObjectSignatureData(parent_tp);
+
+            for ( std::size_t i {}; i < parent_data.num_members; ++i )
+            {
+                if ( parent_data.member_names[i] == node.member->member_identifier )
+                {
+                    var_type = parent_data.member_types[i];
+                }
+            }
+        }
+        else
+        {
+            var_type = scope->lookup( node.member->member_identifier ).type;
+        }
+    }
 
     if ( var_type == ImplementedType::NULL_TYPE )
     {
-        throw std::runtime_error("Error: Variable '" + node.name + "' is undefined.");
+        throw std::runtime_error("Error: Variable '" + node.member->member_identifier + "' is undefined.");
     }
 
     ExpressionTypeEvaluator type_evaluator { scope };

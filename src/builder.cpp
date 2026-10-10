@@ -53,16 +53,17 @@ void NodeMaker::visit(const AssignmentNode& node)
     ExpressionEvaluator evaluator {scope};
     RuntimeValue new_value = evaluator.evaluate(*node.value_expr);
     
-    auto existing_var = scope->lookup(node.name);
+    // TODO: Change assignment logic to actually assign values to object members
+    auto existing_var = scope->lookup(node.member->member_identifier);
     if ( !existing_var )
     {
-        throw std::runtime_error("Error: '" + std::string( node.name ) + "' is undefined.");
+        throw std::runtime_error("Error: '" + std::string( node.member->member_identifier ) + "' is undefined.");
     }
 
     auto target_var = std::dynamic_pointer_cast<ValueDeclaration>(existing_var);
     if (!target_var) 
     {
-        throw std::runtime_error("Error: " + std::string( node.name ) + " is not a mutable variable.");
+        throw std::runtime_error("Error: " + std::string( node.member->member_identifier ) + " is not a mutable variable.");
     }
 
     std::visit([&](auto&&) {
@@ -481,7 +482,7 @@ void NodeMaker::visit(const ObjectSignatureNode& node)
 
 void NodeMaker::visit(const ObjectDeclarationNode& node) 
 {
-    const auto& obj_data = scope->getObjectSignatureData( node.name );
+    const auto& obj_data = scope->getObjectSignatureData( node.type_name );
 
     if( obj_data.num_members == 0 )
     {
