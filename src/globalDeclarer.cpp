@@ -29,7 +29,7 @@ void GlobalDeclarer::defineBuiltInFunctions(std::shared_ptr<Scope>& scope, std::
 
     args.emplace_back(std::make_unique<DeclarationNode>(ImplementedType::_double, "data", nullptr));
     body.emplace_back(std::make_unique<EmbeddedCastFunctionNode>(ImplementedType::_bool));
-    body.emplace_back(std::make_unique<ReturnNode>( std::make_unique<VariableExpression>( std::make_unique<VariableAccess>("ret") ) ));
+    body.emplace_back(std::make_unique<ReturnNode>( std::make_unique<VariableExpression>( "ret" ) ));
     
     static std::unique_ptr<FunctionDeclarationNode> boolCastNode = std::make_unique<FunctionDeclarationNode>
     ( 
@@ -43,7 +43,7 @@ void GlobalDeclarer::defineBuiltInFunctions(std::shared_ptr<Scope>& scope, std::
 
     args.emplace_back(std::make_unique<DeclarationNode>(ImplementedType::_double, "data", nullptr));
     body.emplace_back(std::make_unique<EmbeddedCastFunctionNode>(ImplementedType::_int));
-    body.emplace_back(std::make_unique<ReturnNode>( std::make_unique<VariableExpression>( std::make_unique<VariableAccess>("ret") ) ));
+    body.emplace_back(std::make_unique<ReturnNode>( std::make_unique<VariableExpression>( "ret" ) ));
     
     static std::unique_ptr<FunctionDeclarationNode> intCastNode = std::make_unique<FunctionDeclarationNode>
     ( 
@@ -57,7 +57,7 @@ void GlobalDeclarer::defineBuiltInFunctions(std::shared_ptr<Scope>& scope, std::
 
     args.emplace_back(std::make_unique<DeclarationNode>(ImplementedType::_double, "data", nullptr));
     body.emplace_back(std::make_unique<EmbeddedCastFunctionNode>(ImplementedType::_float));
-    body.emplace_back(std::make_unique<ReturnNode>( std::make_unique<VariableExpression>( std::make_unique<VariableAccess>("ret") ) ));
+    body.emplace_back(std::make_unique<ReturnNode>( std::make_unique<VariableExpression>( "ret" ) ));
     
     static std::unique_ptr<FunctionDeclarationNode> floatCastNode = std::make_unique<FunctionDeclarationNode>
     ( 
@@ -71,7 +71,7 @@ void GlobalDeclarer::defineBuiltInFunctions(std::shared_ptr<Scope>& scope, std::
 
     args.emplace_back(std::make_unique<DeclarationNode>(ImplementedType::_double, "data", nullptr));
     body.emplace_back(std::make_unique<EmbeddedCastFunctionNode>(ImplementedType::_double));
-    body.emplace_back(std::make_unique<ReturnNode>( std::make_unique<VariableExpression>( std::make_unique<VariableAccess>("ret") ) ));
+    body.emplace_back(std::make_unique<ReturnNode>( std::make_unique<VariableExpression>( "ret" ) ));
     
     static std::unique_ptr<FunctionDeclarationNode> doubleCastNode = std::make_unique<FunctionDeclarationNode>
     ( 
@@ -85,7 +85,7 @@ void GlobalDeclarer::defineBuiltInFunctions(std::shared_ptr<Scope>& scope, std::
 
     args.emplace_back(std::make_unique<DeclarationNode>(ImplementedType::_double, "data", nullptr));
     body.emplace_back(std::make_unique<EmbeddedCastFunctionNode>(ImplementedType::_string));
-    body.emplace_back(std::make_unique<ReturnNode>( std::make_unique<VariableExpression>( std::make_unique<VariableAccess>("ret") ) ));
+    body.emplace_back(std::make_unique<ReturnNode>( std::make_unique<VariableExpression>( "ret" ) ));
     
     static std::unique_ptr<FunctionDeclarationNode> stringCastNode = std::make_unique<FunctionDeclarationNode>
     ( 

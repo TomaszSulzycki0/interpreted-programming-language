@@ -2,8 +2,8 @@
 #include"expression.hpp"
 #include"visitorsBase.hpp"
 
-AssignmentNode::AssignmentNode(std::unique_ptr<VariableAccess> var, std::unique_ptr<Expression> val)
-    : member(std::move(var)), value_expr(std::move(val)) {}
+AssignmentNode::AssignmentNode(std::unique_ptr<NamedExpression> _assignee, std::unique_ptr<Expression> val)
+    : assignee(std::move(_assignee)), value_expr(std::move(val)) {}
 
 DeclarationNode::DeclarationNode(ImplementedType t, std::string n, std::unique_ptr<Expression> init)
     : type(t), name(std::move(n)), initializer(std::move(init)) {}

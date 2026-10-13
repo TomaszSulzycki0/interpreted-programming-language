@@ -16,19 +16,9 @@ LiteralExpression::LiteralExpression(std::string v, ImplementedType _tp) : value
 
 LiteralExpression::LiteralExpression(const LiteralExpression& other) : value(other.value), tp(other.tp) {}
 
-VariableExpression::VariableExpression(std::unique_ptr<VariableAccess> v) : var(std::move(v)) {}
+VariableExpression::VariableExpression(std::string n) : name(std::move(n)) {}
 
-VariableExpression::VariableExpression(const VariableExpression& other) 
-{
-    if ( other.var )
-    {
-        var = std::make_unique<VariableAccess>(*other.var);
-    }
-    else
-    {
-        var = nullptr;
-    }
-}
+VariableExpression::VariableExpression(const VariableExpression& other) : name(other.name) {}
 
 UnaryExpression::UnaryExpression(std::string op, std::unique_ptr<Expression> _child) 
     : unary_op(std::move(op)), child(std::move(_child)) {}
@@ -55,7 +45,7 @@ FunctionCallExpression::FunctionCallExpression(const FunctionCallExpression& oth
     }
 }
 
-AccessMemberExpression::AccessMemberExpression( std::unique_ptr<Expression> expr,
+AccessMemberExpression::AccessMemberExpression( std::unique_ptr<NamedExpression> expr,
         std::string mem ) :
         left_side_expr(std::move(expr)), member(mem) {}
 
@@ -63,7 +53,11 @@ AccessMemberExpression::AccessMemberExpression(const AccessMemberExpression& oth
 {
     if ( other.left_side_expr )
     {
-        left_side_expr = other.left_side_expr->clone();
+        auto cloned = other.left_side_expr->clone();
+        
+        left_side_expr = std::unique_ptr<NamedExpression>(
+            dynamic_cast<NamedExpression*>(cloned.release())
+        );
     }
     else
     {

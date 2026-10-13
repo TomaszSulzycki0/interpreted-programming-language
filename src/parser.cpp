@@ -123,16 +123,18 @@ Token Parser::consume(TOKEN_TYPE type, std::string_view error_message)
 std::unique_ptr<ASTNode> Parser::parseAssignment()
 {
     Token assignee_name = consume( TOKEN_TYPE::TOKEN_IDENTIFIER, std::string_view("Error: Expected declaration identifier.") );
-
-    std::unique_ptr<VariableAccess> assignee { std::make_unique<VariableAccess>( std::string(assignee_name.value) ) };
+    
+    std::unique_ptr<NamedExpression> left_side = std::make_unique<VariableExpression>( std::string(assignee_name.value) );
     
     while ( check(TOKEN_TYPE::TOKEN_DOT) )
     {
         advance();
         
         Token member_name = consume( TOKEN_TYPE::TOKEN_IDENTIFIER, std::string_view("Error: Expected member identifier.") );
-        
-        assignee =  std::make_unique<VariableAccess>( std::string(member_name.value), std::move(assignee) );
+    
+        left_side = std::make_unique<AccessMemberExpression>(
+            std::move(left_side),
+            std::string(member_name.value) );
     }
     
     // Check assignment operator
@@ -151,10 +153,9 @@ std::unique_ptr<ASTNode> Parser::parseAssignment()
         expr = rpner.parseRPN(*this);
 
         // Change expression to include the left side of the assignment 
-        auto left_side = std::make_unique<VariableExpression>(std::make_unique<VariableAccess>(*assignee));
         expr = std::make_unique<BinaryExpression>( 
                 std::string( 1, assignment_operator.value.front() ),
-                std::move( left_side ), 
+                left_side->clone(), 
                 std::move( expr ) );
     }
     else
@@ -172,7 +173,7 @@ std::unique_ptr<ASTNode> Parser::parseAssignment()
     
     consume( TOKEN_TYPE::TOKEN_SEMICOLON, std::string_view("Error: Expected semicolon.") );
 
-    return std::make_unique<AssignmentNode>( std::move(assignee), std::move(expr) );
+    return std::make_unique<AssignmentNode>( std::move(left_side), std::move(expr) );
 }
 
 std::unique_ptr<ASTNode> Parser::parseDeclaration()
@@ -410,7 +411,7 @@ std::unique_ptr<Expression> Parser::parseAtomicExpression()
     {
         Token identifier = advance();
 
-        std::unique_ptr<Expression> expr = std::make_unique<VariableExpression>( std::make_unique<VariableAccess>(std::string(identifier.value)) );
+        std::unique_ptr<NamedExpression> expr = std::make_unique<VariableExpression>( std::string(identifier.value) );
 
         // TODO: Make member access (dot) possible after funtion call eg. foo().x
 

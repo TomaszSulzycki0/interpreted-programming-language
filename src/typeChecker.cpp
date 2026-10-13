@@ -36,36 +36,14 @@ ImplementedType NodeTypeChecker::getInverseTypeConversionRank(int rank)
 
 void NodeTypeChecker::visit(const AssignmentNode& node)
 {
-    ImplementedType var_type {};
-    // This is the case when we assign to an object member eg. foo.x = ...
-    if ( node.member)
-    {
-        if ( node.member->parent )
-        {
-            const auto parent_tp = scope->getObjectInstanceType(node.member->parent->member_identifier);
+    ExpressionTypeEvaluator type_evaluator { scope };
 
-            const auto parent_data = scope->getObjectSignatureData(parent_tp);
-
-            for ( std::size_t i {}; i < parent_data.num_members; ++i )
-            {
-                if ( parent_data.member_names[i] == node.member->member_identifier )
-                {
-                    var_type = parent_data.member_types[i];
-                }
-            }
-        }
-        else
-        {
-            var_type = scope->lookup( node.member->member_identifier ).type;
-        }
-    }
+    ImplementedType var_type = type_evaluator.evaluateType(*node.assignee);
 
     if ( var_type == ImplementedType::NULL_TYPE )
     {
-        throw std::runtime_error("Error: Variable '" + node.member->member_identifier + "' is undefined.");
+        throw std::runtime_error("Error: Variable '" + node.assignee->getName() + "' is undefined.");
     }
-
-    ExpressionTypeEvaluator type_evaluator { scope };
 
     ImplementedType expr_type = type_evaluator.evaluateType( *node.value_expr );
 
@@ -326,31 +304,11 @@ void ExpressionTypeEvaluator::visit(const LiteralExpression& expr)
 
 void ExpressionTypeEvaluator::visit(const VariableExpression& expr)
 {
-
-    ImplementedType var_type;
-
-    // Is member access
-    if ( expr.var->parent )
-    {
-        auto data = scope->getObjectSignatureData(expr.var->parent->member_identifier);
-        
-        for( std::size_t i {}; i < data.num_members; ++i )
-        {
-            if ( data.member_names[i] == expr.var->member_identifier)
-            {
-                var_type = data.member_types[i];
-            }
-        }
-    }
-    else
-    {
-        var_type = scope->lookup( expr.var->member_identifier ).type;
-    }
-
+    ImplementedType var_type = scope->lookup( expr.getName() ).type;
 
     if ( var_type == ImplementedType::NULL_TYPE )
     {
-        throw std::runtime_error("Error: Variable '" + expr.var->member_identifier + "' is undefined.");
+        throw std::runtime_error("Error: Variable '" + expr.getName() + "' is undefined.");
     }
 
     last_evaluated_type = var_type;
@@ -442,7 +400,7 @@ void ExpressionTypeEvaluator::visit(const AccessMemberExpression& expr)
         throw std::runtime_error("Error: Invalid use of member accessor.");
     }
 
-    const auto obj_tp = scope->getObjectInstanceType(obj->var->member_identifier);
+    const auto obj_tp = scope->getObjectInstanceType(obj->getName());
 
     const auto obj_signature_data = scope->getObjectSignatureData(obj_tp);
 

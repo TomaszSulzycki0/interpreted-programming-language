@@ -38,7 +38,7 @@ TEST(ParserControlFlowTest, ParsesIfWithoutElse)
     const auto* assignment = dynamic_cast<const AssignmentNode*>(node->body_nodes[0].get());
 
     ASSERT_NE(assignment, nullptr);
-    EXPECT_EQ(assignment->member->member_identifier, "x");
+    EXPECT_EQ(assignment->assignee->getName(), "x");
 }
 
 TEST(ParserControlFlowTest, ParsesIfWithElse)
@@ -72,8 +72,8 @@ TEST(ParserControlFlowTest, ParsesIfWithElse)
     ASSERT_NE(if_assignment, nullptr);
     ASSERT_NE(else_assignment, nullptr);
 
-    EXPECT_EQ(if_assignment->member->member_identifier, "x");
-    EXPECT_EQ(else_assignment->member->member_identifier, "x");
+    EXPECT_EQ(if_assignment->assignee->getName(), "x");
+    EXPECT_EQ(else_assignment->assignee->getName(), "x");
 
     const auto* if_value = dynamic_cast<const LiteralExpression*>(if_assignment->value_expr.get());
     const auto* else_value = dynamic_cast<const LiteralExpression*>(else_assignment->value_expr.get());
@@ -116,7 +116,7 @@ TEST(ParserControlFlowTest, ParsesWhile)
     const auto* assignment = dynamic_cast<const AssignmentNode*>(node->body_nodes[0].get());
 
     ASSERT_NE(assignment, nullptr);
-    EXPECT_EQ(assignment->member->member_identifier, "x");
+    EXPECT_EQ(assignment->assignee->getName(), "x");
 }
 
 TEST(ParserControlFlowTest, ParsesNestedIf)
@@ -149,7 +149,7 @@ TEST(ParserControlFlowTest, ParsesNestedIf)
     const auto* assignment = dynamic_cast<const AssignmentNode*>(inner->body_nodes[0].get());
 
     ASSERT_NE(assignment, nullptr);
-    EXPECT_EQ(assignment->member->member_identifier, "x");
+    EXPECT_EQ(assignment->assignee->getName(), "x");
 }
 
 TEST(ParserControlFlowTest, ParsesFunctionDeclaration)

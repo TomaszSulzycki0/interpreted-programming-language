@@ -20,7 +20,7 @@ TEST(ParserExpressionTest, ParsesSimpleAssignment)
     const auto* node = dynamic_cast<const AssignmentNode*>(ast[0].get());
     ASSERT_NE(node, nullptr);
 
-    EXPECT_EQ(node->member->member_identifier, "x");
+    EXPECT_EQ(node->assignee->getName(), "x");
 
     const auto* literal = dynamic_cast<const LiteralExpression*>(node->value_expr.get());
 
@@ -45,7 +45,7 @@ TEST(ParserExpressionTest, ParsesVariableAssignment)
     const auto* variable = dynamic_cast<const VariableExpression*>(node->value_expr.get());
 
     ASSERT_NE(variable, nullptr);
-    EXPECT_EQ(variable->var->member_identifier, "y");
+    EXPECT_EQ(variable->getName(), "y");
 }
 
 TEST(ParserExpressionTest, ParsesBinaryExpression)
@@ -185,7 +185,7 @@ TEST(ParserExpressionTest, ParsesCompoundAddAssignment)
     ASSERT_NE(left, nullptr);
     ASSERT_NE(right, nullptr);
 
-    EXPECT_EQ(left->var->member_identifier, "x");
+    EXPECT_EQ(left->getName(), "x");
     EXPECT_EQ(right->value, "5");
 }
 

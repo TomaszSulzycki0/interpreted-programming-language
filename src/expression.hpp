@@ -8,7 +8,6 @@
 #include"parser.hpp"
 
 class ExpressionVisitor;
-struct VariableAccess;
 enum class ImplementedType;
 
 // Base class for all expressions
@@ -54,20 +53,6 @@ public:
     }
 };
 
-class VariableExpression final : public Expression 
-{
-public:
-    std::unique_ptr<VariableAccess> var;
-    explicit VariableExpression(std::unique_ptr<VariableAccess> v);
-    VariableExpression(const VariableExpression& other);
-
-    void accept(ExpressionVisitor& visitor) const override;
-
-    std::unique_ptr<Expression> clone() const override 
-    {
-        return std::make_unique<VariableExpression>(*this);
-    }
-};
 
 class UnaryExpression final : public Expression 
 {
@@ -86,7 +71,34 @@ public:
     }
 };
 
-class FunctionCallExpression final : public Expression 
+class NamedExpression : public Expression
+{
+public:
+    const virtual std::string getName() const = 0;
+
+};
+
+class VariableExpression final : public NamedExpression
+{
+public:
+    std::string name;
+    explicit VariableExpression(std::string n);
+    VariableExpression(const VariableExpression& other);
+
+    void accept(ExpressionVisitor& visitor) const override;
+
+    const std::string getName() const override 
+    {
+        return name;   
+    }
+
+    std::unique_ptr<Expression> clone() const override 
+    {
+        return std::make_unique<VariableExpression>(*this);
+    }
+};
+
+class FunctionCallExpression final : public NamedExpression
 {
 public:
     const std::string name;
@@ -97,23 +109,33 @@ public:
 
     void accept(ExpressionVisitor& visitor) const override;
 
+    const std::string getName() const override 
+    {
+        return name;
+    }
+
     std::unique_ptr<Expression> clone() const override 
     {
         return std::make_unique<FunctionCallExpression>(*this);
     }
 };
 
-class AccessMemberExpression final : public Expression
+class AccessMemberExpression final : public NamedExpression
 {
 public:
 
-    std::unique_ptr<Expression> left_side_expr;
+    std::unique_ptr<NamedExpression> left_side_expr;
     std::string member;
 
-    explicit AccessMemberExpression( std::unique_ptr<Expression> expr, std::string mem );
+    explicit AccessMemberExpression( std::unique_ptr<NamedExpression> expr, std::string mem );
     AccessMemberExpression(const AccessMemberExpression& other);
     
     void accept(ExpressionVisitor& visitor) const override;
+
+    const std::string getName() const override 
+    {
+        return member;   
+    }
 
     std::unique_ptr<Expression> clone() const override 
     {
