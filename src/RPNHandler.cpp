@@ -184,7 +184,6 @@ std::unique_ptr<Expression> RPNHandler::parseObjectRPN(IParserContext& pctx, boo
         else if ( pctx.check( TOKEN_TYPE::TOKEN_BRACE_CLOSE ) )
         {
             is_arg_end = true;
-            pctx.advance();
             break;
         }
         else
@@ -497,7 +496,7 @@ void RPNHandler::handleClosingParenthesisRPN(std::vector<Token>& operator_stack,
     }
 }
 
-void RPNHandler::makeBinExprRPN( std::vector<Token>& operator_stack, std::vector<std::unique_ptr<Expression>>& expr_stack)
+void RPNHandler::makeBinExprRPN( std::vector<Token>& operator_stack, std::vector<std::unique_ptr<Expression>>& expr_stack)      
 {
     auto last_op = operator_stack.back();
     operator_stack.pop_back();

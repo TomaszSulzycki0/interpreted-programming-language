@@ -11,7 +11,6 @@
 #include"visitorsBase.hpp"
 #include"builder.hpp"
 #include"typeChecker.hpp"
-#include"implementedType.hpp"
 #include"globalDeclarer.hpp"
 
 constexpr int num_args_for_default_usage = 2;

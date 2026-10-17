@@ -5,7 +5,6 @@
 #include<memory>
 
 #include"visitorsBase.hpp"
-#include"implementedType.hpp"
 
 class ASTNode;
 class SemanticScope;
@@ -55,12 +54,12 @@ public:
     void visit(const EmbeddedPrintFunctionNode&) override {};
     void visit(const EmbeddedCastFunctionNode&) override {};
 
-    ImplementedType fn_return_type = ImplementedType::NULL_TYPE;
+    std::string fn_return_type = "";
     
-    static void checkTypeUpCasting(ImplementedType from, ImplementedType to);
-    static int getTypeConversionRank(ImplementedType tp);
-    static ImplementedType getInverseTypeConversionRank(int rank);
-    static bool isNumeric(ImplementedType tp);
+    static void checkTypeUpCasting(std::string from, std::string to);
+    static int getTypeConversionRank(std::string tp);
+    static std::string getInverseTypeConversionRank(int rank);
+    static bool isNumeric(std::string tp);
 
     explicit NodeTypeChecker(std::shared_ptr<SemanticScope> s) : scope(std::move(s)) {}
 };
@@ -70,11 +69,11 @@ class ExpressionTypeEvaluator final : public ExpressionVisitor
 {
 private:
     std::shared_ptr<SemanticScope> scope;
-    ImplementedType last_evaluated_type;
+    std::string last_evaluated_type;
 public:
 
     // Evaluate the type of an expression in the current scope
-    ImplementedType evaluateType(const Expression& expr);
+    std::string evaluateType(const Expression& expr);
     
     void visit(const LiteralExpression& expr) override;
     void visit(const VariableExpression& expr) override;
@@ -82,6 +81,7 @@ public:
     void visit(const UnaryExpression& expr) override;
     void visit(const FunctionCallExpression& expr) override;
     void visit(const AccessMemberExpression& expr) override;
+    void visit(const MultiExpression& expr) override;
 
     explicit ExpressionTypeEvaluator(std::shared_ptr<SemanticScope> s) : scope(std::move(s)) {}
 };

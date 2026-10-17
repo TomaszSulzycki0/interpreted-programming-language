@@ -11,7 +11,6 @@
 #include"stringVariable.hpp"
 #include"abstractNodes.hpp"
 #include"debugMacros.hpp"
-#include"implementedType.hpp"
 
 std::ostream& operator<<(std::ostream& os, const RuntimeValue& value) 
 {
@@ -141,10 +140,10 @@ void NodeMaker::visit(const DeclarationNode& node)
     }
     else 
     {
-        if (node.type == ImplementedType::_int) raw_value = 0;
-        else if (node.type == ImplementedType::_double || node.type == ImplementedType::_float) raw_value = 0.0;
-        else if (node.type == ImplementedType::_string) raw_value = "";
-        else if (node.type == ImplementedType::_bool) raw_value = 0;
+        if (node.type == "int") raw_value = 0;
+        else if (node.type == "double" || node.type == "float") raw_value = 0.0;
+        else if (node.type == "string") raw_value = "";
+        else if (node.type == "bool") raw_value = 0;
     }
 
     std::shared_ptr<Declaration> concrete_decl = nullptr;
@@ -152,7 +151,7 @@ void NodeMaker::visit(const DeclarationNode& node)
     std::visit([&](auto&& evaluated_arg) {
         using EvaluatedType = std::decay_t<decltype(evaluated_arg)>;
 
-        if ( node.type == ImplementedType::_int ) 
+        if ( node.type == "int" ) 
         {
             if constexpr ( std::is_arithmetic_v<EvaluatedType> ) {
                 concrete_decl = std::make_shared<Numeric<int>>(node.name, static_cast<int>(evaluated_arg));
@@ -160,7 +159,7 @@ void NodeMaker::visit(const DeclarationNode& node)
                 throw std::runtime_error("Error: Cannot initialize int variable '" + std::string( node.name ) + "' with a non-numeric value.");
             }
         } 
-        else if ( node.type == ImplementedType::_double ) 
+        else if ( node.type == "double" ) 
         {
             if constexpr ( std::is_arithmetic_v<EvaluatedType> ) {
                 concrete_decl = std::make_shared<Numeric<double>>(node.name, static_cast<double>(evaluated_arg));
@@ -170,7 +169,7 @@ void NodeMaker::visit(const DeclarationNode& node)
                 throw std::runtime_error("Error: Cannot initialize double variable '" + std::string( node.name ) + "' with a non-numeric value.");
             }
         } 
-        else if ( node.type == ImplementedType::_float ) 
+        else if ( node.type == "float" ) 
         {
             if constexpr ( std::is_arithmetic_v<EvaluatedType> )  
             {
@@ -181,7 +180,7 @@ void NodeMaker::visit(const DeclarationNode& node)
                 throw std::runtime_error("Error: Cannot initialize float variable '" + std::string( node.name ) + "' with a non-numeric value.");
             }
         }
-        else if ( node.type == ImplementedType::_string )
+        else if ( node.type == "string" )
         {
             if constexpr (std::is_same_v<EvaluatedType, std::string>) 
             {
@@ -196,7 +195,7 @@ void NodeMaker::visit(const DeclarationNode& node)
                 throw std::runtime_error("Error: Cannot initialize string variable '" + node.name + "'.");
             }
         }
-        else if ( node.type == ImplementedType::_bool )
+        else if ( node.type == "bool" )
         {
             if constexpr (std::is_arithmetic_v<EvaluatedType>) 
             {
@@ -503,7 +502,7 @@ void NodeMaker::visit(const ObjectSignatureNode& node)
 {
     const auto num_members = node.member_variables.size();
     
-    std::vector<ImplementedType> mem_types {};
+    std::vector<std::string> mem_types {};
     mem_types.reserve(num_members);
 
     std::vector<std::string> mem_names {};
@@ -514,7 +513,7 @@ void NodeMaker::visit(const ObjectSignatureNode& node)
         const auto* primitive_decl = dynamic_cast<const DeclarationNode*>( mem.get() );
         if ( primitive_decl )
         {
-            mem_types.push_back(primitive_decl->type);
+            mem_types.push_back(std::string(primitive_decl->type));
             mem_names.push_back(std::string(primitive_decl->name));
             continue;
         }
@@ -522,7 +521,7 @@ void NodeMaker::visit(const ObjectSignatureNode& node)
         const auto* obj_decl = dynamic_cast<const ObjectDeclarationNode*>( mem.get() );
         if ( obj_decl )
         {
-            mem_types.push_back(ImplementedType::NULL_TYPE);
+            mem_types.push_back(std::string(obj_decl->type_name));
             mem_names.push_back(std::string(obj_decl->name));
         }
     }
@@ -540,15 +539,25 @@ void NodeMaker::visit(const ObjectDeclarationNode& node)
         throw std::runtime_error("Error: Undefined object typename.");
     }
 
-    std::vector<std::unique_ptr<DeclarationNode>> member_nodes {};
+    std::vector<std::unique_ptr<ASTNode>> member_nodes {};
 
     for ( std::size_t i {}; i < obj_data.num_members; ++i )
     {
         const auto& tp = obj_data.member_types[i];
         const auto& name = obj_data.member_names[i];
-        std::unique_ptr<Expression> expr = node.initializers[i]->clone();
+        std::unique_ptr<Expression> expr = node.initializers->expr_list[i]->clone();
 
-        member_nodes.push_back( std::make_unique<DeclarationNode>( tp, std::string(name), std::move(expr) ) );
+        
+        if ( auto* obj_init_expr = dynamic_cast<MultiExpression*>(expr.get()) )
+        {
+            expr.release();
+            member_nodes.push_back( std::make_unique<ObjectDeclarationNode>
+                ( tp, std::string(name), std::unique_ptr<MultiExpression>(obj_init_expr) ) );
+        }
+        else
+        {
+            member_nodes.push_back( std::make_unique<DeclarationNode>( tp, std::string(name), std::move(expr) ) );
+        }
     }
 
     std::shared_ptr<Scope> obj_member_scope { std::make_shared<Scope>( scope ) };
@@ -557,7 +566,7 @@ void NodeMaker::visit(const ObjectDeclarationNode& node)
 
     for ( std::size_t i {}; i < obj_data.num_members; ++i )
     {
-        obj_member_declarer.visit( *(member_nodes[i]) );
+        member_nodes[i]->accept(obj_member_declarer);
     }
 
     std::shared_ptr<ObjectDeclaration> decl = nullptr;
@@ -614,7 +623,7 @@ void NodeMaker::visit(const EmbeddedCastFunctionNode& node)
     // here we have to declare "ret" as the input cast to the appropriate type
     std::shared_ptr<DeclarationNode> temp_returnable { nullptr };
     std::unique_ptr<LiteralExpression> post_cast { nullptr };
-    if ( node.tp == ImplementedType::_bool )
+    if ( node.tp == "bool" )
     {
         auto value = std::visit( [&](auto&& unpacked) -> bool
         {
@@ -627,9 +636,9 @@ void NodeMaker::visit(const EmbeddedCastFunctionNode& node)
             return false;
         }, input_valued->getValue());
 
-        post_cast = std::make_unique<LiteralExpression>(std::to_string(value), ImplementedType::_bool);
+        post_cast = std::make_unique<LiteralExpression>(std::to_string(value), "bool");
     }
-    else if ( node.tp == ImplementedType::_int )
+    else if ( node.tp == "int" )
     {
         auto value = std::visit( [&](auto&& unpacked) -> int
         {
@@ -642,9 +651,9 @@ void NodeMaker::visit(const EmbeddedCastFunctionNode& node)
             return 0;
         }, input_valued->getValue());
 
-        post_cast = std::make_unique<LiteralExpression>(std::to_string(value), ImplementedType::_int);
+        post_cast = std::make_unique<LiteralExpression>(std::to_string(value), "int");
     }
-    else if ( node.tp == ImplementedType::_float )
+    else if ( node.tp == "float" )
     {
         auto value = std::visit( [&](auto&& unpacked) -> float
         {
@@ -657,9 +666,9 @@ void NodeMaker::visit(const EmbeddedCastFunctionNode& node)
             return 0;
         }, input_valued->getValue());
 
-        post_cast = std::make_unique<LiteralExpression>(std::to_string(value), ImplementedType::_float);
+        post_cast = std::make_unique<LiteralExpression>(std::to_string(value), "float");
     }
-    else if ( node.tp == ImplementedType::_double )
+    else if ( node.tp == "double" )
     {
         auto value = std::visit( [&](auto&& unpacked) -> double
         {
@@ -673,9 +682,9 @@ void NodeMaker::visit(const EmbeddedCastFunctionNode& node)
         }, input_valued->getValue());
 
 
-        post_cast = std::make_unique<LiteralExpression>(std::to_string(value), ImplementedType::_double);
+        post_cast = std::make_unique<LiteralExpression>(std::to_string(value), "double");
     }
-    else if ( node.tp == ImplementedType::_string )
+    else if ( node.tp == "string" )
     {
         auto value = std::visit( [&](auto&& unpacked) -> std::string
         {
@@ -689,7 +698,7 @@ void NodeMaker::visit(const EmbeddedCastFunctionNode& node)
         }, input_valued->getValue());
 
 
-        post_cast = std::make_unique<LiteralExpression>(value, ImplementedType::_string);
+        post_cast = std::make_unique<LiteralExpression>(value, "string");
     }
     else
     {
@@ -1000,4 +1009,9 @@ void ExpressionEvaluator::visit(const AccessMemberExpression& expr)
     }
 
     last_evaluated_value = var_member_decl->getValue();
+}
+
+void ExpressionEvaluator::visit(const MultiExpression& )
+{
+
 }

@@ -12,7 +12,7 @@ BinaryExpression::BinaryExpression( const BinaryExpression& other)
             expr_left(other.expr_left ? other.expr_left->clone() : nullptr),
             expr_right(other.expr_right ? other.expr_right->clone() : nullptr) {}
 
-LiteralExpression::LiteralExpression(std::string v, ImplementedType _tp) : value(std::move(v)), tp(_tp) {}
+LiteralExpression::LiteralExpression(std::string v, std::string _tp) : value(std::move(v)), tp(std::move(_tp)) {}
 
 LiteralExpression::LiteralExpression(const LiteralExpression& other) : value(other.value), tp(other.tp) {}
 
@@ -67,6 +67,25 @@ AccessMemberExpression::AccessMemberExpression(const AccessMemberExpression& oth
     member = other.member;
 }
 
+MultiExpression::MultiExpression(std::vector<std::unique_ptr<Expression>> expressions) : expr_list(std::move(expressions)) {}
+
+MultiExpression::MultiExpression(const MultiExpression& other) 
+{
+    expr_list.reserve( other.expr_list.size() );
+
+    for (const auto& expr : other.expr_list) 
+    {
+        if (expr) 
+        {
+            expr_list.push_back(expr->clone());
+        } 
+        else 
+        {
+            expr_list.push_back(nullptr);
+        }
+    }
+}
+
 void LiteralExpression::accept(ExpressionVisitor& visitor) const 
 {
     visitor.visit(*this); 
@@ -93,6 +112,11 @@ void FunctionCallExpression::accept(ExpressionVisitor& visitor) const
 }
 
 void AccessMemberExpression::accept(ExpressionVisitor& visitor) const
+{
+    visitor.visit(*this);
+}
+
+void MultiExpression::accept(ExpressionVisitor& visitor) const
 {
     visitor.visit(*this);
 }

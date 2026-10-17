@@ -72,6 +72,7 @@ public:
     void visit(const UnaryExpression& expr) override;
     void visit(const FunctionCallExpression& expr) override;
     void visit(const AccessMemberExpression& expr) override;
+    void visit(const MultiExpression& expr) override;
 
     explicit ExpressionEvaluator(std::shared_ptr<Scope> s) : scope(std::move(s)) {}
 };

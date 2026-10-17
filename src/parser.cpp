@@ -4,7 +4,6 @@
 #include"numericVariable.hpp"
 #include"expression.hpp"
 #include"debugMacros.hpp"
-#include"implementedType.hpp"
 
 // Runs the lexer.
 // Make sure to call before parseProgram()
@@ -198,7 +197,7 @@ std::unique_ptr<ASTNode> Parser::parseDeclaration()
 
     consume( TOKEN_TYPE::TOKEN_SEMICOLON, std::string_view("Error: Expected semicolon.") );
 
-    return std::make_unique<DeclarationNode>(   to_type( std::string( declared_type.value ) ), 
+    return std::make_unique<DeclarationNode>(   std::string( declared_type.value ) , 
                                                 std::string( declared_name.value ), 
                                                 std::move( expr ) );
 }
@@ -209,27 +208,12 @@ std::unique_ptr<ASTNode> Parser::parseObjectDeclaration()
 
     Token declared_name = consume( TOKEN_TYPE::TOKEN_IDENTIFIER, std::string_view("Error: Invalid declaration syntax.") );
 
-    std::vector<std::unique_ptr<Expression>> expressions {};
-    
-    if ( check( TOKEN_TYPE::TOKEN_EQUALS ) )
+    std::unique_ptr<MultiExpression> expressions = nullptr;
+
+    if ( check(TOKEN_TYPE::TOKEN_EQUALS) )
     {
         advance();
-        
-        consume( TOKEN_TYPE::TOKEN_BRACE_OPEN, std::string_view("Error: Expected opening bracket.") );
-        
-        bool is_arg_end = false;
-
-        while( !is_arg_end )
-        {
-            std::unique_ptr<Expression> expr = nullptr;
-            expr = rpner.parseObjectRPN(*this, is_arg_end);
-            if ( !expr )
-            {
-                throw std::runtime_error("Error: Could not parse declaration expression");
-            }
-
-            expressions.push_back(std::move(expr));
-        }
+        expressions = parseObjectInitialization();    
     }
 
     consume( TOKEN_TYPE::TOKEN_SEMICOLON, std::string_view("Error: Expected semicolon.") );
@@ -253,7 +237,7 @@ std::unique_ptr<ASTNode> Parser::parseFunctionDeclaration()
         {
             Token fn_arg_type = advance();
             Token fn_arg_identifier = consume( TOKEN_TYPE::TOKEN_IDENTIFIER, std::string_view("Error: Expected function argument identifier.") );
-            fn_args.push_back( std::make_unique<DeclarationNode>(   to_type( std::string( fn_arg_type.value ) ), 
+            fn_args.push_back( std::make_unique<DeclarationNode>(   std::string( fn_arg_type.value ), 
                                                                     std::string( fn_arg_identifier.value ), 
                                                                     nullptr ) );
 
@@ -282,7 +266,7 @@ std::unique_ptr<ASTNode> Parser::parseFunctionDeclaration()
 
     consume( TOKEN_TYPE::TOKEN_BRACE_CLOSE, std::string_view("Error: Expected closing bracket.") );
 
-    return std::make_unique<FunctionDeclarationNode>(   to_type( std::string( fn_ret_type.value ) ),
+    return std::make_unique<FunctionDeclarationNode>(   std::string( fn_ret_type.value ),
                                                         std::string( fn_identifier.value ),
                                                         std::move( fn_args ),
                                                         std::move( fn_body ) );
@@ -379,12 +363,12 @@ std::unique_ptr<Expression> Parser::parseAtomicExpression()
         
         if ( str_body_or_end.type == TOKEN_TYPE::TOKEN_STRING_END )
         {
-            return std::make_unique<LiteralExpression>("", ImplementedType::_string);
+            return std::make_unique<LiteralExpression>("", "string");
         }
         else if ( str_body_or_end.type == TOKEN_TYPE::TOKEN_STRING_BODY )
         {
             consume( TOKEN_TYPE::TOKEN_STRING_END, std::string_view("Error: Expected string end literal.") );
-            return std::make_unique<LiteralExpression>("\"" + std::string(str_body_or_end.value) + "\"", ImplementedType::_string);
+            return std::make_unique<LiteralExpression>("\"" + std::string(str_body_or_end.value) + "\"", "string");
         }
         return nullptr;
     }
@@ -392,19 +376,19 @@ std::unique_ptr<Expression> Parser::parseAtomicExpression()
     if ( check( TOKEN_TYPE::TOKEN_LITERAL_FLOAT ) )
     {
         Token literal = advance();
-        return std::make_unique<LiteralExpression>( std::string(literal.value), ImplementedType::_float );
+        return std::make_unique<LiteralExpression>( std::string(literal.value), "float" );
     }
 
     if ( check( TOKEN_TYPE::TOKEN_LITERAL_INTEGRAL ) )
     {
         Token literal = advance();
-        return std::make_unique<LiteralExpression>( std::string(literal.value), ImplementedType::_int );
+        return std::make_unique<LiteralExpression>( std::string(literal.value), "int" );
     }
     
     if ( check( TOKEN_TYPE::TOKEN_KEYWORD_BOOL ) )
     {
         Token literal = advance();
-        return std::make_unique<LiteralExpression>( std::string(literal.value), ImplementedType::_bool );
+        return std::make_unique<LiteralExpression>( std::string(literal.value), "bool" );
     }
     
     if ( check( TOKEN_TYPE::TOKEN_IDENTIFIER ) )
@@ -472,10 +456,57 @@ std::unique_ptr<ASTNode> Parser::parseObjectSignature()
 
     while ( !check(TOKEN_TYPE::TOKEN_BRACE_CLOSE) && !isDone() )
     {
-       member_vars.push_back( parseDeclaration() );
+        if ( check(TOKEN_TYPE::TOKEN_KEYWORD_USER_DEFINED_TYPE) )
+        {
+            member_vars.push_back( parseObjectDeclaration() );
+        }
+        else if ( check(TOKEN_TYPE::TOKEN_KEYWORD_TYPE) )
+        {
+            member_vars.push_back( parseDeclaration() );
+        }
+        else
+        {
+            throw std::runtime_error("Error: Unexpected symbol in object member declaration.");
+        }
     }
 
     consume(TOKEN_TYPE::TOKEN_BRACE_CLOSE, std::string_view("Error: Expected closing bracket.") );
 
     return std::make_unique<ObjectSignatureNode>( std::string(identifier.value), std::move(member_vars) );
+}
+
+std::unique_ptr<MultiExpression> Parser::parseObjectInitialization()
+{
+    consume(TOKEN_TYPE::TOKEN_BRACE_OPEN, std::string_view("Error: Expected opening bracket.") );
+
+    std::vector<std::unique_ptr<Expression>> expressions;
+
+    bool is_arg_end = false;
+
+    while( !is_arg_end )
+    {
+        std::unique_ptr<Expression> expr = nullptr;
+        expr = rpner.parseObjectRPN(*this, is_arg_end);
+        if ( !expr )
+        {
+            throw std::runtime_error("Error: Could not parse object initialization argument expression");
+        }
+
+        expressions.push_back(std::move(expr));
+
+        // Nested brackets
+        if ( check(TOKEN_TYPE::TOKEN_BRACE_OPEN) && !is_arg_end )
+        {
+            expressions.push_back( parseObjectInitialization() );
+        }
+
+        if ( check(TOKEN_TYPE::TOKEN_BRACE_CLOSE) )
+        {
+            advance();
+            is_arg_end = true;
+        }
+    }
+
+    return std::make_unique<MultiExpression>(std::move(expressions));
+
 }

@@ -1,7 +1,6 @@
 #include"scope.hpp"
 #include"visitorsBase.hpp"
 #include"declarationBase.hpp"
-#include"implementedType.hpp"
 
 Scope::Scope() = default;
 Scope::Scope(std::shared_ptr<Scope> parent) : parent_scope(std::move(parent)) {}
@@ -58,7 +57,7 @@ std::shared_ptr<Declaration> Scope::lookupLocal(std::string_view name) const
 SemanticScope::SemanticScope() = default;
 SemanticScope::SemanticScope(std::shared_ptr<SemanticScope> parent) : parent_scope(std::move(parent)) {}
 
-std::vector<ImplementedType> SemanticScope::getFnArgTypes(std::string_view name) const
+std::vector<std::string> SemanticScope::getFnArgTypes(std::string_view name) const
 {
     auto it = fn_arg_data.find( std::string(name) );
     if ( it == fn_arg_data.end() )

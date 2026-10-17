@@ -15,7 +15,6 @@ target_sources(ipl_lib PRIVATE
     src/abstractNodes.cpp
     src/RPNHandler.cpp
     src/typeChecker.cpp
-    src/implementedType.cpp
     src/globalDeclarer.cpp
 )
 

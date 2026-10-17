@@ -8,7 +8,6 @@
 #include"parser.hpp"
 
 class ExpressionVisitor;
-enum class ImplementedType;
 
 // Base class for all expressions
 class Expression 
@@ -41,8 +40,8 @@ class LiteralExpression final : public Expression
 {
 public:
     const std::string value;
-    const ImplementedType tp;
-    explicit LiteralExpression(std::string v, ImplementedType _tp);
+    const std::string tp;
+    explicit LiteralExpression(std::string v, std::string _tp);
     LiteralExpression(const LiteralExpression& other);
 
     void accept(ExpressionVisitor& visitor) const override;
@@ -140,6 +139,24 @@ public:
     std::unique_ptr<Expression> clone() const override 
     {
         return std::make_unique<AccessMemberExpression>(*this);
+    }
+};
+
+class MultiExpression final : public Expression
+{
+public:
+
+    std::vector<std::unique_ptr<Expression>> expr_list;
+
+    explicit MultiExpression(std::vector<std::unique_ptr<Expression>> expressions);
+
+    MultiExpression(const MultiExpression& other);
+
+    void accept(ExpressionVisitor& visitor) const override;
+  
+    std::unique_ptr<Expression> clone() const override 
+    {
+        return std::make_unique<MultiExpression>(*this);
     }
 };
 

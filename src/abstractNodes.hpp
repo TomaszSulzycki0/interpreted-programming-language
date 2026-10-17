@@ -8,9 +8,9 @@
 class NodeVisitor;
 class Expression;
 class NamedExpression;
+class MultiExpression;
 class DeclarationNode;
 class FunctionCallExpression;
-enum class ImplementedType;
 
 // TODO: Pass to node constructors the line where it was written for better error messages  
 
@@ -37,12 +37,12 @@ class DeclarationNode : public ASTNode
 {
 public:
     std::string line;                        
-    ImplementedType type;
+    std::string type;
     std::string name;
     std::unique_ptr<Expression> initializer;
 
     void accept(NodeVisitor& visitor) const override;
-    explicit DeclarationNode(ImplementedType t, std::string n, std::unique_ptr<Expression> init);
+    explicit DeclarationNode(std::string t, std::string n, std::unique_ptr<Expression> init);
 };
 
 class ObjectDeclarationNode : public ASTNode
@@ -51,10 +51,10 @@ public:
     std::string line;                        
     std::string type_name;
     std::string name;
-    std::vector<std::unique_ptr<Expression>> initializers;
+    std::unique_ptr<MultiExpression> initializers;
 
     void accept(NodeVisitor& visitor) const override;
-    explicit ObjectDeclarationNode(std::string tn, std::string n, std::vector<std::unique_ptr<Expression>> init);
+    explicit ObjectDeclarationNode(std::string tn, std::string n, std::unique_ptr<MultiExpression> init);
 };
 
 class FunctionCallNode : public ASTNode
@@ -72,7 +72,7 @@ class FunctionDeclarationNode : public ASTNode
 {
 public:
     std::string line;                        
-    ImplementedType return_type;
+    std::string return_type;
     std::string name;
     std::vector<std::unique_ptr<DeclarationNode>> arg_nodes;
     std::vector<std::unique_ptr<ASTNode>> body_nodes;
@@ -80,7 +80,7 @@ public:
     void accept(NodeVisitor& visitor) const override;
 
     explicit FunctionDeclarationNode(
-        ImplementedType rt, 
+        std::string rt, 
         std::string n, 
         std::vector<std::unique_ptr<DeclarationNode>> _args,
         std::vector<std::unique_ptr<ASTNode>> bdnds);
@@ -166,10 +166,10 @@ public:
 class EmbeddedCastFunctionNode : public EmbeddedFunctionNode
 {
 public:
-    ImplementedType tp;
+    std::string tp;
     void accept(NodeVisitor& visitor) const override;
 
-    explicit EmbeddedCastFunctionNode(ImplementedType _tp) : tp( _tp ) {}
+    explicit EmbeddedCastFunctionNode(std::string _tp) : tp( _tp ) {}
 };
 
 #endif

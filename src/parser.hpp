@@ -10,6 +10,7 @@
 class ASTNode;
 class RPNHandler;
 class FunctionCallExpression;
+class MultiExpression;
 
 // Parsing state used mostly to chandle closing braces 
 enum class PARSING_MODE
@@ -65,6 +66,7 @@ private:
     std::unique_ptr<Expression> parseAtomicExpression(); 
     std::unique_ptr<FunctionCallExpression> parseNonVoidFunctionCall();
     std::unique_ptr<FunctionCallExpression> parseFunctionCallArguments( std::string_view f_identifier ); 
+    std::unique_ptr<MultiExpression> parseObjectInitialization();
 
     // If parser throws at any point, 
     // it continues parsing but marks itself as non executable

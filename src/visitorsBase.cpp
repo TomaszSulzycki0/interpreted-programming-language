@@ -7,7 +7,6 @@
 #include"stringVariable.hpp"
 #include"abstractNodes.hpp"
 #include"debugMacros.hpp"
-#include"implementedType.hpp"
 
 void PrintVisitor::visit(const NumericDeclaration& num_decl) 
 {

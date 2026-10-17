@@ -21,6 +21,7 @@ class LiteralExpression;
 class VariableExpression;
 class UnaryExpression;
 class FunctionCallExpression;
+class MultiExpression;
 class AccessMemberExpression;
 
 class ASTNode;
@@ -88,6 +89,7 @@ public:
     virtual void visit(const UnaryExpression& expr) = 0;
     virtual void visit(const FunctionCallExpression& expr) = 0;
     virtual void visit(const AccessMemberExpression& expr) = 0;
+    virtual void visit(const MultiExpression& expr) = 0;
 
     virtual ~ExpressionVisitor() = default;
 };
