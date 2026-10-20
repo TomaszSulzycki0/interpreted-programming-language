@@ -419,3 +419,26 @@ void Tokenizer::debugTokens(const std::vector<Token>& tokens)
                     << std::endl;
     }
 }
+
+void Tokenizer::resetKeywords()
+{
+    keywords =  
+    {
+        { std::string_view("int"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
+        { std::string_view("float"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
+        { std::string_view("double"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
+        { std::string_view("bool"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
+        { std::string_view("void"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
+        { std::string_view("string"), TOKEN_TYPE::TOKEN_KEYWORD_TYPE },
+        { std::string_view("fn"), TOKEN_TYPE::TOKEN_KEYWORD_FUNCTION },
+        { std::string_view("true"), TOKEN_TYPE::TOKEN_KEYWORD_BOOL },
+        { std::string_view("false"), TOKEN_TYPE::TOKEN_KEYWORD_BOOL },
+        { std::string_view("if"), TOKEN_TYPE::TOKEN_KEYWORD_IF },
+        { std::string_view("else"), TOKEN_TYPE::TOKEN_KEYWORD_ELSE },
+        { std::string_view("while"), TOKEN_TYPE::TOKEN_KEYWORD_WHILE },
+        { std::string_view("and"), TOKEN_TYPE::TOKEN_OPERATOR },
+        { std::string_view("or"), TOKEN_TYPE::TOKEN_OPERATOR },
+        { std::string_view("object"), TOKEN_TYPE::TOKEN_KEYWORD_OBJECT },
+        { std::string_view("return"), TOKEN_TYPE::TOKEN_RETURN }
+    };
+}

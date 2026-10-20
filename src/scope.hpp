@@ -37,6 +37,8 @@ public:
         obj_data[std::string(type_name)] = data;
     }
 
+    // Gets the types and names of object's members
+    // 
     ObjectSignatureData getObjectSignatureData(std::string_view type_name) const;
 
     // Looks up the declaration in current or parent scopes

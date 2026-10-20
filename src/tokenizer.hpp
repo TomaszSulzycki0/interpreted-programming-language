@@ -137,6 +137,10 @@ public:
     std::vector<Token> emitTokens();
     
     void debugTokens(const std::vector<Token>& tokens);
+
+    // During program execution the keywords map might be extended with user 
+    // defined objects. This method reverts back to default state.
+    static void resetKeywords();
 };
 
 
