@@ -3,7 +3,6 @@
 #include "parser.hpp"
 #include "abstractNodes.hpp"
 #include "expression.hpp"
-#include "implementedType.hpp"
 
 
 TEST(ParserControlFlowTest, ParsesIfWithoutElse)
@@ -172,17 +171,17 @@ TEST(ParserControlFlowTest, ParsesFunctionDeclaration)
     ASSERT_NE(node, nullptr);
 
     EXPECT_EQ(node->name, "add");
-    EXPECT_EQ(node->return_type, ImplementedType::_int);
+    EXPECT_EQ(node->return_type, "int");
 
     ASSERT_EQ(node->arg_nodes.size(), 2);
 
     ASSERT_NE(node->arg_nodes[0], nullptr);
     ASSERT_NE(node->arg_nodes[1], nullptr);
 
-    EXPECT_EQ(node->arg_nodes[0]->type, ImplementedType::_int);
+    EXPECT_EQ(node->arg_nodes[0]->type, "int");
     EXPECT_EQ(node->arg_nodes[0]->name, "a");
 
-    EXPECT_EQ(node->arg_nodes[1]->type, ImplementedType::_int);
+    EXPECT_EQ(node->arg_nodes[1]->type, "int");
     EXPECT_EQ(node->arg_nodes[1]->name, "b");
 
     ASSERT_EQ(node->body_nodes.size(), 1);
@@ -212,7 +211,7 @@ TEST(ParserControlFlowTest, ParsesFunctionDeclarationWithoutArguments)
     ASSERT_NE(node, nullptr);
 
     EXPECT_EQ(node->name, "getValue");
-    EXPECT_EQ(node->return_type, ImplementedType::_int);
+    EXPECT_EQ(node->return_type, "int");
     EXPECT_TRUE(node->arg_nodes.empty());
 
     ASSERT_EQ(node->body_nodes.size(), 1);

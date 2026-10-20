@@ -7,6 +7,7 @@
 
 class Scope;
 class Expression;
+class NamedExpression;
 class ASTNode;
 
 // Code executor module
@@ -46,6 +47,8 @@ public:
     void visit(const EmbeddedCastFunctionNode& node) override;
 
     bool reached_return_statement = false;
+
+    std::shared_ptr<Declaration> getMemberDeclaration(const std::unique_ptr<NamedExpression>& expr_ptr, std::vector<std::string>& member_stack);
 
     Expression* getReturnExpression() const { return return_expression.get(); }
 

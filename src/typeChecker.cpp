@@ -392,12 +392,25 @@ void ExpressionTypeEvaluator::visit(const AccessMemberExpression& expr)
 {
     const auto* obj = dynamic_cast<VariableExpression*>(expr.left_side_expr.get());
 
+    std::string obj_tp;
+
     if ( !obj )
     {
-        throw std::runtime_error("Error: Invalid use of member accessor.");
+        // This is the case when we access nested object members eg. foo.faz.x
+        if ( const auto* obj_member = dynamic_cast<AccessMemberExpression*>(expr.left_side_expr.get()) )
+        {
+            obj_tp = evaluateType(*obj_member);
+        }
+        else
+        {
+            // Funtion calls will be checked here
+            throw std::runtime_error("Error: Invalid use of member accessor.");
+        }
     }
-
-    const auto obj_tp = scope->getObjectInstanceType(obj->getName());
+    else
+    {   
+        obj_tp = scope->getObjectInstanceType(obj->getName());
+    }
 
     const auto obj_signature_data = scope->getObjectSignatureData(obj_tp);
 
@@ -410,7 +423,7 @@ void ExpressionTypeEvaluator::visit(const AccessMemberExpression& expr)
         }
     }
 
-    throw std::runtime_error("Error: Object does not name member.");
+    throw std::runtime_error("Error: Object does not name member '" + expr.member + "'.");
 }
 
 void ExpressionTypeEvaluator::visit(const MultiExpression& )

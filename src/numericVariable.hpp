@@ -96,7 +96,7 @@ public:
         return static_cast<long long>(value); 
     }
 
-    explicit Numeric(std::string_view _name, const T& _value) : NumericDeclaration(_name), value(_value) {}
+    explicit Numeric(std::string _name, const T& _value) : NumericDeclaration(_name), value(_value) {}
 };
 
 

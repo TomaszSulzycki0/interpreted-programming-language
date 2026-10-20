@@ -52,69 +52,24 @@ void NodeMaker::visit(const AssignmentNode& node)
     ExpressionEvaluator evaluator {scope};
     RuntimeValue new_value = evaluator.evaluate(*node.value_expr);
 
-    std::shared_ptr<Declaration> existing_var = nullptr;
+    std::vector<std::string> temp_stack;
 
-    const auto* regular_var = dynamic_cast<VariableExpression*>(node.assignee.get());
-    if ( regular_var )
+    std::shared_ptr<Declaration> existing_var = getMemberDeclaration(node.assignee, temp_stack);
+
+    if ( !existing_var )
     {
-        existing_var = scope->lookup(regular_var->name);
-        if ( !existing_var )
-        {
-            throw std::runtime_error("Error: '" + std::string( regular_var->name ) + "' is undefined.");
-        }
-
-        auto target_var = std::dynamic_pointer_cast<ValueDeclaration>(existing_var);
-
-        if (target_var) 
-        {
-            std::visit([&](auto&&) {
+        throw std::runtime_error("Error: Unable to find assignee.");
+    }
+    
+    if ( auto target_var = std::dynamic_pointer_cast<ValueDeclaration>(existing_var) )
+    {
+        std::visit([&](auto&&) {
                 target_var->setValue(new_value);
             }, new_value);
-        }
-        else
-        {   
-            throw std::runtime_error("Error: Target declaration is not a mutable variable.");
-        }
     }
     else
-    {
-        const auto* object_member = dynamic_cast<AccessMemberExpression*>(node.assignee.get());
-
-        if ( object_member )
-        {
-            // TODO: Recursively check member access to get the valid member
-            existing_var = scope->lookup( object_member->left_side_expr->getName() );
-            if ( !existing_var )
-            {
-                throw std::runtime_error("Error: '" + std::string( regular_var->name ) + "' is undefined.");
-            }
-        }
-
-        auto target_obj = std::dynamic_pointer_cast<ObjectDeclaration>(existing_var);
-        
-        if ( target_obj )
-        {
-            
-            // Lookup the member inside object 
-            auto target_decl = target_obj->member_scope->lookupLocal( object_member->getName() );
-
-            auto target_var = std::dynamic_pointer_cast<ValueDeclaration>(target_decl);
-
-            if (target_var) 
-            {
-                std::visit([&](auto&&) {
-                    target_var->setValue(new_value);
-                }, new_value);
-            }
-            else
-            {   
-                throw std::runtime_error("Error: Target declaration is not a mutable variable.");
-            }
-        }
-        else
-        {   
-            throw std::runtime_error("Error: Target declaration is not an object.");
-        }
+    {   
+        throw std::runtime_error("Error: Target declaration is not a mutable variable.");
     }
 
     #ifdef DEBUG_EXEC
@@ -571,9 +526,10 @@ void NodeMaker::visit(const ObjectDeclarationNode& node)
 
     std::shared_ptr<ObjectDeclaration> decl = nullptr;
 
-    decl = std::make_shared<ObjectDeclaration>( std::string(node.name), std::move(obj_member_scope) );
+    decl = std::make_shared<ObjectDeclaration>( node.name, std::move(obj_member_scope), std::string(node.type_name) );
 
-    scope->define( std::string(node.name), decl );
+    scope->define( node.name, decl );
+
 }
 
 void NodeMaker::visit(const EmbeddedPrintFunctionNode&)
@@ -709,6 +665,54 @@ void NodeMaker::visit(const EmbeddedCastFunctionNode& node)
     this->visit( *(temp_returnable) ); 
 }
 
+std::shared_ptr<Declaration> NodeMaker::getMemberDeclaration(const std::unique_ptr<NamedExpression>& expr_ptr, std::vector<std::string>& member_stack)
+{
+    if ( const auto* var_expr = dynamic_cast<VariableExpression*>(expr_ptr.get()) )
+    {
+        auto existing_var = scope->lookup(var_expr->name);
+        if ( !existing_var )
+        {
+            throw std::runtime_error("Error: '" + std::string( var_expr->name ) + "' is undefined.");
+        }
+
+        std::shared_ptr<Declaration> object_decl_member = existing_var;
+
+        while( !member_stack.empty() )
+        {
+            const auto object_decl = std::dynamic_pointer_cast<ObjectDeclaration>(existing_var);
+
+            if ( !object_decl )
+            {
+                throw std::runtime_error("Error: '" + std::string( var_expr->name ) + "' is not an object.");
+            }
+
+            object_decl_member = object_decl->member_scope->lookupLocal(member_stack.back());
+            
+            if ( !object_decl_member )
+            {
+                throw std::runtime_error("Error: '" + std::string( member_stack.back() ) + "' is not a valid member.");
+            }
+
+            member_stack.pop_back();
+
+            if ( !member_stack.empty() )
+            {
+                existing_var = object_decl_member;
+            }
+        }
+
+        return object_decl_member;
+    }
+    else if ( const auto* access_member_expr = dynamic_cast<AccessMemberExpression*>(expr_ptr.get()) )
+    {
+        member_stack.push_back(expr_ptr->getName());
+        return getMemberDeclaration(access_member_expr->left_side_expr, member_stack);
+    }
+    else
+    {
+        throw std::runtime_error("Error: Member access expression of invalid type.");
+    }
+}
 
 RuntimeValue ExpressionEvaluator::evaluate(const Expression& expr) 
 {
@@ -981,24 +985,16 @@ void ExpressionEvaluator::visit(const AccessMemberExpression& expr)
         throw std::runtime_error("Error: Invalid object access.");
     }
     
-    // TODO: Recursively check member access to get the valid member
-    std::string var_name = expr.left_side_expr->getName();
+    NodeMaker decl_finder { scope };
 
-    const auto decl = scope->lookup(var_name);
+    std::vector<std::string> member_stack;
 
-    const auto obj_decl = std::dynamic_pointer_cast<ObjectDeclaration>(decl);
-
-    if ( !obj_decl )
-    {
-        throw std::runtime_error("Error: Variable '" + std::string(decl->getName()) + "' is not a valid object.");
-    }
-
-    const auto member_decl = obj_decl->member_scope->lookupLocal(expr.member);
+    const auto member_decl = decl_finder.getMemberDeclaration( std::make_unique<AccessMemberExpression>(expr) , member_stack);
 
     if ( !member_decl )
     {
         throw std::runtime_error("Error: Variable '" + std::string(expr.member) +
-         "' is not a member of '" + std::string(decl->getName()) + "'.");
+         "' is not a member of '" + std::string(expr.left_side_expr->getName()) + "'.");
     }
     
     const auto var_member_decl = std::dynamic_pointer_cast<ValueDeclaration>(member_decl);

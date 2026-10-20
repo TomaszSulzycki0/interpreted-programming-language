@@ -13,12 +13,11 @@ class Scope;
 class Declaration
 {
 private:
-    std::string_view name;
+    std::string name;
 protected:
-    explicit Declaration(std::string_view _name) : name(_name) {}
-    explicit Declaration(std::string&&) = delete; 
+    explicit Declaration(std::string _name) : name(std::move(_name)) {}
 public:
-    std::string_view getName() const { return name; }
+    std::string getName() const { return name; }
     virtual void accept(DeclarationVisitor& visitor) const = 0;
     virtual ~Declaration() = default;
 };
@@ -38,10 +37,12 @@ class ObjectDeclaration : public Declaration
 public:
     void accept(DeclarationVisitor& visitor) const override { visitor.visit(*this); }
     std::shared_ptr<Scope> member_scope;
+    std::string type_name;
 
-    explicit ObjectDeclaration(std::string_view _name,
-        std::shared_ptr<Scope> _member_scope) :
-        Declaration(_name), member_scope(std::move(_member_scope)) {}
+    explicit ObjectDeclaration(std::string _name,
+        std::shared_ptr<Scope> _member_scope,
+        std::string t) :
+        Declaration(_name), member_scope(std::move(_member_scope)), type_name(std::move(t)) {}
 
 };
 
@@ -73,7 +74,7 @@ public:
     std::size_t getNumArgs() const { return num_args; }
     std::string getReturnType() const { return return_type; }
 
-    explicit FunctionDeclaration(   std::string_view _name, 
+    explicit FunctionDeclaration(   std::string _name, 
                                     std::size_t _num_args,
                                     std::vector<std::string> _arg_names,
                                     std::string _return_type,
