@@ -2,14 +2,17 @@
 #include"expression.hpp"
 #include"visitorsBase.hpp"
 
+DeclarableNode::DeclarableNode(std::string tp, std::string _name)
+    : type(std::move(tp)), name(std::move(_name)) {}
+
 AssignmentNode::AssignmentNode(std::unique_ptr<NamedExpression> _assignee, std::unique_ptr<Expression> val)
     : assignee(std::move(_assignee)), value_expr(std::move(val)) {}
 
 DeclarationNode::DeclarationNode(std::string t, std::string n, std::unique_ptr<Expression> init)
-    : type(std::move(t)), name(std::move(n)), initializer(std::move(init)) {}
+    : DeclarableNode(t, n), initializer(std::move(init)) {}
 
-ObjectDeclarationNode::ObjectDeclarationNode(std::string tn, std::string n, std::unique_ptr<MultiExpression> init)
-    : type_name(tn), name(std::move(n)), initializers(std::move(init)) {}
+ObjectDeclarationNode::ObjectDeclarationNode(std::string tn, std::string n, std::unique_ptr<Expression> init)
+    : DeclarableNode(tn, n), initializer(std::move(init)) {}
 
 FunctionCallNode::FunctionCallNode(
     std::string n,
@@ -20,7 +23,7 @@ FunctionCallNode::FunctionCallNode(
 FunctionDeclarationNode::FunctionDeclarationNode(
     std::string rt, 
     std::string n, 
-    std::vector<std::unique_ptr<DeclarationNode>> _args,
+    std::vector<std::unique_ptr<DeclarableNode>> _args,
     std::vector<std::unique_ptr<ASTNode>> bdnds) :
         return_type(std::move(rt)), 
         name(std::move(n)), 

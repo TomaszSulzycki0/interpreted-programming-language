@@ -22,6 +22,15 @@ public:
     virtual ~ASTNode() = default;
 };
 
+class DeclarableNode : public ASTNode
+{
+public:
+    std::string type;
+    std::string name;
+
+    explicit DeclarableNode(std::string tp, std::string _name);
+};
+
 class AssignmentNode : public ASTNode 
 {
 public:
@@ -33,28 +42,24 @@ public:
     explicit AssignmentNode(std::unique_ptr<NamedExpression> _assignee, std::unique_ptr<Expression> val);
 };
 
-class DeclarationNode : public ASTNode
+class DeclarationNode : public DeclarableNode
 {
 public:
     std::string line;                        
-    std::string type;
-    std::string name;
     std::unique_ptr<Expression> initializer;
 
     void accept(NodeVisitor& visitor) const override;
     explicit DeclarationNode(std::string t, std::string n, std::unique_ptr<Expression> init);
 };
 
-class ObjectDeclarationNode : public ASTNode
+class ObjectDeclarationNode : public DeclarableNode
 {
 public:
     std::string line;                        
-    std::string type_name;
-    std::string name;
-    std::unique_ptr<MultiExpression> initializers;
+    std::unique_ptr<Expression> initializer;
 
     void accept(NodeVisitor& visitor) const override;
-    explicit ObjectDeclarationNode(std::string tn, std::string n, std::unique_ptr<MultiExpression> init);
+    explicit ObjectDeclarationNode(std::string tn, std::string n, std::unique_ptr<Expression> init);
 };
 
 class FunctionCallNode : public ASTNode
@@ -74,7 +79,7 @@ public:
     std::string line;                        
     std::string return_type;
     std::string name;
-    std::vector<std::unique_ptr<DeclarationNode>> arg_nodes;
+    std::vector<std::unique_ptr<DeclarableNode>> arg_nodes;
     std::vector<std::unique_ptr<ASTNode>> body_nodes;
 
     void accept(NodeVisitor& visitor) const override;
@@ -82,7 +87,7 @@ public:
     explicit FunctionDeclarationNode(
         std::string rt, 
         std::string n, 
-        std::vector<std::unique_ptr<DeclarationNode>> _args,
+        std::vector<std::unique_ptr<DeclarableNode>> _args,
         std::vector<std::unique_ptr<ASTNode>> bdnds);
 
 };

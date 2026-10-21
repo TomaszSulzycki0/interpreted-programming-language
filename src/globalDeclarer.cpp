@@ -9,7 +9,7 @@ void GlobalDeclarer::defineBuiltInFunctions(std::shared_ptr<Scope>& scope, std::
     NodeMaker declarer { scope };
     NodeTypeChecker semantic_declarer { s_scope };
 
-    std::vector<std::unique_ptr<DeclarationNode>> args;
+    std::vector<std::unique_ptr<DeclarableNode>> args;
     std::vector<std::unique_ptr<ASTNode>> body;
     
     // print

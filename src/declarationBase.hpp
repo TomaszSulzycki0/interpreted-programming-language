@@ -64,7 +64,7 @@ private:
     
 public:
     std::vector<ASTNode*> body_nodes;
-    std::vector<DeclarationNode*> arg_nodes;
+    std::vector<DeclarableNode*> arg_nodes;
     std::shared_ptr<Scope> declaration_scope;
 
 public:
@@ -79,7 +79,7 @@ public:
                                     std::vector<std::string> _arg_names,
                                     std::string _return_type,
                                     std::vector<ASTNode*> _body_nodes,
-                                    std::vector<DeclarationNode*> _args,
+                                    std::vector<DeclarableNode*> _args,
                                     std::shared_ptr<Scope> _declaration_scope
                                 ) : Declaration(_name), 
                                     num_args(_num_args), 

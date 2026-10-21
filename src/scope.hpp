@@ -13,6 +13,7 @@ struct ObjectSignatureData
     std::size_t num_members {};
     std::vector<std::string> member_types {};
     std::vector<std::string> member_names {};
+    std::vector<bool> is_obj {};
 };
 
 // Scope class for declarations
@@ -38,7 +39,7 @@ public:
     }
 
     // Gets the types and names of object's members
-    // 
+    //  
     ObjectSignatureData getObjectSignatureData(std::string_view type_name) const;
 
     // Looks up the declaration in current or parent scopes

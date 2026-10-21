@@ -42,7 +42,7 @@ void NodeTypeChecker::visit(const AssignmentNode& node)
 
     if ( var_type.empty() )
     {
-        throw std::runtime_error("Error: Variable '" + node.assignee->getName() + "' is undefined.");
+        throw std::runtime_error("Error: Variable '" + node.assignee->name + "' is undefined.");
     }
 
     std::string expr_type = type_evaluator.evaluateType( *node.value_expr );
@@ -109,6 +109,11 @@ void NodeTypeChecker::visit(const FunctionDeclarationNode& node)
     {
         fn_body_scope->define( arg_node->name,  VariableData(arg_node->type));    
         fn_arg_data.push_back( arg_node->type );
+
+        if ( dynamic_cast<ObjectDeclarationNode*>( arg_node.get() ) )
+        {
+            fn_body_scope->defineObjectInstanceType( arg_node->name, arg_node->type );
+        }
     }
 
     scope->storeFnArgTypes( node.name, fn_arg_data );
@@ -219,6 +224,9 @@ void NodeTypeChecker::visit(const ObjectSignatureNode& node)
 
     std::vector<std::string> mem_names;
     mem_names.reserve(num_members);
+
+    std::vector<bool> is_obj_vec {};
+    is_obj_vec.reserve(num_members);
    
     for ( const auto& mem : node.member_variables )
     {
@@ -227,17 +235,19 @@ void NodeTypeChecker::visit(const ObjectSignatureNode& node)
         {
             mem_types.push_back(primitive_decl->type);
             mem_names.push_back(std::string(primitive_decl->name));
+            is_obj_vec.push_back(false);
             continue;
         }
 
         const auto* obj_decl = dynamic_cast<const ObjectDeclarationNode*>( mem.get() );
         if ( obj_decl )
         {
-            mem_types.push_back(std::string(obj_decl->type_name));
+            mem_types.push_back(std::string(obj_decl->type));
             mem_names.push_back(std::string(obj_decl->name));
+            is_obj_vec.push_back(true);
         }
     }
-    ObjectSignatureData data { num_members, std::move( mem_types ), std::move( mem_names ) };
+    ObjectSignatureData data { num_members, std::move( mem_types ), std::move( mem_names ), std::move(is_obj_vec) };
 
     scope->defineObjectSignature( node.name, std::move(data) );
     auto x = scope->getObjectSignatureData(node.name);
@@ -245,7 +255,7 @@ void NodeTypeChecker::visit(const ObjectSignatureNode& node)
 
 void NodeTypeChecker::visit(const ObjectDeclarationNode& node)
 {
-    scope->defineObjectInstanceType(node.name, node.type_name);
+    scope->defineObjectInstanceType(node.name, node.type);
 }
 
 void NodeTypeChecker::checkTypeUpCasting(std::string from, std::string to)
@@ -301,11 +311,16 @@ void ExpressionTypeEvaluator::visit(const LiteralExpression& expr)
 
 void ExpressionTypeEvaluator::visit(const VariableExpression& expr)
 {
-    std::string var_type = scope->lookup( expr.getName() ).type;
+    std::string var_type = scope->lookup( expr.name ).type;
 
     if ( var_type.empty() )
     {
-        throw std::runtime_error("Error: Variable '" + expr.getName() + "' is undefined.");
+        var_type = scope->getObjectInstanceType( expr.name );
+        
+        if ( var_type.empty() )
+        {
+            throw std::runtime_error("Error: Variable '" + expr.name + "' is undefined.");
+        }
     }
 
     last_evaluated_type = var_type;
@@ -384,7 +399,6 @@ void ExpressionTypeEvaluator::visit(const FunctionCallExpression& expr)
         }
     }
 
-
     last_evaluated_type = fn_ret_type;
 }
 
@@ -403,27 +417,27 @@ void ExpressionTypeEvaluator::visit(const AccessMemberExpression& expr)
         }
         else
         {
-            // Funtion calls will be checked here
+            // Function calls will be checked here
             throw std::runtime_error("Error: Invalid use of member accessor.");
         }
     }
     else
     {   
-        obj_tp = scope->getObjectInstanceType(obj->getName());
+        obj_tp = scope->getObjectInstanceType(obj->name);
     }
 
     const auto obj_signature_data = scope->getObjectSignatureData(obj_tp);
 
     for ( std::size_t i {}; i < obj_signature_data.num_members; ++i )
     {
-        if ( obj_signature_data.member_names[i] == expr.member )
+        if ( obj_signature_data.member_names[i] == expr.name )
         {
             last_evaluated_type = obj_signature_data.member_types[i];
             return;
         }
     }
 
-    throw std::runtime_error("Error: Object does not name member '" + expr.member + "'.");
+    throw std::runtime_error("Error: Object does not name member '" + expr.name + "'.");
 }
 
 void ExpressionTypeEvaluator::visit(const MultiExpression& )

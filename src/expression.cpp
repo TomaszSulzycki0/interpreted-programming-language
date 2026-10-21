@@ -16,9 +16,9 @@ LiteralExpression::LiteralExpression(std::string v, std::string _tp) : value(std
 
 LiteralExpression::LiteralExpression(const LiteralExpression& other) : value(other.value), tp(other.tp) {}
 
-VariableExpression::VariableExpression(std::string n) : name(std::move(n)) {}
+VariableExpression::VariableExpression(std::string n) : NamedExpression(n) {}
 
-VariableExpression::VariableExpression(const VariableExpression& other) : name(other.name) {}
+VariableExpression::VariableExpression(const VariableExpression& other) : NamedExpression(other.name) {}
 
 UnaryExpression::UnaryExpression(std::string op, std::unique_ptr<Expression> _child) 
     : unary_op(std::move(op)), child(std::move(_child)) {}
@@ -26,9 +26,9 @@ UnaryExpression::UnaryExpression(std::string op, std::unique_ptr<Expression> _ch
 UnaryExpression::UnaryExpression(const UnaryExpression& other) : unary_op(other.unary_op), child( other.child ? other.child->clone() : nullptr ) {}
 
 FunctionCallExpression::FunctionCallExpression(std::string n, std::vector<std::unique_ptr<Expression>> _args) 
-    : name(std::move(n)), args( std::move(_args)) {}
+    : NamedExpression(n), args( std::move(_args)) {}
 
-FunctionCallExpression::FunctionCallExpression(const FunctionCallExpression& other) : name(other.name)
+FunctionCallExpression::FunctionCallExpression(const FunctionCallExpression& other) : NamedExpression(other.name)
 {
     args.reserve( other.args.size() );
 
@@ -47,9 +47,9 @@ FunctionCallExpression::FunctionCallExpression(const FunctionCallExpression& oth
 
 AccessMemberExpression::AccessMemberExpression( std::unique_ptr<NamedExpression> expr,
         std::string mem ) :
-        left_side_expr(std::move(expr)), member(mem) {}
+        NamedExpression(mem), left_side_expr(std::move(expr))  {}
 
-AccessMemberExpression::AccessMemberExpression(const AccessMemberExpression& other)
+AccessMemberExpression::AccessMemberExpression(const AccessMemberExpression& other) : NamedExpression(other.name)
 {
     if ( other.left_side_expr )
     {
@@ -64,7 +64,6 @@ AccessMemberExpression::AccessMemberExpression(const AccessMemberExpression& oth
         left_side_expr = nullptr;
     }
     
-    member = other.member;
 }
 
 MultiExpression::MultiExpression(std::vector<std::unique_ptr<Expression>> expressions) : expr_list(std::move(expressions)) {}

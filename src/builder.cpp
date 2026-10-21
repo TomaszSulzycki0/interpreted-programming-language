@@ -203,7 +203,7 @@ void NodeMaker::visit(const FunctionDeclarationNode& node)
     }
 
     // Same as above for arguments
-    std::vector<DeclarationNode*> raw_args;
+    std::vector<DeclarableNode*> raw_args;
     for (const auto& ptr : node.arg_nodes) 
     {
         raw_args.push_back(ptr.get());
@@ -462,6 +462,9 @@ void NodeMaker::visit(const ObjectSignatureNode& node)
 
     std::vector<std::string> mem_names {};
     mem_names.reserve(num_members);
+    
+    std::vector<bool> is_obj_vec {};
+    is_obj_vec.reserve(num_members);
    
     for ( const auto& mem : node.member_variables )
     {
@@ -470,24 +473,26 @@ void NodeMaker::visit(const ObjectSignatureNode& node)
         {
             mem_types.push_back(std::string(primitive_decl->type));
             mem_names.push_back(std::string(primitive_decl->name));
+            is_obj_vec.push_back(false);
             continue;
         }
 
         const auto* obj_decl = dynamic_cast<const ObjectDeclarationNode*>( mem.get() );
         if ( obj_decl )
         {
-            mem_types.push_back(std::string(obj_decl->type_name));
+            mem_types.push_back(std::string(obj_decl->type));
             mem_names.push_back(std::string(obj_decl->name));
+            is_obj_vec.push_back(true);
         }
     }
-    ObjectSignatureData data { num_members, std::move( mem_types), std::move( mem_names) };
+    ObjectSignatureData data { num_members, std::move( mem_types), std::move( mem_names), std::move(is_obj_vec) };
 
     scope->defineObjectSignature( node.name, std::move(data) );
 }
 
 void NodeMaker::visit(const ObjectDeclarationNode& node) 
 {
-    const auto& obj_data = scope->getObjectSignatureData( node.type_name );
+    const auto& obj_data = scope->getObjectSignatureData( node.type );
 
     if( obj_data.num_members == 0 )
     {
@@ -500,19 +505,16 @@ void NodeMaker::visit(const ObjectDeclarationNode& node)
     {
         const auto& tp = obj_data.member_types[i];
         const auto& name = obj_data.member_names[i];
-        std::unique_ptr<Expression> expr = node.initializers->expr_list[i]->clone();
 
-        
-        if ( auto* obj_init_expr = dynamic_cast<MultiExpression*>(expr.get()) )
+        if ( obj_data.is_obj[i] )
         {
-            expr.release();
-            member_nodes.push_back( std::make_unique<ObjectDeclarationNode>
-                ( tp, std::string(name), std::unique_ptr<MultiExpression>(obj_init_expr) ) );
+            
         }
         else
         {
-            member_nodes.push_back( std::make_unique<DeclarationNode>( tp, std::string(name), std::move(expr) ) );
+
         }
+
     }
 
     std::shared_ptr<Scope> obj_member_scope { std::make_shared<Scope>( scope ) };
@@ -526,7 +528,7 @@ void NodeMaker::visit(const ObjectDeclarationNode& node)
 
     std::shared_ptr<ObjectDeclaration> decl = nullptr;
 
-    decl = std::make_shared<ObjectDeclaration>( node.name, std::move(obj_member_scope), std::string(node.type_name) );
+    decl = std::make_shared<ObjectDeclaration>( node.name, std::move(obj_member_scope), std::string(node.type) );
 
     scope->define( node.name, decl );
 
@@ -705,7 +707,7 @@ std::shared_ptr<Declaration> NodeMaker::getMemberDeclaration(const std::unique_p
     }
     else if ( const auto* access_member_expr = dynamic_cast<AccessMemberExpression*>(expr_ptr.get()) )
     {
-        member_stack.push_back(expr_ptr->getName());
+        member_stack.push_back(expr_ptr->name);
         return getMemberDeclaration(access_member_expr->left_side_expr, member_stack);
     }
     else
@@ -993,8 +995,8 @@ void ExpressionEvaluator::visit(const AccessMemberExpression& expr)
 
     if ( !member_decl )
     {
-        throw std::runtime_error("Error: Variable '" + std::string(expr.member) +
-         "' is not a member of '" + std::string(expr.left_side_expr->getName()) + "'.");
+        throw std::runtime_error("Error: Variable '" + std::string(expr.name) +
+         "' is not a member of '" + std::string(expr.left_side_expr->name) + "'.");
     }
     
     const auto var_member_decl = std::dynamic_pointer_cast<ValueDeclaration>(member_decl);

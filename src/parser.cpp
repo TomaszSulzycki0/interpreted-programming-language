@@ -208,38 +208,53 @@ std::unique_ptr<ASTNode> Parser::parseObjectDeclaration()
 
     Token declared_name = consume( TOKEN_TYPE::TOKEN_IDENTIFIER, std::string_view("Error: Invalid declaration syntax.") );
 
-    std::unique_ptr<MultiExpression> expressions = nullptr;
+    std::unique_ptr<MultiExpression> expression = nullptr;
 
     if ( check(TOKEN_TYPE::TOKEN_EQUALS) )
     {
         advance();
-        expressions = parseObjectInitialization();    
+
+        if ( check(TOKEN_TYPE::TOKEN_BRACE_OPEN) )
+        {
+            expression = parseObjectInitialization();    
+        }
+
     }
 
     consume( TOKEN_TYPE::TOKEN_SEMICOLON, std::string_view("Error: Expected semicolon.") );
 
-    return std::make_unique<ObjectDeclarationNode>( std::string(declared_type.value), std::string(declared_name.value), std::move(expressions));
+    return std::make_unique<ObjectDeclarationNode>( std::string(declared_type.value), std::string(declared_name.value), std::move(expression));
 }
 
 std::unique_ptr<ASTNode> Parser::parseFunctionDeclaration()
 {
-    consume( TOKEN_TYPE::TOKEN_KEYWORD_FUNCTION, std::string_view("Error: Expected keyword fn.") );
+     consume( TOKEN_TYPE::TOKEN_KEYWORD_FUNCTION, std::string_view("Error: Expected keyword fn.") );
 
     Token fn_identifier = consume( TOKEN_TYPE::TOKEN_FUNCTION_IDENTIFIER, std::string_view("Error: Expected function identifier.") );
 
     consume( TOKEN_TYPE::TOKEN_PARENTHESIS_OPEN, std::string_view("Error: Expected opening parenthesis.") );
 
-    std::vector<std::unique_ptr<DeclarationNode>> fn_args;
+    std::vector<std::unique_ptr<DeclarableNode>> fn_args;
 
-    if ( check( TOKEN_TYPE::TOKEN_KEYWORD_TYPE ) )
+    if ( check( TOKEN_TYPE::TOKEN_KEYWORD_TYPE ) || check( TOKEN_TYPE::TOKEN_KEYWORD_USER_DEFINED_TYPE ) )
     {
         do
         {
             Token fn_arg_type = advance();
             Token fn_arg_identifier = consume( TOKEN_TYPE::TOKEN_IDENTIFIER, std::string_view("Error: Expected function argument identifier.") );
-            fn_args.push_back( std::make_unique<DeclarationNode>(   std::string( fn_arg_type.value ), 
-                                                                    std::string( fn_arg_identifier.value ), 
-                                                                    nullptr ) );
+
+            if ( fn_arg_type.type == TOKEN_TYPE:: TOKEN_KEYWORD_TYPE )
+            {
+                fn_args.push_back( std::make_unique<DeclarationNode>( std::string( fn_arg_type.value ), 
+                std::string( fn_arg_identifier.value ), 
+                nullptr ) );
+            }
+            else 
+            {
+                fn_args.push_back( std::make_unique<ObjectDeclarationNode>( std::string( fn_arg_type.value ), 
+                std::string( fn_arg_identifier.value ), 
+                nullptr ) );
+            }
 
             if ( check( TOKEN_TYPE::TOKEN_COMMA ) )
             {
@@ -258,7 +273,15 @@ std::unique_ptr<ASTNode> Parser::parseFunctionDeclaration()
     
     consume( TOKEN_TYPE::TOKEN_ARROW, std::string_view("Error: Expected return type identification arrow '->'.") );
 
-    Token fn_ret_type = consume( TOKEN_TYPE::TOKEN_KEYWORD_TYPE, std::string_view("Error: Expected function return type.") );
+    Token fn_ret_type;
+    if ( check( TOKEN_TYPE::TOKEN_KEYWORD_TYPE ) )
+    {
+        fn_ret_type = consume( TOKEN_TYPE::TOKEN_KEYWORD_TYPE, std::string_view("Error: Expected function return type.") );
+    }
+    else
+    {
+        fn_ret_type = consume( TOKEN_TYPE::TOKEN_KEYWORD_USER_DEFINED_TYPE, std::string_view("Error: Expected function return type.") );
+    }
 
     consume( TOKEN_TYPE::TOKEN_BRACE_OPEN, std::string_view("Error: Expected opening bracket.") );
 
