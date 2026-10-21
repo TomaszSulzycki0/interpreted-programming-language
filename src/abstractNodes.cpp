@@ -11,8 +11,8 @@ AssignmentNode::AssignmentNode(std::unique_ptr<NamedExpression> _assignee, std::
 DeclarationNode::DeclarationNode(std::string t, std::string n, std::unique_ptr<Expression> init)
     : DeclarableNode(t, n), initializer(std::move(init)) {}
 
-ObjectDeclarationNode::ObjectDeclarationNode(std::string tn, std::string n, std::unique_ptr<Expression> init)
-    : DeclarableNode(tn, n), initializer(std::move(init)) {}
+ObjectDeclarationNode::ObjectDeclarationNode(std::string tn, std::string n, std::unique_ptr<MultiExpression> init)
+    : DeclarableNode(tn, n), initializers(std::move(init)) {}
 
 FunctionCallNode::FunctionCallNode(
     std::string n,

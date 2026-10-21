@@ -224,9 +224,6 @@ void NodeTypeChecker::visit(const ObjectSignatureNode& node)
 
     std::vector<std::string> mem_names;
     mem_names.reserve(num_members);
-
-    std::vector<bool> is_obj_vec {};
-    is_obj_vec.reserve(num_members);
    
     for ( const auto& mem : node.member_variables )
     {
@@ -235,7 +232,6 @@ void NodeTypeChecker::visit(const ObjectSignatureNode& node)
         {
             mem_types.push_back(primitive_decl->type);
             mem_names.push_back(std::string(primitive_decl->name));
-            is_obj_vec.push_back(false);
             continue;
         }
 
@@ -244,10 +240,9 @@ void NodeTypeChecker::visit(const ObjectSignatureNode& node)
         {
             mem_types.push_back(std::string(obj_decl->type));
             mem_names.push_back(std::string(obj_decl->name));
-            is_obj_vec.push_back(true);
         }
     }
-    ObjectSignatureData data { num_members, std::move( mem_types ), std::move( mem_names ), std::move(is_obj_vec) };
+    ObjectSignatureData data { num_members, std::move( mem_types ), std::move( mem_names ) };
 
     scope->defineObjectSignature( node.name, std::move(data) );
     auto x = scope->getObjectSignatureData(node.name);

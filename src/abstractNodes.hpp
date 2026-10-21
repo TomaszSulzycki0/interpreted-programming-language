@@ -56,10 +56,10 @@ class ObjectDeclarationNode : public DeclarableNode
 {
 public:
     std::string line;                        
-    std::unique_ptr<Expression> initializer;
+    std::unique_ptr<MultiExpression> initializers;
 
     void accept(NodeVisitor& visitor) const override;
-    explicit ObjectDeclarationNode(std::string tn, std::string n, std::unique_ptr<Expression> init);
+    explicit ObjectDeclarationNode(std::string tn, std::string n, std::unique_ptr<MultiExpression> init);
 };
 
 class FunctionCallNode : public ASTNode

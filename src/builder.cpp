@@ -462,9 +462,6 @@ void NodeMaker::visit(const ObjectSignatureNode& node)
 
     std::vector<std::string> mem_names {};
     mem_names.reserve(num_members);
-    
-    std::vector<bool> is_obj_vec {};
-    is_obj_vec.reserve(num_members);
    
     for ( const auto& mem : node.member_variables )
     {
@@ -473,7 +470,6 @@ void NodeMaker::visit(const ObjectSignatureNode& node)
         {
             mem_types.push_back(std::string(primitive_decl->type));
             mem_names.push_back(std::string(primitive_decl->name));
-            is_obj_vec.push_back(false);
             continue;
         }
 
@@ -482,10 +478,9 @@ void NodeMaker::visit(const ObjectSignatureNode& node)
         {
             mem_types.push_back(std::string(obj_decl->type));
             mem_names.push_back(std::string(obj_decl->name));
-            is_obj_vec.push_back(true);
         }
     }
-    ObjectSignatureData data { num_members, std::move( mem_types), std::move( mem_names), std::move(is_obj_vec) };
+    ObjectSignatureData data { num_members, std::move( mem_types), std::move( mem_names) };
 
     scope->defineObjectSignature( node.name, std::move(data) );
 }
@@ -506,13 +501,17 @@ void NodeMaker::visit(const ObjectDeclarationNode& node)
         const auto& tp = obj_data.member_types[i];
         const auto& name = obj_data.member_names[i];
 
-        if ( obj_data.is_obj[i] )
+        std::unique_ptr<Expression> expr = node.initializers->expr_list[i]->clone();
+
+        if ( auto* obj_init_expr = dynamic_cast<MultiExpression*>(expr.get()) )
         {
-            
+            expr.release();
+            member_nodes.push_back( std::make_unique<ObjectDeclarationNode>
+                ( tp, std::string(name), std::unique_ptr<MultiExpression>(obj_init_expr) ) );
         }
         else
         {
-
+            member_nodes.push_back( std::make_unique<DeclarationNode>( tp, std::string(name), std::move(expr) ) );
         }
 
     }

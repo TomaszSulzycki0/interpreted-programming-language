@@ -13,7 +13,6 @@ struct ObjectSignatureData
     std::size_t num_members {};
     std::vector<std::string> member_types {};
     std::vector<std::string> member_names {};
-    std::vector<bool> is_obj {};
 };
 
 // Scope class for declarations
