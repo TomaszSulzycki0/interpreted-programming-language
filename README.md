@@ -1,17 +1,25 @@
 
-[![C++ CMake CI Suite](https://github.com/TomaszSulzycki0/interpreted-programming-language/actions/workflows/ci.yml/badge.svg)](https://github.com/TomaszSulzycki0/interpreted-programming-language/actions/workflows/ci.yml)
+
+[![CI](https://img.shields.io/github/actions/workflow/status/TomaszSulzycki0/interpreted-programming-language/ci.yml?style=for-the-badge&label=CI&logo=github)](https://github.com/TomaszSulzycki0/interpreted-programming-language/actions/workflows/ci.yml) [![Live Demo](https://img.shields.io/badge/Live%20Demo-Open%20Playground-4f46e5?style=for-the-badge&logo=webassembly&logoColor=white)](https://tomaszsulzycki0.github.io/interpreted-programming-language/)
 
 # Interpreted programming language
 
 A tree-walk interpreter for a custom statically typed programming language, built from scratch in C++ with CMake.
 
+## 🚀 Try it online
 
+You can run IPL directly in your browser, with no installation needed. The interpreter is compiled to WebAssembly with Emscripten, so your code runs locally and nothing is sent to a server.
+
+**[Open the interactive playground →](https://tomaszsulzycki0.github.io/interpreted-programming-language/)**
+
+The playground includes a syntax quick reference and a few example programs to get you started.
 ## Features
 
 - Data types: int, bool, float, double, string.
 - Control flow: if-else statements, while statements, functions. 
 - Functions: scope isolation, recursion.
 - Built-in functions: print, casting functions
+- Objects: Storing multiple variables
 - Comments.
 
 ## Installation
