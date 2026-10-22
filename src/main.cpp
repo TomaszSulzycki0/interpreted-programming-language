@@ -12,6 +12,7 @@
 #include"code_executor/builder.hpp"
 #include"checker/typeChecker.hpp"
 #include"globalDeclarer.hpp"
+#include"interpreter.hpp"
 
 constexpr int num_args_for_default_usage = 2;
 constexpr int num_args_for_description = 1;
@@ -43,36 +44,9 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    try
-    {
-        Parser parser { readFileToString(input_filename) };
-
-        std::shared_ptr<SemanticScope> main_semantic_scope { std::make_shared<SemanticScope>() };
-        TypeChecker type_checker { main_semantic_scope };
-        
-        std::shared_ptr<Scope> main_scope { std::make_shared<Scope>() };
-        Builder builder { main_scope };
-        
-        GlobalDeclarer::defineBuiltInFunctions( main_scope, main_semantic_scope );
-
-        parser.tokenizeProgram();
-        
-        auto program_ast = parser.parseProgram( PARSING_MODE::DEFAULT );
-
-        if ( parser.isASTExecutable() )
-        {
-            type_checker.run_check( program_ast );
-        }
-        
-        if ( type_checker.isASTWellTyped() && parser.isASTExecutable() )
-        {
-            builder.buildProgram( program_ast ); 
-        }
-    }
-    catch(const std::exception& e)
-    {
-        std::cerr << e.what() << '\n';
-    }
+    Interpreter interpreter {};
+    
+    interpreter.run( readFileToString(input_filename) );
     
 }
 

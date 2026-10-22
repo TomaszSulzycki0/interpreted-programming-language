@@ -1,0 +1,28 @@
+name: Deploy
+on:
+  push:
+    branches: [main]
+permissions:
+  pages: write
+  id-token: write
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mymindstorm/setup-emsdk@v14
+      - run: emcmake cmake -B build-wasm -DCMAKE_BUILD_TYPE=Release
+      - run: cmake --build build-wasm
+        - run: |
+          mkdir site
+          cp docs/index.html docs/app.css site/
+          cp build-wasm/ipl_wasm.js build-wasm/ipl_wasm.wasm site/
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: site }
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: github-pages
+    steps:
+      - uses: actions/deploy-pages@v4

@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>IPL Playground</title>
+    <link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header style="text-align: center;">
+    <h1>Interpreted Programming Language</h1>
+    <p>Write code, run it in your browser. The interpreter is compiled to WebAssembly, so nothing is sent to a server.</p>
+  </header>
+
+  <!-- ====================== DOCUMENTATION ====================== -->
+  <section class="card">
+    <h2>About the language</h2>
+    <p>
+      IPL is a statically typed interpreted language with a lexer, parser, type checker and tree-walking executor,
+      written in C++23. Programs are checked for type errors before they run, so most mistakes are reported
+      before any code executes.
+    </p>
+
+    <h2 style="margin-top:20px">How to use this page</h2>
+    <ul>
+      <li>Type or paste code into the <strong>Code</strong> panel, or pick a program from the <strong>Examples</strong> menu.</li>
+      <li>Press <strong>Run</strong> or use <code>Ctrl</code> + <code>Enter</code>. Output and error messages appear in the <strong>Output</strong> panel.</li>
+      <li>Everything runs locally in your browser, so a program with an infinite loop can freeze this tab. Reload the page if that happens.</li>
+    </ul>
+
+    <details style="margin-top:16px" open>
+      <summary>Syntax quick reference</summary>
+      <ul>
+        <li><strong>Statements</strong> end with a semicolon: <code>print("hello");</code></li>
+        <li><strong>Types:</strong> void, bool, int, float, double, string </li>
+        <li><strong>Variables:</strong> C-style declarations <code>int i = 0; string s = "foo"</code> </li>
+        <li><strong>Operators:</strong> +, -, *, /, =, !, %, ==, !=, +=, -=, *=, /= </li>
+        <li><strong>Control flow:</strong> if statements, while loops 
+            <br> 
+            <code> 
+                if ( foo ) { # If foo is true } else { # if foo is false } 
+                <br>
+                while ( foo ) { # Executes this code while foo is true }
+            </code></li>
+        <li><strong>Functions:</strong> Pass arguments as value, recursion is allowed. <br>
+            <code>
+            fn foo(int faz) -> void { # Function body }
+            </code>
+        </li>
+        <li><strong>Comments:</strong> <code>#This is a comment</code> </li>
+        <li><strong>Objects:</strong> Objects allow to store multiple variables <br>
+            <code> 
+                object Person { int age; string name; } 
+                <br>
+                Person tom = { 20, "Tom"}; <br>
+                tom.age += 1;
+            </code> </li>
+        <li><strong>Casting:</strong> Built in casting functions <br>
+            <code>
+                int i = int(11.12); <br>
+                string eleven = string(i); <br>
+            </code> </li>
+        
+      </ul>
+    </details>
+  </section>
+
+  <!-- ====================== PLAYGROUND ====================== -->
+  <section class="playground">
+    <div class="pane">
+      <div class="pane-head">
+        <span>Code</span>
+        <span class="spacer"></span>
+        <select id="examples" aria-label="Examples"></select>
+        <button id="run" class="primary" disabled>▶ Run</button>
+      </div>
+      <textarea id="code" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+    </div>
+
+    <div class="pane">
+      <div class="pane-head">
+        <span>Output</span>
+        <span class="spacer"></span>
+        <span class="status" id="status"><span class="dot" id="dot"></span><span id="statusText">Loading interpreter…</span></span>
+        <button id="clear">Clear</button>
+      </div>
+      <pre id="out"></pre>
+    </div>
+  </section>
+
+  <footer>
+    Built with C++ and <a href="https://emscripten.org" target="_blank" rel="noopener">Emscripten</a>.
+    <br><br>
+    <a href="https://github.com/TomaszSulzycki0/interpreted-programming-language" target="_blank" rel="noopener">https://github.com/TomaszSulzycki0/interpreted-programming-language</a>
+  </footer>
+</div>
+
+<script src="ipl_wasm.js"></script>
+<script>
+  const EXAMPLES = {
+    "Hello World": 'print("Hello World");',
+    "SinCos": `double pi = 3.1415926535;
+
+fn power(double base, int exp) -> double
+{
+    if ( exp == 0 )
+    {
+        return double(1);
+    }
+
+    double result = base;
+    int i = 0;
+
+    while( i < exp - 1 )
+    {
+        result *= base;
+        i += 1;
+    }
+
+    return result;
+}
+
+fn sin(double x) -> double
+{
+    # Get argument to < -pi, pi> range
+
+    while ( x >= pi )
+    {
+        x -= pi;
+    }
+    while ( x <= -pi)
+    {
+        x += pi;
+    }
+
+    return x - power(x, 3) / double(6) + power(x, 5) / double(120) - power(x, 7) / double(5040);
+}
+
+fn cos(double x) -> double
+{
+    return double(1) - power(sin(x), 2);
+}
+
+float i = - float(pi);
+
+while ( i < float(pi) )
+{
+    print( "sin(" + string( double(i) ) + ") = " + string( sin( double(i) ) ) + 
+        " cos(" + string( double(i) ) + ") = " + string( cos( double(i) ) ) + "\\n" );
+    i += 0.1;
+}`,
+    "Recursion": `int iterations = 10;
+
+fn factorialLoop(int x) -> int
+{
+    int i = 1;
+    int accum = 1;
+
+    while ( i <= x )
+    {
+        accum *= i;
+        i += 1;
+    }
+
+    return accum;
+}
+
+fn factorialRec(int x) -> int
+{
+    if ( x <= 0 )
+    {
+        return 1;
+    }
+    if ( x == 2 )
+    {
+        return 2;
+    }
+
+    return x * factorialRec(x - 1);
+}
+
+int i = 0;
+
+print("Calculating factorials with a while loop:\\n");
+while ( i <= iterations )
+{
+    print( string(i) + "! = " + string( factorialLoop(i) ) + "\\n" );
+
+    i += 1;
+}
+
+i = 0;
+
+print("\\nCalculating factorials with recursion:\\n");
+while ( i <= iterations )
+{
+    print( string(i) + "! = " + string( factorialRec(i) ) + "\\n" );
+
+    i += 1;
+}
+`
+  };
+
+  const $ = id => document.getElementById(id);
+  const codeEl = $('code'), outEl = $('out'), runBtn = $('run');
+  const statusText = $('statusText'), dot = $('dot'), select = $('examples');
+  let mod = null;
+
+  for (const name of Object.keys(EXAMPLES)) {
+    const opt = document.createElement('option');
+    opt.value = opt.textContent = name;
+    select.appendChild(opt);
+  }
+  codeEl.value = EXAMPLES[select.value];
+  select.onchange = () => { codeEl.value = EXAMPLES[select.value]; };
+
+  // Tab key inserts spaces instead of leaving the editor
+  codeEl.addEventListener('keydown', e => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const s = codeEl.selectionStart, end = codeEl.selectionEnd;
+      codeEl.setRangeText('    ', s, end, 'end');
+    }
+  });
+
+  function show(text, isError) {
+    outEl.textContent = text;
+    outEl.classList.toggle('error', !!isError);
+  }
+
+  function render(text) {
+  outEl.textContent = '';
+  outEl.classList.remove('error');
+  if (text === '') { show('(no output)', false); return false; }
+
+  const add = (str, cls) => {
+    if (!str) return;
+    const span = document.createElement('span');
+    if (cls) span.className = cls;
+    span.textContent = str;
+    outEl.appendChild(span);
+  };
+
+  const re = /\x01([\s\S]*?)\x02/g;
+  let last = 0, hasError = false, m;
+  while ((m = re.exec(text)) !== null) {
+    add(text.slice(last, m.index));
+    add(m[1], 'err');
+    hasError = true;
+    last = re.lastIndex;
+  }
+  add(text.slice(last));
+  return hasError;
+}
+
+  function run() {
+  if (!mod) return;
+  const t0 = performance.now();
+  try {
+    const hasError = render(mod.runCode(codeEl.value));
+    statusText.textContent = (hasError ? 'Finished with errors in ' : 'Finished in ')
+      + (performance.now() - t0).toFixed(1) + ' ms';
+  } catch (e) {
+    show('Runtime error: ' + e, true);
+    statusText.textContent = 'Failed';
+  }
+}
+
+  runBtn.onclick = run;
+  $('clear').onclick = () => show('', false);
+  document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); run(); }
+  });
+
+  createIpl().then(m => {
+    mod = m;
+    runBtn.disabled = false;
+    dot.classList.add('ready');
+    statusText.textContent = 'Ready';
+  }).catch(e => {
+    dot.classList.add('fail');
+    statusText.textContent = 'Failed to load';
+    show('Failed to load the interpreter: ' + e, true);
+  });
+</script>
+</body>
+</html>

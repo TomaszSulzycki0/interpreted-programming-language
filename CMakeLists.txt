@@ -16,12 +16,16 @@ target_sources(ipl_lib PRIVATE
     src/parser/RPNHandler.cpp
     src/checker/typeChecker.cpp
     src/globalDeclarer.cpp
+    src/interpreter.cpp
 )
 
 target_include_directories(ipl_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 if(MSVC)
     target_compile_options(ipl_lib PRIVATE /W4 /WX)
+elseif(EMSCRIPTEN)
+    target_compile_options(ipl_lib PUBLIC -fexceptions)
+    target_compile_options(ipl_lib PRIVATE -Wall -Wextra -Wpedantic)
 else()
     target_compile_options(ipl_lib PRIVATE 
         -Wall 
@@ -36,6 +40,30 @@ endif()
 target_compile_definitions(ipl_lib PRIVATE
     $<$<CONFIG:Debug>:DEBUG_ALL>
 )
+
+# ---------------------------------------------------------------
+# WebAssembly build
+# ---------------------------------------------------------------
+
+if(EMSCRIPTEN)
+    add_executable(ipl_wasm src/wasm_main.cpp)
+    target_link_libraries(ipl_wasm PRIVATE ipl_lib)
+    target_link_options(ipl_wasm PRIVATE
+        -fexceptions
+        -lembind
+        -sMODULARIZE=1
+        -sEXPORT_NAME=createIpl
+        -sENVIRONMENT=web,worker
+        -sALLOW_MEMORY_GROWTH=1
+        -sSTACK_SIZE=2097152
+    )
+    set_target_properties(ipl_wasm PROPERTIES SUFFIX ".js")
+    return()   
+endif()
+
+# ---------------------------------------------------------------
+# Native build
+# ---------------------------------------------------------------
 
 add_executable(ipl src/main.cpp)
 target_link_libraries(ipl PRIVATE ipl_lib)

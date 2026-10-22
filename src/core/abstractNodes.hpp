@@ -40,6 +40,7 @@ public:
 
     void accept(NodeVisitor& visitor) const override;
     explicit AssignmentNode(std::unique_ptr<NamedExpression> _assignee, std::unique_ptr<Expression> val);
+    ~AssignmentNode();
 };
 
 class DeclarationNode : public DeclarableNode
@@ -50,6 +51,7 @@ public:
 
     void accept(NodeVisitor& visitor) const override;
     explicit DeclarationNode(std::string t, std::string n, std::unique_ptr<Expression> init);
+    ~DeclarationNode();
 };
 
 class ObjectDeclarationNode : public DeclarableNode
@@ -60,6 +62,7 @@ public:
 
     void accept(NodeVisitor& visitor) const override;
     explicit ObjectDeclarationNode(std::string tn, std::string n, std::unique_ptr<MultiExpression> init);
+    ~ObjectDeclarationNode();
 };
 
 class FunctionCallNode : public ASTNode
@@ -71,6 +74,7 @@ public:
     void accept(NodeVisitor& visitor) const override;
 
     explicit FunctionCallNode(std::string n, std::unique_ptr<FunctionCallExpression> _expr);
+    ~FunctionCallNode();
 };
 
 class FunctionDeclarationNode : public ASTNode
@@ -90,6 +94,8 @@ public:
         std::vector<std::unique_ptr<DeclarableNode>> _args,
         std::vector<std::unique_ptr<ASTNode>> bdnds);
 
+    ~FunctionDeclarationNode();
+
 };
 
 class ElseNode : public ASTNode
@@ -101,6 +107,7 @@ public:
     void accept(NodeVisitor& visitor) const override;
 
     explicit ElseNode(std::vector<std::unique_ptr<ASTNode>> bdnds);
+    ~ElseNode();
 };
 
 class IfNode : public ASTNode
@@ -116,6 +123,8 @@ public:
         std::vector<std::unique_ptr<ASTNode>> bdnds,
         std::unique_ptr<Expression> c_expr,
         std::unique_ptr<ElseNode> _else_nd );
+    
+    ~IfNode();
 };
 
 class WhileNode : public ASTNode
@@ -129,6 +138,8 @@ public:
     explicit WhileNode(
         std::vector<std::unique_ptr<ASTNode>> bdnds,
         std::unique_ptr<Expression> c_expr);
+
+    ~WhileNode();
 };
 
 class ReturnNode : public ASTNode
@@ -139,6 +150,8 @@ public:
     void accept(NodeVisitor& visitor) const override;
 
     explicit ReturnNode( std::unique_ptr<Expression> r_expr );
+
+    ~ReturnNode();
 };
 
 class ObjectSignatureNode : public ASTNode
@@ -153,6 +166,8 @@ public:
     explicit ObjectSignatureNode( 
         std::string n,
         std::vector<std::unique_ptr<ASTNode>> mv );
+
+    ~ObjectSignatureNode();
 };
 
 // Holds c++ code to be executed

@@ -109,11 +109,6 @@ void NodeTypeChecker::visit(const FunctionDeclarationNode& node)
     {
         fn_body_scope->define( arg_node->name,  VariableData(arg_node->type));    
         fn_arg_data.push_back( arg_node->type );
-
-        if ( dynamic_cast<ObjectDeclarationNode*>( arg_node.get() ) )
-        {
-            fn_body_scope->defineObjectInstanceType( arg_node->name, arg_node->type );
-        }
     }
 
     scope->storeFnArgTypes( node.name, fn_arg_data );

@@ -29,35 +29,35 @@ std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram(const PARSING_MODE& m
         {
             if ( check( TOKEN_TYPE::TOKEN_KEYWORD_TYPE ) )
             {
-                ast.push_back( std::move( parseDeclaration() ) );
+                ast.push_back( parseDeclaration() );
             }
             else if ( check( TOKEN_TYPE::TOKEN_KEYWORD_USER_DEFINED_TYPE) )
             {
-                ast.push_back( std::move( parseObjectDeclaration() ) );
+                ast.push_back( parseObjectDeclaration() );
             }
             else if ( check( TOKEN_TYPE::TOKEN_KEYWORD_IF) )
             {
-                ast.push_back( std::move( parseIf() ) );
+                ast.push_back( parseIf() );
             }
             else if ( check( TOKEN_TYPE::TOKEN_KEYWORD_WHILE) )
             {
-                ast.push_back( std::move( parseWhile() ) );
+                ast.push_back( parseWhile() );
             }
             else if ( check( TOKEN_TYPE::TOKEN_IDENTIFIER) )
             {
-                ast.push_back( std::move( parseAssignment() ) );
+                ast.push_back( parseAssignment() );
             }
             else if ( check( TOKEN_TYPE::TOKEN_KEYWORD_FUNCTION ) )
             {
-                ast.push_back( std::move( parseFunctionDeclaration() ) );
+                ast.push_back( parseFunctionDeclaration() );
             }
             else if ( check( TOKEN_TYPE::TOKEN_KEYWORD_OBJECT ) )
             {
-                ast.push_back( std::move( parseObjectSignature() ) );
+                ast.push_back( parseObjectSignature() );
             }
             else if ( check( TOKEN_TYPE::TOKEN_FUNCTION_IDENTIFIER ) )
             {
-                ast.push_back( std::move( parseVoidFunctionCall() ) );
+                ast.push_back( parseVoidFunctionCall() );
             }
             else if ( check( TOKEN_TYPE::TOKEN_COMMENT_START ) )
             {
@@ -66,7 +66,7 @@ std::vector<std::unique_ptr<ASTNode>> Parser::parseProgram(const PARSING_MODE& m
             }
             else if ( check( TOKEN_TYPE::TOKEN_RETURN ) )
             {
-                ast.push_back( std::move( parseReturn() ) );
+                ast.push_back( parseReturn() );
             }
             else if (   ( check( TOKEN_TYPE::TOKEN_EOF ) ) ||
                         ( check( TOKEN_TYPE::TOKEN_BRACE_CLOSE ) && ( mode == PARSING_MODE::FUNCTION_BODY || mode == PARSING_MODE::IF || mode == PARSING_MODE::WHILE ) ) 

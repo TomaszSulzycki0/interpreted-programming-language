@@ -4,7 +4,7 @@ fn power(double base, int exp) -> double
 {
     if ( exp == 0 )
     {
-        return 1;
+        return double(1);
     }
 
     double result = base;
