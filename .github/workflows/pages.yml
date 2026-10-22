@@ -14,7 +14,7 @@ jobs:
       - uses: mymindstorm/setup-emsdk@v14
       - run: emcmake cmake -B build-wasm -DCMAKE_BUILD_TYPE=Release
       - run: cmake --build build-wasm
-        - run: |
+      - run: |
           mkdir site
           cp docs/index.html docs/app.css site/
           cp build-wasm/ipl_wasm.js build-wasm/ipl_wasm.wasm site/
