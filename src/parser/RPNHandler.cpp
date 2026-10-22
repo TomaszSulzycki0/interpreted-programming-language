@@ -1,7 +1,7 @@
-#include"RPNHandler.hpp"
-#include"tokenizer.hpp"
-#include"parser.hpp"
-#include"expression.hpp"
+#include"parser/RPNHandler.hpp"
+#include"lexer/tokenizer.hpp"
+#include"parser/parser.hpp"
+#include"core/expression.hpp"
 
 // TODO: Abstract rpn code
 

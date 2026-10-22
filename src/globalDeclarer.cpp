@@ -1,8 +1,8 @@
 #include"globalDeclarer.hpp"
-#include"builder.hpp"
-#include"typeChecker.hpp"
-#include"abstractNodes.hpp"
-#include"expression.hpp"
+#include"code_executor/builder.hpp"
+#include"checker/typeChecker.hpp"
+#include"core/abstractNodes.hpp"
+#include"core/expression.hpp"
 
 void GlobalDeclarer::defineBuiltInFunctions(std::shared_ptr<Scope>& scope, std::shared_ptr<SemanticScope>& s_scope)
 {

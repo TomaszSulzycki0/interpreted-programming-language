@@ -3,7 +3,7 @@
 
 #include<concepts>
 
-#include"declarationBase.hpp"
+#include"core/declarationBase.hpp"
 
 template<typename T>
 concept Arithmetic = std::integral<T> || std::floating_point<T>;

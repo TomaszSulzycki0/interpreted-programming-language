@@ -1,6 +1,6 @@
-#include"scope.hpp"
-#include"visitorsBase.hpp"
-#include"declarationBase.hpp"
+#include"core/scope.hpp"
+#include"core/visitorsBase.hpp"
+#include"core/declarationBase.hpp"
 
 Scope::Scope() = default;
 Scope::Scope(std::shared_ptr<Scope> parent) : parent_scope(std::move(parent)) {}

@@ -1,8 +1,8 @@
-#include"expression.hpp"
-#include"declarationBase.hpp"
-#include"scope.hpp"
-#include"visitorsBase.hpp"
-#include"parser.hpp"
+#include"core/expression.hpp"
+#include"core/declarationBase.hpp"
+#include"core/scope.hpp"
+#include"core/visitorsBase.hpp"
+#include"parser/parser.hpp"
 
 BinaryExpression::BinaryExpression(std::string _operator, std::unique_ptr<Expression> _left, std::unique_ptr<Expression> _right)
     : expr_operator(std::move(_operator)), expr_left(std::move(_left)), expr_right(std::move(_right)) {}

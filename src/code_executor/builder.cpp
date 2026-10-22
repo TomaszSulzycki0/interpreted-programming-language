@@ -2,14 +2,14 @@
 #include<format>
 #include<charconv>
 
-#include"builder.hpp"
-#include"parser.hpp"
-#include"visitorsBase.hpp"
-#include"expression.hpp"
-#include"scope.hpp"
-#include"numericVariable.hpp"
-#include"stringVariable.hpp"
-#include"abstractNodes.hpp"
+#include"code_executor/builder.hpp"
+#include"parser/parser.hpp"
+#include"core/visitorsBase.hpp"
+#include"core/expression.hpp"
+#include"core/scope.hpp"
+#include"core/numericVariable.hpp"
+#include"core/stringVariable.hpp"
+#include"core/abstractNodes.hpp"
 #include"debugMacros.hpp"
 
 std::ostream& operator<<(std::ostream& os, const RuntimeValue& value) 

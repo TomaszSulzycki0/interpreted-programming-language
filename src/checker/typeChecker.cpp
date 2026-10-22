@@ -1,8 +1,8 @@
-#include"typeChecker.hpp"
-#include"abstractNodes.hpp"
-#include"scope.hpp"
-#include"expression.hpp"
-#include"parser.hpp"
+#include"checker/typeChecker.hpp"
+#include"core/abstractNodes.hpp"
+#include"core/scope.hpp"
+#include"core/expression.hpp"
+#include"parser/parser.hpp"
 
 void TypeChecker::run_check(const std::vector<std::unique_ptr<ASTNode>>& nodes)
 {

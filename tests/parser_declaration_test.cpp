@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 
-#include "parser.hpp"
-#include "abstractNodes.hpp"
-#include "expression.hpp"
+#include "parser/parser.hpp"
+#include "core/abstractNodes.hpp"
+#include "core/expression.hpp"
 
 
 TEST(ParserDeclarationTest, ParsesUninitializedDeclaration)

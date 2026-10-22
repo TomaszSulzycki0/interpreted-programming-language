@@ -1,12 +1,12 @@
 #include <gtest/gtest.h>
 
-#include"visitorsBase.hpp"
-#include"abstractNodes.hpp"
-#include"parser.hpp"
-#include"typeChecker.hpp"
-#include"scope.hpp"
-#include"builder.hpp"
-#include"declarationBase.hpp"
+#include"core/visitorsBase.hpp"
+#include"core/abstractNodes.hpp"
+#include"parser/parser.hpp"
+#include"checker/typeChecker.hpp"
+#include"core/scope.hpp"
+#include"code_executor/builder.hpp"
+#include"core/declarationBase.hpp"
 
 
 class BuilderTest : public ::testing::Test

@@ -4,8 +4,8 @@
 #include<string>
 #include<vector>
 
-#include"visitorsBase.hpp"
-#include"parser.hpp"
+#include"core/visitorsBase.hpp"
+#include"parser/parser.hpp"
 
 class Scope;
 

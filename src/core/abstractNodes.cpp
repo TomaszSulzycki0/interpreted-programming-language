@@ -1,6 +1,6 @@
-#include"abstractNodes.hpp"
-#include"expression.hpp"
-#include"visitorsBase.hpp"
+#include"core/abstractNodes.hpp"
+#include"core/expression.hpp"
+#include"core/visitorsBase.hpp"
 
 DeclarableNode::DeclarableNode(std::string tp, std::string _name)
     : type(std::move(tp)), name(std::move(_name)) {}

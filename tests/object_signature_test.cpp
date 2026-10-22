@@ -3,11 +3,11 @@
 #include<vector>
 #include<memory>
 
-#include"abstractNodes.hpp"
-#include"parser.hpp"
-#include"typeChecker.hpp"
-#include"scope.hpp"
-#include"builder.hpp"
+#include"core/abstractNodes.hpp"
+#include"parser/parser.hpp"
+#include"checker/typeChecker.hpp"
+#include"core/scope.hpp"
+#include"code_executor/builder.hpp"
 
 class ObjectSignatureTest : public ::testing::Test
 {

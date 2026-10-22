@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
 
-#include"typeChecker.hpp"
-#include"visitorsBase.hpp"
-#include"abstractNodes.hpp"
-#include"parser.hpp"
-#include"scope.hpp"
+#include"checker/typeChecker.hpp"
+#include"core/visitorsBase.hpp"
+#include"core/abstractNodes.hpp"
+#include"parser/parser.hpp"
+#include"core/scope.hpp"
 
 class TypecheckerAssignmentTest : public ::testing::Test
 {

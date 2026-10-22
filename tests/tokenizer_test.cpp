@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "tokenizer.hpp"
+#include "lexer/tokenizer.hpp"
 
 #include <string>
 #include <vector>

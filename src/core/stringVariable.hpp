@@ -1,7 +1,7 @@
 #ifndef STRING_VARIABLE_HPP
 #define STRING_VARIABLE_HPP
 
-#include"declarationBase.hpp"
+#include"core/declarationBase.hpp"
 
 // Concrete declaraion of string type
 class StringDeclaration final : public ValueDeclaration

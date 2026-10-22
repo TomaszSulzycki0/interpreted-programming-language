@@ -3,9 +3,9 @@
 
 #include<memory>
 
-#include"RPNHandler.hpp"
-#include"tokenizer.hpp"
-#include"abstractNodes.hpp"
+#include"parser/RPNHandler.hpp"
+#include"lexer/tokenizer.hpp"
+#include"core/abstractNodes.hpp"
 
 class ASTNode;
 class RPNHandler;

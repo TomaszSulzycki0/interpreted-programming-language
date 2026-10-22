@@ -5,12 +5,12 @@
 #include<stdexcept>
 #include<fstream>
 
-#include"scope.hpp"
-#include"numericVariable.hpp"
-#include"parser.hpp"
-#include"visitorsBase.hpp"
-#include"builder.hpp"
-#include"typeChecker.hpp"
+#include"core/scope.hpp"
+#include"core/numericVariable.hpp"
+#include"parser/parser.hpp"
+#include"core/visitorsBase.hpp"
+#include"code_executor/builder.hpp"
+#include"checker/typeChecker.hpp"
 #include"globalDeclarer.hpp"
 
 constexpr int num_args_for_default_usage = 2;

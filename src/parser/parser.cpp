@@ -1,8 +1,8 @@
 #include<iostream>
 
-#include"parser.hpp"
-#include"numericVariable.hpp"
-#include"expression.hpp"
+#include"parser/parser.hpp"
+#include"core/numericVariable.hpp"
+#include"core/expression.hpp"
 #include"debugMacros.hpp"
 
 // Runs the lexer.

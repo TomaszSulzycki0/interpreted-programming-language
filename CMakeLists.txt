@@ -6,15 +6,15 @@ add_library(ipl_lib STATIC)
 target_compile_features(ipl_lib PUBLIC cxx_std_23)
 
 target_sources(ipl_lib PRIVATE
-    src/scope.cpp
-    src/parser.cpp
-    src/builder.cpp
-    src/visitorsBase.cpp
-    src/expression.cpp
-    src/tokenizer.cpp
-    src/abstractNodes.cpp
-    src/RPNHandler.cpp
-    src/typeChecker.cpp
+    src/core/scope.cpp
+    src/parser/parser.cpp
+    src/code_executor/builder.cpp
+    src/core/visitorsBase.cpp
+    src/core/expression.cpp
+    src/lexer/tokenizer.cpp
+    src/core/abstractNodes.cpp
+    src/parser/RPNHandler.cpp
+    src/checker/typeChecker.cpp
     src/globalDeclarer.cpp
 )
 

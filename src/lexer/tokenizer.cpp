@@ -1,4 +1,4 @@
-#include"tokenizer.hpp"
+#include"lexer/tokenizer.hpp"
 
 Tokenizer::Tokenizer(const std::string& _code) : code(_code), code_size(code.size())
 {

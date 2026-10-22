@@ -4,7 +4,7 @@
 #include<vector>
 #include<memory>
 
-#include"visitorsBase.hpp"
+#include"core/visitorsBase.hpp"
 
 class ASTNode;
 class SemanticScope;
